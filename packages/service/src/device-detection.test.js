@@ -1,9 +1,5 @@
 const HID = require("node-hid");
 
-// ═══════════════════════════════════════════
-// HID device enumeration
-// ═══════════════════════════════════════════
-
 describe("HID device enumeration", () => {
   let allDevices;
 
@@ -32,10 +28,6 @@ describe("HID device enumeration", () => {
     }
   });
 });
-
-// ═══════════════════════════════════════════
-// Mouse detection (usagePage=1, usage=2)
-// ═══════════════════════════════════════════
 
 describe("Mouse device detection", () => {
   let mice;
@@ -75,10 +67,6 @@ describe("Mouse device detection", () => {
     }
   });
 });
-
-// ═══════════════════════════════════════════
-// Deduplication (wireless mice show multiple HID interfaces)
-// ═══════════════════════════════════════════
 
 describe("Mouse deduplication", () => {
   let mice;
@@ -127,10 +115,6 @@ describe("Mouse deduplication", () => {
   });
 });
 
-// ═══════════════════════════════════════════
-// Wireless / Bluetooth detection
-// ═══════════════════════════════════════════
-
 describe("Wireless mouse support", () => {
   let mice;
 
@@ -140,7 +124,6 @@ describe("Wireless mouse support", () => {
   });
 
   test("wireless mice are detected (multiple HID interfaces per device)", () => {
-    // Wireless mice typically expose 2+ HID interfaces for a single VID:PID
     const counts = {};
     for (const m of mice) {
       const key = `${m.vendorId}:${m.productId}`;
@@ -158,7 +141,6 @@ describe("Wireless mouse support", () => {
       });
     }
 
-    // This test just verifies the detection logic handles multi-interface correctly
     expect(Object.keys(counts).length).toBeGreaterThanOrEqual(1);
   });
 
@@ -167,10 +149,6 @@ describe("Wireless mouse support", () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 });
-
-// ═══════════════════════════════════════════
-// Non-mouse HID devices are excluded
-// ═══════════════════════════════════════════
 
 describe("Non-mouse filtering", () => {
   let allDevices;
@@ -182,7 +160,6 @@ describe("Non-mouse filtering", () => {
   });
 
   test("keyboards are not included in mouse list", () => {
-    // Keyboards: usagePage=1, usage=6
     const keyboards = allDevices.filter((d) => d.usagePage === 1 && d.usage === 6);
     for (const kb of keyboards) {
       const inMice = mice.some((m) => m.path === kb.path);
@@ -192,7 +169,6 @@ describe("Non-mouse filtering", () => {
   });
 
   test("gamepads are not included in mouse list", () => {
-    // Gamepads: usagePage=1, usage=4 or 5
     const gamepads = allDevices.filter((d) => d.usagePage === 1 && (d.usage === 4 || d.usage === 5));
     for (const gp of gamepads) {
       const inMice = mice.some((m) => m.path === gp.path);
@@ -202,7 +178,6 @@ describe("Non-mouse filtering", () => {
   });
 
   test("vendor-specific HID devices are not included", () => {
-    // Vendor-specific: usagePage >= 0xFF00
     const vendor = allDevices.filter((d) => d.usagePage >= 0xff00);
     for (const v of vendor) {
       const inMice = mice.some((m) => m.path === v.path);
@@ -211,10 +186,6 @@ describe("Non-mouse filtering", () => {
     console.log(`  ${vendor.length} vendor-specific interface(s) correctly excluded`);
   });
 });
-
-// ═══════════════════════════════════════════
-// Device report summary
-// ═══════════════════════════════════════════
 
 describe("Device report", () => {
   test("prints full device report", () => {

@@ -33,11 +33,156 @@ let ws = null;
 let svcProcess = null;
 let ringSize = 640;
 let lastRingConfig = null;
+let lastPluginActions = null;
+let lastPluginStates = null;
+function sendRingState() {
+  if (!ring || ring.isDestroyed()) return;
+  const wc = ring.webContents;
+  if (lastPluginActions) wc.send("ring-config", { pluginActions: lastPluginActions });
+  if (lastRingConfig) wc.send("ring-config", ringConfigForRenderer());
+  if (lastPluginStates) wc.send("ring-config", { pluginStates: lastPluginStates });
+}
+const ATTENTION_GROUP_ID = "__attention";
+let attentionItems = [];
+function ringConfigForRenderer() {
+  const cfg = lastRingConfig;
+  if (!cfg || !Array.isArray(cfg.groups)) return cfg;
+  const groups = cfg.groups.filter((g) => g?.id !== ATTENTION_GROUP_ID);
+  const item = attentionItems.find((i) => i.pluginId && Array.isArray(i.actionIds) && i.actionIds.length > 0);
+  if (!item) return groups.length === cfg.groups.length ? cfg : { ...cfg, groups };
+  let actions = item.actionIds.map((a) => `plugin:${item.pluginId}:${a}`);
+  if (lastPluginActions) {
+    const known = new Set(lastPluginActions.map((a) => a.id));
+    actions = actions.filter((a) => known.has(a));
+  }
+  if (actions.length === 0) return cfg;
+  const group = { id: ATTENTION_GROUP_ID, name: "Claude \xB7 confirma\xE7\xE3o", icon: "brain", actions };
+  return { ...cfg, groups: [group, ...groups] };
+}
+const CUE_W = 300;
+const CUE_H = 84;
+const CUE_FOLLOW_MS = 2e3;
+const CUE_FADE_MS = 180;
+let cue = null;
+let cueLoaded = false;
+let cueShown = false;
+let cueFollowTimer = null;
+let cueHideTimer = null;
+let cueLastPos = { x: NaN, y: NaN };
+let cueAnnounce = false;
+function createCueWindow() {
+  cue = new import_electron.BrowserWindow({
+    width: CUE_W,
+    height: CUE_H,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    resizable: false,
+    movable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    focusable: false,
+    hasShadow: false,
+    show: false,
+    webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true }
+  });
+  cueLoaded = false;
+  cue.setIgnoreMouseEvents(true);
+  cue.setAlwaysOnTop(true, "screen-saver");
+  cue.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  cue.loadFile(path.join(__dirname, "src", "cue.html"));
+  cue.webContents.on("did-finish-load", () => {
+    cueLoaded = true;
+    updateCue();
+  });
+  cue.on("closed", () => {
+    cue = null;
+    cueLoaded = false;
+    cueShown = false;
+    stopCueFollow();
+  });
+}
+function positionCue() {
+  if (!cue || cue.isDestroyed()) return;
+  const wa = import_electron.screen.getPrimaryDisplay().workArea;
+  const x = Math.round(wa.x + wa.width - CUE_W);
+  const y = Math.round(wa.y + (wa.height - CUE_H) / 2);
+  if (x === cueLastPos.x && y === cueLastPos.y) return;
+  cueLastPos = { x, y };
+  cue.setBounds({ x, y, width: CUE_W, height: CUE_H });
+}
+function stopCueFollow() {
+  if (cueFollowTimer) {
+    clearInterval(cueFollowTimer);
+    cueFollowTimer = null;
+  }
+}
+function cueScript(code) {
+  if (!cue || cue.isDestroyed() || !cueLoaded) return;
+  cue.webContents.executeJavaScript(code).catch(() => {
+  });
+}
+function updateCue() {
+  const item = attentionItems[0];
+  const wanted = !!item && !(ring && !ring.isDestroyed() && ring.isVisible());
+  if (!wanted) {
+    stopCueFollow();
+    if (!cue || cue.isDestroyed() || !cueShown) return;
+    cueShown = false;
+    cueScript("window.cueHide && window.cueHide()");
+    if (cueHideTimer) clearTimeout(cueHideTimer);
+    cueHideTimer = setTimeout(() => {
+      cueHideTimer = null;
+      if (cue && !cue.isDestroyed() && !cueShown) cue.hide();
+    }, CUE_FADE_MS);
+    return;
+  }
+  if (!cue || cue.isDestroyed()) {
+    createCueWindow();
+    return;
+  }
+  if (!cueLoaded) return;
+  if (cueHideTimer) {
+    clearTimeout(cueHideTimer);
+    cueHideTimer = null;
+  }
+  const data = {
+    title: item.title,
+    text: item.text || "",
+    count: attentionItems.length,
+    accent: lastRingConfig?.accent,
+    announce: cueAnnounce
+  };
+  cueAnnounce = false;
+  cueScript(`window.cueShow && window.cueShow(${JSON.stringify(data)})`);
+  cueLastPos = { x: NaN, y: NaN };
+  positionCue();
+  if (!cueShown) {
+    cueShown = true;
+    cue.showInactive();
+    cue.setAlwaysOnTop(true, "screen-saver");
+  }
+  if (!cueFollowTimer) cueFollowTimer = setInterval(positionCue, CUE_FOLLOW_MS);
+}
+function setAttention(items) {
+  const next = (Array.isArray(items) ? items : []).filter(
+    (i) => i && typeof i.id === "string" && typeof i.title === "string"
+  );
+  const before = new Set(attentionItems.map((i) => `${i.pluginId}
+${i.id}`));
+  const hasNew = next.some((i) => !before.has(`${i.pluginId}
+${i.id}`));
+  attentionItems = next;
+  if (hasNew) cueAnnounce = true;
+  updateCue();
+}
 const IS_PACKAGED = import_electron.app.isPackaged;
 const RESOURCES = IS_PACKAGED ? process.resourcesPath : path.join(__dirname, "..");
 const ASSETS = IS_PACKAGED ? path.join(RESOURCES, "app.asar", "assets") : path.join(__dirname, "..", "assets");
 const CONFIG_FILE = IS_PACKAGED ? path.join(RESOURCES, "ui", "index.html") : null;
-const CONFIG_URL = "http://localhost:5173";
+const CONFIG_URL = `http://localhost:${Number(process.env.ORBIT_UI_PORT) || 9120}`;
 const SERVICE_PATH = IS_PACKAGED ? path.join(RESOURCES, "service", "index.js") : path.join(__dirname, "..", "service", "dist", "index.js");
 function releaseWin32State() {
   try {
@@ -73,6 +218,7 @@ function startService() {
   if (IS_PACKAGED) {
     env.ELECTRON_RUN_AS_NODE = "1";
     env.NODE_PATH = path.join(RESOURCES, "app.asar.unpacked", "node_modules") + path.delimiter + path.join(RESOURCES, "app.asar", "node_modules");
+    env.ORBIT_PLUGIN_CATALOG = path.join(RESOURCES, "plugins");
   }
   svcProcess = (0, import_child_process.spawn)(nodeExe, [SERVICE_PATH], {
     stdio: "inherit",
@@ -107,6 +253,11 @@ function createRingWindow() {
   ring.on("ready-to-show", () => {
     console.log("[ring] Window ready");
   });
+  ring.webContents.on("did-finish-load", sendRingState);
+  ring.on("show", updateCue);
+  ring.on("hide", () => {
+    setTimeout(updateCue, 450);
+  });
 }
 function createConfigWindow() {
   if (configWindow) {
@@ -140,6 +291,11 @@ function createConfigWindow() {
   } else {
     configWindow.loadURL(CONFIG_URL);
   }
+  configWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith("https://")) import_electron.shell.openExternal(url).catch(() => {
+    });
+    return { action: "deny" };
+  });
   configWindow.webContents.on("did-fail-load", (_e, code, desc) => {
     console.error("[orbitring] Config window failed to load:", code, desc);
   });
@@ -179,19 +335,31 @@ function createTray() {
   tray.setContextMenu(contextMenu);
   tray.on("double-click", () => createConfigWindow());
 }
+const RING_CONTENT_RADIUS = 190;
 function showRing(cursorX, cursorY) {
   if (!ring) return;
   if (ring.isVisible()) return;
   const cursor = cursorX != null ? { x: cursorX, y: cursorY } : import_electron.screen.getCursorScreenPoint();
   const display = import_electron.screen.getDisplayNearestPoint(cursor);
   const size = ringSize;
-  let x = Math.round(cursor.x - size / 2);
-  let y = Math.round(cursor.y - size / 2);
-  x = Math.max(display.bounds.x, Math.min(x, display.bounds.x + display.bounds.width - size));
-  y = Math.max(display.bounds.y, Math.min(y, display.bounds.y + display.bounds.height - size));
+  const b = display.bounds;
+  const reach = Math.min(RING_CONTENT_RADIUS, Math.floor(Math.min(b.width, b.height) / 2));
+  const centerX = Math.round(Math.max(b.x + reach, Math.min(cursor.x, b.x + b.width - reach)));
+  const centerY = Math.round(Math.max(b.y + reach, Math.min(cursor.y, b.y + b.height - reach)));
+  const x = centerX - size / 2;
+  const y = centerY - size / 2;
   ring.setBounds({ x, y, width: size, height: size });
-  if (lastRingConfig) ring.webContents.send("ring-config", lastRingConfig);
-  ring.webContents.send("ring-show", { cx: cursor.x - x, cy: cursor.y - y });
+  if ((centerX !== cursor.x || centerY !== cursor.y) && ws?.readyState === import_ws.WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: "move_cursor_lock", x: centerX, y: centerY }));
+  }
+  const inset = {
+    l: Math.max(0, b.x - x),
+    t: Math.max(0, b.y - y),
+    r: Math.max(0, x + size - (b.x + b.width)),
+    b: Math.max(0, y + size - (b.y + b.height))
+  };
+  sendRingState();
+  ring.webContents.send("ring-show", { cx: centerX - x, cy: centerY - y, inset });
   ring.showInactive();
   ring.moveTop();
 }
@@ -208,6 +376,9 @@ function connectService() {
   ws = new import_ws.WebSocket("ws://localhost:9119");
   ws.on("open", () => {
     console.log("[ring] Connected to service");
+    ws?.send(JSON.stringify({ type: "get_plugins" }));
+    ws?.send(JSON.stringify({ type: "get_plugin_states" }));
+    ws?.send(JSON.stringify({ type: "get_attention" }));
   });
   ws.on("message", (raw) => {
     try {
@@ -232,19 +403,23 @@ function connectService() {
         lastRingConfig = r;
         ringSize = 640;
         if (ring) {
-          ring.webContents.send("ring-config", r);
+          ring.webContents.send("ring-config", ringConfigForRenderer());
         }
       } else if (msg.type === "plugins") {
         const pluginActions = (msg.plugins || []).flatMap(
-          (p) => (p.actions || []).map((a) => ({ id: `plugin:${p.id}:${a.id}`, name: a.name, icon: a.icon, iconActive: a.iconActive }))
+          (p) => (p.actions || []).map((a) => ({ id: `plugin:${p.id}:${a.id}`, name: a.name, icon: a.icon, iconActive: a.iconActive, keepIcon: a.keepIcon === true, image: typeof a.image === "string" ? a.image : void 0 }))
         );
+        lastPluginActions = pluginActions;
         if (ring && pluginActions.length) {
           ring.webContents.send("ring-config", { pluginActions });
+          if (lastPluginStates) ring.webContents.send("ring-config", { pluginStates: lastPluginStates });
         }
+      } else if (msg.type === "attention") {
+        setAttention(msg.items);
       } else if (msg.type === "plugin_states") {
-        console.log("[ring] Got plugin states, forwarding to ring");
+        lastPluginStates = msg.states || {};
         if (ring) {
-          ring.webContents.send("ring-config", { pluginStates: msg.states });
+          ring.webContents.send("ring-config", { pluginStates: lastPluginStates });
         }
       }
     } catch (e) {
@@ -253,6 +428,7 @@ function connectService() {
   });
   ws.on("close", () => {
     console.log("[ring] Disconnected, retrying in 2s...");
+    if (attentionItems.length) setAttention([]);
     setTimeout(connectService, 2e3);
   });
   ws.on("error", () => {
@@ -277,7 +453,11 @@ import_electron.ipcMain.on("close-ring", () => {
 import_electron.ipcMain.on("hide-ring", () => {
   if (ring) ring.hide();
 });
+const IS_FIRST_INSTANCE = !IS_PACKAGED || import_electron.app.requestSingleInstanceLock();
+if (!IS_FIRST_INSTANCE) import_electron.app.quit();
+import_electron.app.on("second-instance", () => createConfigWindow());
 import_electron.app.whenReady().then(() => {
+  if (!IS_FIRST_INSTANCE) return;
   if (IS_PACKAGED) {
     startService();
   }
@@ -286,10 +466,11 @@ import_electron.app.whenReady().then(() => {
   createConfigWindow();
   setTimeout(connectService, IS_PACKAGED ? 1500 : 500);
 });
-import_electron.app.on("window-all-closed", (e) => {
-  e.preventDefault();
+import_electron.app.on("window-all-closed", () => {
 });
 import_electron.app.on("before-quit", () => {
+  stopCueFollow();
+  if (cue && !cue.isDestroyed()) cue.destroy();
   releaseWin32State();
   if (svcProcess) svcProcess.kill();
 });

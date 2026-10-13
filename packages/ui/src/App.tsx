@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AuthorCredit } from "./components/AuthorCredit";
 import {
   Mouse,
   Settings,
@@ -16,7 +17,7 @@ import { BindingEditor } from "./components/BindingEditor";
 import { ProfileList } from "./components/ProfileList";
 import { RingEditor } from "./components/RingEditor";
 import { PluginManager } from "./components/PluginManager";
-import type { PluginInfo } from "./components/PluginManager";
+import type { PluginInfo, CatalogPlugin } from "./components/PluginManager";
 
 type Tab = "devices" | "bindings" | "ring" | "profiles" | "plugins" | "settings";
 
@@ -27,6 +28,7 @@ export function App() {
   const [config, setConfig] = useState<any>(null);
   const [lastEvent, setLastEvent] = useState<any>(null);
   const [plugins, setPlugins] = useState<PluginInfo[]>([]);
+  const [catalog, setCatalog] = useState<CatalogPlugin[]>([]);
   const [ringSettings, setRingSettings] = useState<any>({
     groups: [
       { id: "edit", name: "Edicao", icon: "edit", actions: ["copy", "paste", "undo"] },
@@ -64,9 +66,14 @@ export function App() {
         case "ring_config": setRingSettings(msg.ring); break;
         case "button_event": setLastEvent(msg); break;
         case "plugins": setPlugins(msg.plugins); break;
+        case "plugin_catalog": setCatalog(Array.isArray(msg.plugins) ? msg.plugins : []); break;
       }
     });
   }, [onMessage]);
+
+  useEffect(() => {
+    if (state === "connected") send({ type: "get_plugin_catalog" });
+  }, [state, send]);
 
   const connectionIcon = {
     connected: <Wifi className="w-3.5 h-3.5" style={{ color: accent }} />,
@@ -85,12 +92,9 @@ export function App() {
 
   return (
     <div className="flex h-screen bg-[#0A0A0B]">
-      {/* Draggable title bar area */}
       <div className="fixed top-0 left-0 right-0 h-9 z-50" style={{ WebkitAppRegion: "drag" } as any} />
 
-      {/* Sidebar */}
       <aside className="w-48 bg-[#141417] border-r border-[#2A2A30] flex flex-col">
-        {/* Logo */}
         <div className="px-4 py-5 border-b border-[#2A2A30]" style={{ WebkitAppRegion: "drag" } as any}>
           <div className="flex items-center gap-2.5">
             <svg viewBox="0 0 128 128" className="w-7 h-7 flex-shrink-0">
@@ -102,12 +106,11 @@ export function App() {
             </svg>
             <div>
               <h1 className="text-sm text-[#FAFAFA] tracking-tight leading-none"><span className="font-bold">orbit</span><span className="font-light">Ring</span></h1>
-              <p className="text-[10px] font-mono text-[#71717A] tracking-wide mt-0.5">v0.1.0</p>
+              <p className="text-[10px] font-mono text-[#71717A] tracking-wide mt-0.5">v1.0.0</p>
             </div>
           </div>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 px-2 py-3 space-y-0.5" style={{ WebkitAppRegion: "no-drag" } as any}>
           {tabs.map((t) => (
             <button
@@ -126,7 +129,6 @@ export function App() {
           ))}
         </nav>
 
-        {/* Connection */}
         <div className="px-3 py-3 border-t border-[#2A2A30]">
           <div className="flex items-center gap-2 text-[10px] font-mono text-[#71717A]">
             {connectionIcon}
@@ -144,11 +146,21 @@ export function App() {
             </div>
           )}
         </div>
+
+        <div className="px-3 py-3 border-t border-[#2A2A30]" style={{ WebkitAppRegion: "no-drag" } as any}>
+          <AuthorCredit author="@S1LV4" prefix="developed by" size={18} />
+          <a
+            href="https://github.com/S1LV4/Orbit-Ring"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="mt-1.5 block text-[10px] font-mono text-[#71717A] hover:text-[var(--accent)] transition-colors"
+          >
+            open source · github
+          </a>
+        </div>
       </aside>
 
-      {/* Main content — pt-9 accounts for titleBarOverlay height */}
       <main className="flex-1 overflow-auto relative pt-9">
-        {/* ASCII terrain background removed */}
 
         <div className="relative z-10">
         {tab === "ring" && (
@@ -182,6 +194,8 @@ export function App() {
         {tab === "plugins" && (
           <PluginManager
             plugins={plugins}
+            catalog={catalog}
+            onInstall={(pluginId) => send({ type: "install_plugin", pluginId })}
             onRemove={(pluginId) =>
               send({ type: "remove_plugin", pluginId })
             }

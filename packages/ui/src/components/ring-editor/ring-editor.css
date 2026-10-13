@@ -1,0 +1,85 @@
+.ring-editor :focus-visible,
+.re-layer :focus-visible,
+.re-layer:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.ring-editor .re-input,
+.re-layer .re-input {
+  background: #141417;
+  border: 1px solid #2a2a30;
+  border-radius: 8px;
+  color: #fafafa;
+  outline: none;
+  transition: border-color 120ms, box-shadow 120ms;
+}
+.ring-editor .re-input::placeholder,
+.re-layer .re-input::placeholder {
+  color: #71717a;
+}
+.ring-editor .re-input:hover,
+.re-layer .re-input:hover {
+  border-color: #3a3a42;
+}
+.ring-editor .re-input:focus,
+.re-layer .re-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.18);
+  outline: none;
+}
+
+.ring-editor .re-field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #a1a1aa;
+}
+.ring-editor .re-drop-line {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--accent);
+  pointer-events: none;
+  z-index: 2;
+}
+.ring-editor .re-drop-line::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: -2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.ring-editor .re-section-header {
+  position: sticky;
+  z-index: 10;
+  height: 40px;
+  background: #111114;
+}
+
+.ring-editor .re-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #efeee7;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.ring-editor .re-section-title:hover {
+  color: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring-editor *,
+  .re-layer * {
+    transition-duration: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}

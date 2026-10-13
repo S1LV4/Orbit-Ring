@@ -14,7 +14,6 @@ test("showcase: all groups and actions one by one", async ({ page }) => {
   await openRing(page);
   await page.setViewportSize({ width: 800, height: 800 });
 
-  // Open ring with nodes at final positions
   await page.evaluate(() => {
     const w = window as any;
     w.isOpen = true;
@@ -28,13 +27,11 @@ test("showcase: all groups and actions one by one", async ({ page }) => {
   });
   await delay(1500);
 
-  // Get all groups
   const groups: { id: string; name: string; actions: string[] }[] = await page.evaluate(() =>
     (window as any).groups.map((g: any) => ({ id: g.id, name: g.name, actions: g.actions }))
   );
 
   for (const group of groups) {
-    // Hover group
     await page.evaluate((gid: string) => {
       const w = window as any;
       w.activeGroup = null;
@@ -42,14 +39,12 @@ test("showcase: all groups and actions one by one", async ({ page }) => {
     }, group.id);
     await delay(1500);
 
-    // Activate group (enter subgroup)
     await page.evaluate((gid: string) => {
       const w = window as any;
       w.sim.change = w.sim.f;
       w.activeGroup = gid;
       w.hover = null;
       w.sim.grpP = 0;
-      // Snap action nodes to targets
       var T = w._targets();
       for (var id in T) {
         w.sim.nodes[id] = { x: T[id].x, y: T[id].y, s: T[id].s, vx: 0, vy: 0, vs: 0 };
@@ -58,7 +53,6 @@ test("showcase: all groups and actions one by one", async ({ page }) => {
     }, group.id);
     await delay(1200);
 
-    // Hover each action one by one
     for (const aid of group.actions) {
       await page.evaluate((actionId: string) => {
         (window as any).hover = actionId;
@@ -66,12 +60,10 @@ test("showcase: all groups and actions one by one", async ({ page }) => {
       await delay(1200);
     }
 
-    // Clear hover
     await page.evaluate(() => { (window as any).hover = null; });
     await delay(800);
   }
 
-  // Close ring
   await page.evaluate(() => {
     const w = window as any;
     w.isOpen = false;

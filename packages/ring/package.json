@@ -1,20 +1,110 @@
 {
-  "name": "@m-ring/ring",
-  "version": "0.1.0",
+  "name": "@orbitring/ring",
+  "version": "1.0.0",
   "private": true,
+  "license": "GPL-3.0-only",
   "main": "main.js",
   "scripts": {
     "build:ring": "esbuild src/ring-app.tsx --bundle --outfile=src/ring-bundle.js --jsx=automatic --jsx-import-source=preact --format=iife --target=es2020",
-    "dev": "npm run build:ring && electron ."
+    "watch:ring": "esbuild src/ring-app.tsx --bundle --outfile=src/ring-bundle.js --jsx=automatic --jsx-import-source=preact --format=iife --target=es2020 --watch",
+    "compile": "esbuild src/main.ts --platform=node --format=cjs --outfile=main.js && esbuild src/preload.ts --platform=node --format=cjs --outfile=preload.js",
+    "dev": "npm run build:ring && electron .",
+    "pack": "npm run compile && electron-builder --win --dir",
+    "dist": "npm run compile && electron-builder --win",
+    "test:e2e": "npm run build:ring && playwright test",
+    "test:e2e:ci": "npm run build:ring && playwright test e2e/ring.e2e.test.ts e2e/ring-input e2e/ring-edit e2e/ring-image e2e/ring-parity"
   },
   "dependencies": {
-    "@preact/signals": "^1.3.4",
-    "electron": "^33.0.0",
-    "preact": "^10.29.8",
+    "koffi": "^3.3.3",
+    "node-hid": "^3.1.0",
+    "sharp": "^0.35.5",
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@preact/signals": "^1.3.4",
     "@types/ws": "^8.5.10",
-    "esbuild": "^0.28.0"
+    "electron": "33.4.11",
+    "electron-builder": "^26.15.3",
+    "esbuild": "^0.28.0",
+    "preact": "^10.29.8"
+  },
+  "description": "OrbitRing — radial actions menu and mouse button remapper for any mouse",
+  "author": "S1LV4 (https://github.com/S1LV4)",
+  "homepage": "https://github.com/S1LV4/Orbit-Ring",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/S1LV4/Orbit-Ring.git"
+  },
+  "bugs": {
+    "url": "https://github.com/S1LV4/Orbit-Ring/issues"
+  },
+  "build": {
+    "appId": "com.orbitring.app",
+    "productName": "OrbitRing",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/ring.html",
+      "src/ring.css",
+      "src/ring-bundle.js",
+      "src/cue.html",
+      "assets/**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/**"
+    ],
+    "npmRebuild": false,
+    "extraResources": [
+      {
+        "from": "../service/dist",
+        "to": "service",
+        "filter": [
+          "index.js"
+        ]
+      },
+      {
+        "from": "../ui/dist",
+        "to": "ui",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../../plugins",
+        "to": "plugins",
+        "filter": [
+          "**/*",
+          "!**/node_modules/**"
+        ]
+      },
+      {
+        "from": "../../LICENSE",
+        "to": "LICENSE.txt"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/app-icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "OrbitRing",
+      "artifactName": "OrbitRing-Setup-${version}.${ext}"
+    }
   }
 }

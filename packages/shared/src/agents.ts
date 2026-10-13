@@ -1,7 +1,3 @@
-/**
- * AI coding agent catalog — detection, metadata, and activity tracking.
- */
-
 export type AgentCategory =
   | "cli"
   | "editor"
@@ -13,13 +9,9 @@ export interface AgentDef {
   name: string;
   icon: string;
   category: AgentCategory;
-  /** Process names to look for on the system */
   processNames: string[];
-  /** Data store paths relative to home dir (use forward slashes, expanded at runtime) */
   storePaths: string[];
-  /** Environment variable overrides for store paths */
   envOverrides?: string[];
-  /** Whether this agent reports token-level usage */
   reportsTokens: boolean;
 }
 
@@ -32,17 +24,12 @@ export interface AgentStatus {
   category: AgentCategory;
   running: boolean;
   installed: boolean;
-  /** Where the agent was detected */
   environments: AgentEnvironment[];
-  /** WSL distro name (if found in WSL) */
   wslDistro?: string;
-  /** Last detected activity timestamp (ms since epoch) */
   lastActive?: number;
 }
 
-/** Full agent catalog */
 export const AGENT_CATALOG: AgentDef[] = [
-  // ── CLI Agents ──
   {
     id: "claude-code",
     name: "Claude Code",
@@ -252,7 +239,6 @@ export const AGENT_CATALOG: AgentDef[] = [
     reportsTokens: true,
   },
 
-  // ── Editor Extensions ──
   {
     id: "roo-code",
     name: "Roo Code",
@@ -331,7 +317,6 @@ export const AGENT_CATALOG: AgentDef[] = [
     reportsTokens: true,
   },
 
-  // ── IDE / Desktop Apps ──
   {
     id: "cursor",
     name: "Cursor",
@@ -448,23 +433,13 @@ export const AGENT_CATALOG: AgentDef[] = [
   },
 ];
 
-/**
- * Activity detection patterns for JSONL transcript files.
- * Used to determine if an agent is currently working.
- */
 export interface ActivityPattern {
   agentId: string;
-  /** File extension to scan (e.g. ".jsonl") */
   fileExt: string;
-  /** How many bytes from file tail to read */
   tailBytes: number;
-  /** JSON field that indicates the record type */
   typeField: string;
-  /** Values that mean "agent is working" */
   workingValues: string[];
-  /** Values that mean "agent finished" */
   finishedValues: string[];
-  /** Grace period in seconds before declaring idle */
   gracePeriod: number;
 }
 
@@ -472,7 +447,7 @@ export const ACTIVITY_PATTERNS: ActivityPattern[] = [
   {
     agentId: "claude-code",
     fileExt: ".jsonl",
-    tailBytes: 131072, // 128KB
+    tailBytes: 131072,
     typeField: "type",
     workingValues: ["user", "tool_use"],
     finishedValues: ["end_turn"],
@@ -499,7 +474,7 @@ export const ACTIVITY_PATTERNS: ActivityPattern[] = [
   {
     agentId: "zcode",
     fileExt: ".jsonl",
-    tailBytes: 2097152, // 2MB
+    tailBytes: 2097152,
     typeField: "type",
     workingValues: ["turn.started", "tool.call.started", "model.request"],
     finishedValues: ["turn.completed", "turn.failed", "turn.cancelled"],

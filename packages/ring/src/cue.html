@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<title>OrbitRing · aviso</title>
+<style>
+  :root { --acc: #C6F432; --ink: #0A0A0B; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; user-select: none;
+    font-family: 'Segoe UI', system-ui, sans-serif; }
+
+  .cue { position: absolute; inset: 0; opacity: 0; transform: translateX(34px);
+    transition: transform 420ms cubic-bezier(.34, 1.4, .64, 1), opacity 180ms ease-out; }
+  .cue.on { opacity: 1; transform: none; }
+
+  .orb { position: absolute; right: -32px; top: 50%; width: 64px; height: 64px; margin-top: -32px; }
+  .orb svg { width: 64px; height: 64px; overflow: visible; display: block; }
+  .disc { fill: rgba(10, 10, 11, .86); stroke: rgba(255, 255, 255, .10); stroke-width: 1; }
+  .track { fill: none; stroke: rgba(255, 255, 255, .14); stroke-width: 2.5; }
+  .arc { fill: none; stroke: var(--acc); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 96 55;
+    transform-origin: 32px 32px; animation: spin 9s linear infinite; }
+  .orbit { transform-origin: 32px 32px; animation: spin 2.6s linear infinite; }
+  .orbit circle { fill: var(--acc); }
+  .core { fill: var(--acc); transform-origin: 32px 32px; animation: breathe 2.6s ease-in-out infinite; }
+  .halo { fill: none; stroke: var(--acc); stroke-width: 1; opacity: 0; transform-origin: 32px 32px;
+    animation: halo 2.6s ease-out infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes breathe { 0%, 100% { transform: scale(.8); opacity: .75; } 50% { transform: scale(1.1); opacity: 1; } }
+  @keyframes halo { 0% { transform: scale(1); opacity: .5; } 100% { transform: scale(1.5); opacity: 0; } }
+
+  .count { position: absolute; right: 28px; top: 50%; margin-top: -31px; min-width: 16px; height: 16px; padding: 0 4px;
+    border-radius: 999px; background: var(--acc); color: var(--ink); font: 700 10px/16px 'Segoe UI', sans-serif; text-align: center; }
+  .count[hidden] { display: none; }
+
+  .label { position: absolute; right: 42px; top: 50%; transform: translate(18px, -50%); opacity: 0; max-width: 236px;
+    padding: 6px 11px 7px; border-radius: 10px; background: rgba(16, 17, 20, .94); border: 1px solid rgba(255, 255, 255, .10);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .35); transition: transform 320ms cubic-bezier(.2, .8, .2, 1), opacity 200ms; }
+  .label.on { transform: translate(0, -50%); opacity: 1; }
+  .label .t { font: 600 10px/1.2 'Segoe UI', sans-serif; letter-spacing: .02em; color: var(--acc); white-space: nowrap; }
+  .label .s { margin-top: 2px; font: 500 11.5px/1.25 Consolas, ui-monospace, monospace; color: #D4D4D8;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cue { transition: opacity 120ms; transform: none; }
+    .label { transition: opacity 120ms; transform: translate(0, -50%); }
+    .arc, .orbit, .core, .halo { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="cue" id="cue">
+  <div class="label" id="label"><div class="t" id="title"></div><div class="s" id="summary"></div></div>
+  <div class="orb">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <circle class="disc" cx="32" cy="32" r="30"/>
+      <circle class="halo" cx="32" cy="32" r="24"/>
+      <circle class="track" cx="32" cy="32" r="24"/>
+      <circle class="arc" cx="32" cy="32" r="24"/>
+      <g class="orbit"><circle cx="32" cy="8" r="3.4"/></g>
+      <circle class="core" cx="32" cy="32" r="5"/>
+    </svg>
+  </div>
+  <div class="count" id="count" hidden></div>
+</div>
+<script>
+  (function () {
+    var cue = document.getElementById("cue"), label = document.getElementById("label");
+    var title = document.getElementById("title"), summary = document.getElementById("summary"), count = document.getElementById("count");
+    var timer = 0;
+    function isDark(hex) { // perceived luminance of #rrggbb
+      var m = /^#([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return false;
+      var n = parseInt(m[1], 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) < 60;
+    }
+    window.cueShow = function (d) {
+      d = d || {};
+      if (/^#[0-9a-f]{6}$/i.test(d.accent || "")) document.documentElement.style.setProperty("--acc", isDark(d.accent) ? "#FAFAFA" : d.accent);
+      title.textContent = d.title || "Atenção";
+      summary.textContent = d.text || "";
+      var n = Number(d.count) || 0;
+      count.hidden = n < 2; count.textContent = n > 9 ? "9+" : String(n);
+      requestAnimationFrame(function () { cue.classList.add("on"); });
+      if (d.announce) {
+        label.classList.add("on");
+        clearTimeout(timer);
+        timer = setTimeout(function () { label.classList.remove("on"); }, Number(d.announceMs) || 2800);
+      }
+    };
+    window.cueHide = function () { cue.classList.remove("on"); label.classList.remove("on"); clearTimeout(timer); };
+
+    var q = new URLSearchParams(location.search);
+    if (q.has("demo")) {
+      window.cueShow({ title: q.get("title") || "Claude pede confirmação", text: q.get("text") || "Bash: npm test",
+        count: q.get("count"), accent: q.get("accent"), announce: !q.has("quiet"), announceMs: 600000 });
+    }
+  })();
+</script>
+</body>
+</html>

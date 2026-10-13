@@ -1,56 +1,46 @@
-import { hovered } from "../state/ring-state";
-import { ACTION_ICONS, ACTION_LABELS, BUTTON_CENTERS } from "../utils/catalog";
-import { executeAction } from "../hooks/useHostBridge";
+import { actionImage, actionSvg, keepsIcon, pluginDisplay } from "../utils/catalog";
+import { nodeRef } from "./GroupButton";
 
-interface ActionButtonProps {
-  index: number;
-}
-
-export function ActionButton({ index }: ActionButtonProps) {
-  const c = BUTTON_CENTERS[index];
-  const isHov = hovered.value === index;
-
+export function ActionButton({ gid, aid }: { gid: string; aid: string }) {
+  const key = gid + ":" + aid, d = pluginDisplay[aid];
+  const st = d && d.status ? " st-" + d.status : "";
+  const img = actionImage(aid);
   return (
-    <div
-      class={`b${isHov ? " hov" : ""}`}
-      style={{
-        left: `${c.x - 23}px`,
-        top: `${c.y - 23}px`,
-        animationDelay: `${15 + index * 25}ms`,
-      }}
-      data-i={index}
-      onClick={() => executeAction(index)}
-    >
-      <svg
-        viewBox="0 0 24 24"
-        dangerouslySetInnerHTML={{ __html: ACTION_ICONS[index] }}
-      />
+    <div class="pos" ref={nodeRef(key, "btn")}>
+      <button class="btn" tabIndex={-1} data-key={key}>
+        {img
+          ? <span class={"pimgw" + (d && d.text === "–" ? " off" : "")}>
+              <img class="pimg" src={img} alt="" width={46} height={46} decoding="async" draggable={false} />
+              {d && d.text ? <span class={"ptxt pscrim" + st}>{d.text}</span> : null}
+            </span>
+          : d && d.text && keepsIcon(aid)
+            ? <span class="pstk">
+                <svg viewBox="0 0 24 24" dangerouslySetInnerHTML={{ __html: actionSvg(aid) }} />
+                <span class={"ptxt" + st}>{d.text}</span>
+              </span>
+            : d && d.text
+              ? <span class={"ptxt" + st}>{d.text}</span>
+              : <svg viewBox="0 0 24 24" dangerouslySetInnerHTML={{ __html: actionSvg(aid) }} />}
+        {d && d.value != null ? (
+          <svg class={"gauge" + st} viewBox="0 0 48 48" data-value={d.value}>
+            <circle class="trk" cx="24" cy="24" r="20.5" />
+            {d.value > 0
+              ? <circle class="arc" cx="24" cy="24" r="20.5" pathLength={100} stroke-dasharray={d.value + " 100"} transform="rotate(-90 24 24)" />
+              : null}
+          </svg>
+        ) : null}
+      </button>
     </div>
   );
 }
 
-interface ActionLabelProps {
-  index: number;
-}
-
-/** Exact label positions matching the original layout */
-const LABEL_STYLES: Record<string, string>[] = [
-  { left: "160px", top: "28px", transform: "translateX(-50%)" },
-  { left: "254px", top: "82px" },
-  { left: "280px", top: "145px" },
-  { left: "254px", top: "208px" },
-  { left: "160px", top: "278px", transform: "translateX(-50%)" },
-  { right: "228px", top: "208px" },
-  { right: "256px", top: "145px" },
-  { right: "228px", top: "82px" },
-];
-
-export function ActionLabel({ index }: ActionLabelProps) {
-  const isHov = hovered.value === index;
-
+export function AddButton({ gid }: { gid: string }) {
+  const key = gid + ":+";
   return (
-    <div class={`lbl${isHov ? " on" : ""}`} style={LABEL_STYLES[index]}>
-      {ACTION_LABELS[index]}
+    <div class="pos" ref={nodeRef(key, "btn add")}>
+      <button class="btn add" tabIndex={-1} data-key={key}>
+        <svg viewBox="0 0 24 24"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
+      </button>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-/** A physical mouse button identifier */
 export type MouseButton =
   | "left"
   | "right"
@@ -11,7 +10,6 @@ export type MouseButton =
   | "scroll_left"
   | "scroll_right";
 
-/** Action types — modeled after Logi Options+ card system */
 export type ActionType = "keystroke" | "system" | "command" | "macro" | "none";
 
 export interface KeystrokeAction {
@@ -43,10 +41,7 @@ export interface SystemAction {
     | "switch_desktop_left"
     | "switch_desktop_right"
     | "show_desktop"
-    | "task_view"
-    | "discord_mute"
-    | "discord_deafen"
-    | "discord_screen";
+    | "task_view";
 }
 
 export interface CommandAction {
@@ -81,23 +76,19 @@ export type Action =
   | MacroAction
   | NoAction;
 
-/** Button binding — maps a mouse button to an action */
 export interface ButtonBinding {
   button: MouseButton;
   action: Action;
 }
 
-/** Application-specific profile */
 export interface AppProfile {
   id: string;
   name: string;
-  /** Executable name or path pattern to match (e.g. "code.exe", "chrome.exe") */
   processMatch: string;
   bindings: ButtonBinding[];
   icon?: string;
 }
 
-/** Device info detected by the service */
 export interface DeviceInfo {
   id: string;
   name: string;
@@ -108,26 +99,25 @@ export interface DeviceInfo {
   buttonCount?: number;
 }
 
-/** A ring group containing action IDs */
 export interface RingGroup {
   id: string;
   name: string;
-  icon: string; // icon ID from catalog
-  actions: string[]; // action IDs
+  icon: string;
+  actions: string[];
 }
 
-export type RingTheme = "dark" | "light";
+export type RingTheme = "dark" | "orange" | "neg-orange" | "neg" | "light";
 
 export interface RingSettings {
   groups: RingGroup[];
   theme: RingTheme;
   size: number;
-  accent: string; // hex color
-  speed: number; // animation speed multiplier (0.5–2)
-  liquid: boolean; // goo/liquid effect
+  accent: string;
+  speed: number;
+  liquid: boolean;
+  ascii?: boolean;
 }
 
-/** Claude Code usage tier (session or weekly) */
 export interface ClaudeUsageTier {
   used: number;
   limit: number;
@@ -135,7 +125,6 @@ export interface ClaudeUsageTier {
   resetsAt?: number;
 }
 
-/** Claude Code usage tracking result */
 export interface ClaudeUsage {
   available: boolean;
   session: ClaudeUsageTier;
@@ -143,11 +132,9 @@ export interface ClaudeUsage {
   status: "green" | "amber" | "red";
 }
 
-/** Maps process names to ring group IDs for auto-switch */
 export type AppRingProfileMap = Record<string, string>;
 
-/** Top-level user configuration */
-export interface MRingConfig {
+export interface OrbitRingConfig {
   version: 1;
   defaultProfile: {
     bindings: ButtonBinding[];
@@ -155,6 +142,5 @@ export interface MRingConfig {
   appProfiles: AppProfile[];
   devices: Record<string, { name?: string; enabled: boolean }>;
   ring?: RingSettings;
-  /** Maps process names → ring group IDs for auto-switch on focused window change */
   appRingProfiles?: AppRingProfileMap;
 }

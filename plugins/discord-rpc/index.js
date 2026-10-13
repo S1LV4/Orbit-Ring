@@ -6,21 +6,15 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 
-// Discord IPC named pipe (try indices 0-9)
 const PIPE_PREFIX = process.platform === "win32" ? "\\\\?\\pipe\\discord-ipc-" : "/tmp/discord-ipc-";
 
-// OrbitRing Discord App
 const CLIENT_ID = "1559496309306556597";
 const SCOPES = ["rpc", "identify", "rpc.voice.read", "rpc.voice.write"];
-// Note: RPC scopes require Discord approval. Until approved, keyboard shortcuts are used as fallback.
 
-// Token cache path
 const TOKEN_PATH = path.join(os.homedir(), ".orbit", "credentials.json");
 
-// IPC opcodes
 const OP = { HANDSHAKE: 0, FRAME: 1, CLOSE: 2, PING: 3, PONG: 4 };
 
-// ── PKCE ──
 let codeVerifier = null;
 function generatePKCE() {
   codeVerifier = crypto.randomBytes(32).toString("base64url");
@@ -28,7 +22,6 @@ function generatePKCE() {
   return challenge;
 }
 
-// ── State ──
 let socket = null;
 let authenticated = false;
 let reconnectTimer = null;
@@ -37,7 +30,6 @@ let recvBuf = Buffer.alloc(0);
 let currentUser = null;
 let waitingAuth = false;
 
-// ── IPC framing ──
 function encode(opcode, data) {
   const json = JSON.stringify(data);
   const len = Buffer.byteLength(json);
@@ -72,7 +64,6 @@ function sendCommand(cmd, args, evt) {
   return n;
 }
 
-// ── Token cache ──
 function loadToken() {
   try {
     if (fs.existsSync(TOKEN_PATH)) {
@@ -95,7 +86,6 @@ function saveToken(data) {
   } catch (e) { console.error("[discord-rpc] Failed to save token:", e.message); }
 }
 
-// ── OAuth2 ──
 function exchangeCode(code) {
   return new Promise((resolve, reject) => {
     const params = { client_id: CLIENT_ID, grant_type: "authorization_code", code, code_verifier: codeVerifier };
@@ -153,7 +143,6 @@ function refreshToken(refresh) {
   });
 }
 
-// ── Discord keystroke fallback ──
 function sendDiscordKeystroke(vk) {
   if (process.platform !== "win32") return;
   const vkHex = "0x" + vk.toString(16).toUpperCase();
@@ -181,8 +170,10 @@ if ($disc) {
   exec(`powershell -NoProfile -EncodedCommand ${encoded}`, { timeout: 5000, windowsHide: true });
 }
 
-// ── Connection ──
+let stopped = false;
+
 function tryConnect(pipeIndex = 0) {
+  if (stopped) return;
   if (pipeIndex > 9) {
     console.log("[discord-rpc] Discord IPC not found on pipes 0-9");
     scheduleReconnect();
@@ -193,6 +184,7 @@ function tryConnect(pipeIndex = 0) {
   if (pipeIndex === 0) console.log("[discord-rpc] Connecting to Discord...");
 
   const sock = net.createConnection(pipePath, () => {
+    if (stopped) { sock.destroy(); return; }
     console.log(`[discord-rpc] Connected on pipe ${pipeIndex}`);
     socket = sock;
     recvBuf = Buffer.alloc(0);
@@ -206,7 +198,6 @@ function tryConnect(pipeIndex = 0) {
     handleDisconnect();
   });
   sock.on("close", () => { if (socket === sock) { handleDisconnect(); } });
-  // Only timeout during initial connection, not during auth
   sock.setTimeout(3000, () => {
     if (!waitingAuth) { sock.destroy(); tryConnect(pipeIndex + 1); }
   });
@@ -228,13 +219,11 @@ async function handleFrame(frame) {
   if (opcode === OP.CLOSE) { console.log("[discord-rpc] Discord sent CLOSE"); handleDisconnect(); return; }
   if (opcode !== OP.FRAME) return;
 
-  // READY — handshake done, now authenticate
   if (data.evt === "READY") {
     currentUser = data.data?.user;
-    if (socket) socket.setTimeout(0); // Remove timeout — keep alive
+    if (socket) socket.setTimeout(0);
     console.log(`[discord-rpc] Handshake OK — user: ${currentUser?.username || "unknown"}`);
 
-    // Try cached token first
     const cachedToken = loadToken();
     if (cachedToken) {
       console.log("[discord-rpc] Using cached token...");
@@ -242,7 +231,6 @@ async function handleFrame(frame) {
       return;
     }
 
-    // Try OAuth — scopes may require Discord approval
     console.log("[discord-rpc] Attempting OAuth authorization...");
     waitingAuth = true;
     const challenge = generatePKCE();
@@ -250,17 +238,14 @@ async function handleFrame(frame) {
     return;
   }
 
-  // AUTHORIZE error (scope not approved yet)
   if (data.cmd === "AUTHORIZE" && typeof data.data?.code === "number") {
     waitingAuth = false;
     console.log("[discord-rpc] OAuth scopes not approved yet — using keyboard shortcuts for voice control");
     console.log("[discord-rpc] To enable RPC voice control, get the app approved at Discord Developer Portal");
-    // Stay connected for basic presence, use keyboard fallback for voice
     authenticated = false;
     return;
   }
 
-  // AUTHORIZE success — exchange code for token
   if (data.cmd === "AUTHORIZE" && data.data?.code && typeof data.data.code === "string") {
     waitingAuth = false;
     const authCode = String(data.data.code);
@@ -276,28 +261,23 @@ async function handleFrame(frame) {
     return;
   }
 
-  // AUTHORIZE denied
   if (data.cmd === "AUTHORIZE" && data.evt === "ERROR") {
     waitingAuth = false;
     console.log("[discord-rpc] Authorization denied by user");
     return;
   }
 
-  // AUTHENTICATE response — fully authenticated!
   if (data.cmd === "AUTHENTICATE" && data.data?.user) {
     authenticated = true;
     currentUser = data.data.user;
     console.log(`[discord-rpc] ✓ Authenticated as ${currentUser.username} — voice control enabled!`);
 
-    // Subscribe to voice settings updates
     sendCommand("SUBSCRIBE", {}, "VOICE_SETTINGS_UPDATE");
 
-    // Get initial voice settings
     sendCommand("GET_VOICE_SETTINGS", {});
     return;
   }
 
-  // Voice settings response or update
   if (data.cmd === "GET_VOICE_SETTINGS" || data.evt === "VOICE_SETTINGS_UPDATE") {
     const vs = data.data;
     if (vs) {
@@ -308,13 +288,11 @@ async function handleFrame(frame) {
     return;
   }
 
-  // Error
   if (data.evt === "ERROR") {
     const code = data.data?.code;
     const msg = data.data?.message;
     console.error(`[discord-rpc] Error (${code}): ${msg}`);
     if (code === 4002 || code === 4006) {
-      // Token expired or invalid — clear cache and re-auth
       console.log("[discord-rpc] Token invalid, clearing cache and re-authorizing...");
       try { fs.unlinkSync(TOKEN_PATH); } catch {}
       const challenge = generatePKCE();
@@ -330,27 +308,28 @@ function handleDisconnect() {
   if (waitingAuth) {
     console.log("[discord-rpc] Connection lost during auth — retrying...");
     waitingAuth = false;
-    setTimeout(() => tryConnect(), 3000);
+    if (!stopped) setTimeout(() => tryConnect(), 3000);
   } else {
     scheduleReconnect();
   }
 }
 
 function scheduleReconnect() {
-  if (reconnectTimer) return;
+  if (stopped || reconnectTimer) return;
   console.log("[discord-rpc] Reconnecting in 15s...");
   reconnectTimer = setTimeout(() => { reconnectTimer = null; tryConnect(); }, 15000);
 }
 
-// ── Plugin interface ──
 module.exports = {
   onLoad() {
     console.log("[discord-rpc] Plugin loaded — connecting to Discord...");
+    stopped = false;
     tryConnect();
   },
 
   onUnload() {
     console.log("[discord-rpc] Plugin unloading");
+    stopped = true;
     if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
     if (socket) { try { send(OP.CLOSE, {}); } catch {} socket.destroy(); socket = null; }
     authenticated = false;
@@ -394,7 +373,6 @@ module.exports = {
     }
   },
 
-  // Returns current state for icon updates
   getState() {
     return {
       "toggle_mute": voiceState.mute,

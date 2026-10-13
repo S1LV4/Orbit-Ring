@@ -15,6 +15,7 @@ export interface ClaudeUsage {
   session: ClaudeUsageTier;
   weekly: ClaudeUsageTier;
   status: "green" | "amber" | "red";
+  reason?: "no_credentials" | "unauthorized" | "api_error";
 }
 
 interface OAuthCredentials {
@@ -43,7 +44,7 @@ const HOME = os.homedir();
 const CREDENTIALS_PATH = path.join(HOME, ".claude", ".credentials.json");
 const PROJECTS_DIR = path.join(HOME, ".claude", "projects");
 
-const CACHE_TTL = 60_000; // 60 seconds
+const CACHE_TTL = 55_000;
 let cachedResult: ClaudeUsage | null = null;
 let cachedAt = 0;
 
@@ -51,9 +52,11 @@ function emptyTier(): ClaudeUsageTier {
   return { used: 0, limit: 0, percent: 0 };
 }
 
-function emptyUsage(): ClaudeUsage {
-  return { available: false, session: emptyTier(), weekly: emptyTier(), status: "green" };
+function emptyUsage(reason: ClaudeUsage["reason"]): ClaudeUsage {
+  return { available: false, session: emptyTier(), weekly: emptyTier(), status: "green", reason };
 }
+
+let lastApiStatus = 0;
 
 function computeStatus(percent: number): "green" | "amber" | "red" {
   if (percent > 85) return "red";
@@ -61,15 +64,11 @@ function computeStatus(percent: number): "green" | "amber" | "red" {
   return "green";
 }
 
-/**
- * Read OAuth token from Claude Code credentials file.
- */
 function readCredentials(): string | null {
   try {
     if (!fs.existsSync(CREDENTIALS_PATH)) return null;
     const raw = fs.readFileSync(CREDENTIALS_PATH, "utf8");
     const data = JSON.parse(raw);
-    // Token can be at root level or nested under claudeAiOauth
     const oauth = data.claudeAiOauth || data;
     const token = oauth.accessToken || oauth.access_token;
     return typeof token === "string" && token.length > 0 ? token : null;
@@ -78,9 +77,6 @@ function readCredentials(): string | null {
   }
 }
 
-/**
- * Call the Anthropic OAuth usage API.
- */
 function fetchUsageApi(token: string): Promise<UsageApiResponse | null> {
   return new Promise((resolve) => {
     const options: https.RequestOptions = {
@@ -99,6 +95,7 @@ function fetchUsageApi(token: string): Promise<UsageApiResponse | null> {
       let body = "";
       res.on("data", (chunk: Buffer) => { body += chunk.toString(); });
       res.on("end", () => {
+        lastApiStatus = res.statusCode ?? 0;
         if (res.statusCode !== 200) {
           console.error(`[orbit] Claude usage API returned ${res.statusCode}: ${body.slice(0, 200)}`);
           resolve(null);
@@ -128,17 +125,12 @@ function fetchUsageApi(token: string): Promise<UsageApiResponse | null> {
   });
 }
 
-/**
- * Scan local JSONL transcripts for token counts.
- * Returns total input + output tokens from the most recent files.
- */
 function readLocalTokens(): { inputTokens: number; outputTokens: number } {
   const result = { inputTokens: 0, outputTokens: 0 };
 
   try {
     if (!fs.existsSync(PROJECTS_DIR)) return result;
 
-    // Walk project dirs to find recent .jsonl files
     const jsonlFiles: { path: string; mtime: number }[] = [];
 
     function scanDir(dir: string, depth: number) {
@@ -152,7 +144,6 @@ function readLocalTokens(): { inputTokens: number; outputTokens: number } {
           } else if (entry.name.endsWith(".jsonl")) {
             try {
               const stat = fs.statSync(full);
-              // Only files modified in the last 24 hours
               if (Date.now() - stat.mtimeMs < 86_400_000) {
                 jsonlFiles.push({ path: full, mtime: stat.mtimeMs });
               }
@@ -164,15 +155,13 @@ function readLocalTokens(): { inputTokens: number; outputTokens: number } {
 
     scanDir(PROJECTS_DIR, 0);
 
-    // Sort by most recent, take top 5
     jsonlFiles.sort((a, b) => b.mtime - a.mtime);
     const toRead = jsonlFiles.slice(0, 5);
 
     for (const file of toRead) {
       try {
-        // Read the tail of the file to avoid huge reads
         const stat = fs.statSync(file.path);
-        const readSize = Math.min(stat.size, 256 * 1024); // 256KB tail
+        const readSize = Math.min(stat.size, 256 * 1024);
         const fd = fs.openSync(file.path, "r");
         const buffer = Buffer.alloc(readSize);
         fs.readSync(fd, buffer, 0, readSize, Math.max(0, stat.size - readSize));
@@ -186,7 +175,6 @@ function readLocalTokens(): { inputTokens: number; outputTokens: number } {
           if (!trimmed) continue;
           try {
             const record = JSON.parse(trimmed);
-            // Claude Code JSONL records have usage.input_tokens and usage.output_tokens
             if (record.usage) {
               if (typeof record.usage.input_tokens === "number") {
                 result.inputTokens += record.usage.input_tokens;
@@ -195,7 +183,6 @@ function readLocalTokens(): { inputTokens: number; outputTokens: number } {
                 result.outputTokens += record.usage.output_tokens;
               }
             }
-            // Also check message.usage pattern
             if (record.message?.usage) {
               if (typeof record.message.usage.input_tokens === "number") {
                 result.inputTokens += record.message.usage.input_tokens;
@@ -205,7 +192,6 @@ function readLocalTokens(): { inputTokens: number; outputTokens: number } {
               }
             }
           } catch {
-            // Skip unparseable lines
           }
         }
       } catch {}
@@ -215,10 +201,6 @@ function readLocalTokens(): { inputTokens: number; outputTokens: number } {
   return result;
 }
 
-/**
- * Get Claude Code usage information.
- * Results are cached for 60 seconds.
- */
 export async function getClaudeUsage(): Promise<ClaudeUsage> {
   const now = Date.now();
   if (cachedResult && now - cachedAt < CACHE_TTL) {
@@ -227,22 +209,21 @@ export async function getClaudeUsage(): Promise<ClaudeUsage> {
 
   const token = readCredentials();
   if (!token) {
-    const result = emptyUsage();
+    const result = emptyUsage("no_credentials");
     cachedResult = result;
     cachedAt = now;
     return result;
   }
 
+  lastApiStatus = 0;
   const apiData = await fetchUsageApi(token);
-
-  // Also gather local token counts
-  const localTokens = readLocalTokens();
 
   let session: ClaudeUsageTier;
   let weekly: ClaudeUsageTier;
+  let available = true;
+  let reason: ClaudeUsage["reason"];
 
   if (apiData) {
-    // API returns five_hour/seven_day with utilization (0-100)
     const fh = (apiData as any).five_hour;
     const sd = (apiData as any).seven_day;
     session = {
@@ -258,20 +239,22 @@ export async function getClaudeUsage(): Promise<ClaudeUsage> {
       resetsAt: sd?.resets_at ? new Date(sd.resets_at).getTime() : undefined,
     };
   } else {
-    // API unavailable — provide local token data with no limit info
+    available = false;
+    reason = lastApiStatus === 401 || lastApiStatus === 403 ? "unauthorized" : "api_error";
+    const localTokens = readLocalTokens();
     const totalTokens = localTokens.inputTokens + localTokens.outputTokens;
     session = { used: totalTokens, limit: 0, percent: 0 };
     weekly = { used: totalTokens, limit: 0, percent: 0 };
   }
 
-  // Use the higher utilization percentage for overall status
   const maxPercent = Math.max(session.percent, weekly.percent);
 
   const result: ClaudeUsage = {
-    available: true,
+    available,
     session,
     weekly,
     status: computeStatus(maxPercent),
+    ...(reason ? { reason } : {}),
   };
 
   cachedResult = result;

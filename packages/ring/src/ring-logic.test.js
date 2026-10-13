@@ -1,9 +1,5 @@
 const { pol, hash, sideOf, arm, spring, targets, applyConfig, toggle, validateGroups, selectFromDelta, angleDiff, RAMP } = require("./ring-logic");
 
-// ═══════════════════════════════════════════
-// pol — polar to cartesian
-// ═══════════════════════════════════════════
-
 describe("pol", () => {
   test("0° returns [r, 0]", () => {
     const [x, y] = pol(100, 0);
@@ -36,10 +32,6 @@ describe("pol", () => {
   });
 });
 
-// ═══════════════════════════════════════════
-// hash — deterministic pseudo-random
-// ═══════════════════════════════════════════
-
 describe("hash", () => {
   test("returns value in [0, 1)", () => {
     for (let a = 0; a < 20; a++) {
@@ -62,10 +54,6 @@ describe("hash", () => {
   });
 });
 
-// ═══════════════════════════════════════════
-// sideOf — anchor side from angle
-// ═══════════════════════════════════════════
-
 describe("sideOf", () => {
   test("0° (right) → 'l' (label left of button)", () => {
     expect(sideOf(0)).toBe("l");
@@ -85,10 +73,6 @@ describe("sideOf", () => {
   });
 });
 
-// ═══════════════════════════════════════════
-// arm — spiral arm bezier
-// ═══════════════════════════════════════════
-
 describe("arm", () => {
   test("f=0 returns origin", () => {
     const [x, y] = arm(100, 50, 0);
@@ -104,10 +88,9 @@ describe("arm", () => {
 
   test("f=0.5 returns point along curve with bezier bend", () => {
     const [x, y] = arm(100, 100, 0.5);
-    // Bezier bend means the midpoint deviates from the straight line midpoint
     const straightMidX = 50, straightMidY = 50;
     const dist = Math.hypot(x - straightMidX, y - straightMidY);
-    expect(dist).toBeGreaterThan(1); // offset due to bezier curvature
+    expect(dist).toBeGreaterThan(1);
   });
 
   test("handles zero-length target", () => {
@@ -116,10 +99,6 @@ describe("arm", () => {
     expect(Number.isFinite(y)).toBe(true);
   });
 });
-
-// ═══════════════════════════════════════════
-// spring — physics spring simulation
-// ═══════════════════════════════════════════
 
 describe("spring", () => {
   test("moves value toward target", () => {
@@ -139,7 +118,7 @@ describe("spring", () => {
 
   test("velocity decays (damping)", () => {
     const obj = { x: 0, vx: 10 };
-    spring(obj, "x", "vx", 0, 0, 0.7); // stiff=0 means no restoring force, just damping
+    spring(obj, "x", "vx", 0, 0, 0.7);
     expect(Math.abs(obj.vx)).toBeLessThan(10);
   });
 
@@ -149,10 +128,6 @@ describe("spring", () => {
     expect(obj.x).toBeLessThan(0);
   });
 });
-
-// ═══════════════════════════════════════════
-// targets — ring layout computation
-// ═══════════════════════════════════════════
 
 const DEFAULT_GROUPS = [
   { id: "edit", name: "Edição", icon: "edit", actions: ["copy", "paste", "undo"] },
@@ -195,7 +170,7 @@ describe("targets", () => {
     const T = targets(DEFAULT_GROUPS, true, "edit", null, 75, 130, 30);
     ["copy", "paste", "undo"].forEach((aid) => {
       const dist = Math.hypot(T[aid].x, T[aid].y);
-      expect(dist).toBeCloseTo(130, 0); // R2
+      expect(dist).toBeCloseTo(130, 0);
       expect(T[aid].s).toBe(1);
       expect(T[aid].o).toBe(1);
     });
@@ -203,10 +178,9 @@ describe("targets", () => {
 
   test("inactive group actions collapse to R1", () => {
     const T = targets(DEFAULT_GROUPS, true, "nav", null, 75, 130, 30);
-    // edit actions should be at R1 (collapsed to group position)
     ["copy", "paste", "undo"].forEach((aid) => {
       const dist = Math.hypot(T[aid].x, T[aid].y);
-      expect(dist).toBeCloseTo(75, 0); // R1
+      expect(dist).toBeCloseTo(75, 0);
       expect(T[aid].s).toBe(0);
       expect(T[aid].o).toBe(0);
     });
@@ -217,7 +191,7 @@ describe("targets", () => {
     const T2 = targets(DEFAULT_GROUPS, true, null, "edit", 75, 130, 30);
     const d1 = Math.hypot(T1["edit"].x, T1["edit"].y);
     const d2 = Math.hypot(T2["edit"].x, T2["edit"].y);
-    expect(d2).toBeLessThan(d1); // closer to center (R1-8)
+    expect(d2).toBeLessThan(d1);
   });
 
   test("all action IDs appear in targets", () => {
@@ -238,14 +212,9 @@ describe("targets", () => {
   test("hover on action spreads siblings apart", () => {
     const T1 = targets(DEFAULT_GROUPS, true, "edit", null, 75, 130, 30);
     const T2 = targets(DEFAULT_GROUPS, true, "edit", "copy", 75, 130, 30);
-    // When hovering "copy" (index 0), "paste" (index 1) and "undo" (index 2) should spread
     expect(T2["paste"].a).not.toBeCloseTo(T1["paste"].a, 2);
   });
 });
-
-// ═══════════════════════════════════════════
-// applyConfig — pure state transformer
-// ═══════════════════════════════════════════
 
 describe("applyConfig", () => {
   test("applies groups", () => {
@@ -295,10 +264,6 @@ describe("applyConfig", () => {
   });
 });
 
-// ═══════════════════════════════════════════
-// toggle — open/close state machine
-// ═══════════════════════════════════════════
-
 describe("toggle", () => {
   test("closed → open", () => {
     const result = toggle(false, null);
@@ -320,10 +285,6 @@ describe("toggle", () => {
     expect(result.hover).toBeNull();
   });
 });
-
-// ═══════════════════════════════════════════
-// validateGroups — config validation
-// ═══════════════════════════════════════════
 
 describe("validateGroups", () => {
   const catalog = { copy: {}, paste: {}, undo: {} };
@@ -358,10 +319,6 @@ describe("validateGroups", () => {
   });
 });
 
-// ═══════════════════════════════════════════
-// RAMP constant
-// ═══════════════════════════════════════════
-
 describe("RAMP", () => {
   test("has expected length (10 chars)", () => {
     expect(RAMP.length).toBe(10);
@@ -375,10 +332,6 @@ describe("RAMP", () => {
     expect(RAMP[RAMP.length - 1]).toBe("@");
   });
 });
-
-// ═══════════════════════════════════════════
-// angleDiff — shortest angular distance
-// ═══════════════════════════════════════════
 
 describe("angleDiff", () => {
   test("same angle → 0", () => {
@@ -399,10 +352,6 @@ describe("angleDiff", () => {
     expect(angleDiff(-10, 10)).toBeCloseTo(20);
   });
 });
-
-// ═══════════════════════════════════════════
-// selectFromDelta — delta-based group/action selection
-// ═══════════════════════════════════════════
 
 describe("selectFromDelta", () => {
   const GROUPS = [
@@ -432,7 +381,6 @@ describe("selectFromDelta", () => {
   });
 
   test("moving up selects the top group (edit at -90°)", () => {
-    // edit is at index 0, angle = (0/6)*360 - 90 = -90° (straight up)
     const sel = selectFromDelta(0, -50, GROUPS, null, 75, 130);
     expect(sel.groupId).toBe("edit");
   });
@@ -444,8 +392,6 @@ describe("selectFromDelta", () => {
   });
 
   test("with active group, large delta selects an action", () => {
-    // edit group is at -90° (up). Its actions are spread around -90° with STEP=30
-    // Moving straight up should select the middle action (paste at index 1)
     const sel = selectFromDelta(0, -80, GROUPS, "edit", 75, 130);
     expect(sel.groupId).toBe("edit");
     expect(sel.actionId).not.toBeNull();
@@ -456,7 +402,6 @@ describe("selectFromDelta", () => {
     const up = selectFromDelta(0, -50, GROUPS, null, 75, 130);
     const down = selectFromDelta(0, 50, GROUPS, null, 75, 130);
     const right = selectFromDelta(50, 0, GROUPS, null, 75, 130);
-    // These should select different groups
     const ids = new Set([up.groupId, down.groupId, right.groupId]);
     expect(ids.size).toBeGreaterThanOrEqual(2);
   });

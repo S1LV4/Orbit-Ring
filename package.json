@@ -1,20 +1,39 @@
 {
-  "name": "m-ring",
-  "version": "0.1.0",
+  "name": "orbitring",
+  "version": "1.0.0",
   "private": true,
-  "description": "Open-source mouse button remapper — works with any mouse",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
+  "description": "OrbitRing — radial actions menu and mouse button remapper for any mouse",
+  "author": "S1LV4 (https://github.com/S1LV4)",
+  "homepage": "https://github.com/S1LV4/Orbit-Ring",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/S1LV4/Orbit-Ring.git"
+  },
+  "bugs": {
+    "url": "https://github.com/S1LV4/Orbit-Ring/issues"
+  },
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
+    "dev": "node start.js",
     "dev:service": "npm run dev -w packages/service",
     "dev:ui": "npm run dev -w packages/ui",
-    "build": "npm run build -w packages/shared && npm run build -w packages/service && npm run build -w packages/ui",
-    "test": "npm run test -w packages/ring",
-    "test:e2e": "npm run test:e2e -w packages/ring"
+    "build": "npm run build -w packages/shared && npm run build -w packages/service && npm run build:ring -w packages/ring && npm run build -w packages/ui",
+    "typecheck": "tsc --noEmit -p packages/shared && tsc --noEmit -p packages/service && tsc --noEmit -p packages/ring && tsc --noEmit -p packages/ui",
+    "test": "npm run test -w packages/service",
+    "test:plugins": "npm run test -w packages/service -- plugins-compat",
+    "test:system": "node scripts/system-test.cjs",
+    "test:e2e": "npm run test:e2e:ci -w packages/ring && npm run test:e2e -w packages/ui",
+    "test:all": "npm run typecheck && npm test && npm run build && npm run test:system && npm run test:e2e",
+    "dist": "npm run build && npm run dist -w packages/ring"
   },
   "dependencies": {
     "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "ws": "^8.18.0"
   }
 }
