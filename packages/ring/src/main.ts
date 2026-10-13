@@ -1,6 +1,5 @@
-import { app, BrowserWindow, screen, ipcMain, Tray, Menu, nativeImage } from "electron";
+import { app, BrowserWindow, screen, ipcMain, Tray, Menu, nativeImage, shell } from "electron";
 
-// Disable GPU acceleration — not needed for this app, reduces resource usage
 app.disableHardwareAcceleration();
 import { WebSocket } from "ws";
 import { spawn, ChildProcess } from "child_process";
@@ -13,23 +12,175 @@ let ws: WebSocket | null = null;
 let svcProcess: ChildProcess | null = null;
 let ringSize = 640;
 let lastRingConfig: any = null;
+let lastPluginActions: any[] | null = null;
+let lastPluginStates: Record<string, Record<string, unknown>> | null = null;
 
-// Paths work both in dev (__dirname = packages/ring) and packaged (inside asar + extraResources)
+function sendRingState() {
+  if (!ring || ring.isDestroyed()) return;
+  const wc = ring.webContents;
+  if (lastPluginActions) wc.send("ring-config", { pluginActions: lastPluginActions });
+  if (lastRingConfig) wc.send("ring-config", ringConfigForRenderer());
+  if (lastPluginStates) wc.send("ring-config", { pluginStates: lastPluginStates });
+}
+
+interface AttentionItem {
+  id: string;
+  title: string;
+  text?: string;
+  pluginId?: string;
+  actionIds?: string[];
+}
+
+const ATTENTION_GROUP_ID = "__attention";
+let attentionItems: AttentionItem[] = [];
+
+function ringConfigForRenderer(): any {
+  const cfg = lastRingConfig;
+  if (!cfg || !Array.isArray(cfg.groups)) return cfg;
+  const groups = cfg.groups.filter((g: any) => g?.id !== ATTENTION_GROUP_ID);
+  const item = attentionItems.find((i) => i.pluginId && Array.isArray(i.actionIds) && i.actionIds.length > 0);
+  if (!item) return groups.length === cfg.groups.length ? cfg : { ...cfg, groups };
+  let actions = item.actionIds!.map((a) => `plugin:${item.pluginId}:${a}`);
+  if (lastPluginActions) {
+    const known = new Set(lastPluginActions.map((a: any) => a.id));
+    actions = actions.filter((a) => known.has(a));
+  }
+  if (actions.length === 0) return cfg;
+  const group = { id: ATTENTION_GROUP_ID, name: "Claude · confirmação", icon: "brain", actions };
+  return { ...cfg, groups: [group, ...groups] };
+}
+
+const CUE_W = 300;
+const CUE_H = 84;
+const CUE_FOLLOW_MS = 2000;
+const CUE_FADE_MS = 180;
+
+let cue: BrowserWindow | null = null;
+let cueLoaded = false;
+let cueShown = false;
+let cueFollowTimer: ReturnType<typeof setInterval> | null = null;
+let cueHideTimer: ReturnType<typeof setTimeout> | null = null;
+let cueLastPos = { x: NaN, y: NaN };
+let cueAnnounce = false;
+
+function createCueWindow() {
+  cue = new BrowserWindow({
+    width: CUE_W,
+    height: CUE_H,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    resizable: false,
+    movable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    focusable: false,
+    hasShadow: false,
+    show: false,
+    webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true },
+  });
+  cueLoaded = false;
+  cue.setIgnoreMouseEvents(true);
+  cue.setAlwaysOnTop(true, "screen-saver");
+  cue.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  cue.loadFile(path.join(__dirname, "src", "cue.html"));
+  cue.webContents.on("did-finish-load", () => {
+    cueLoaded = true;
+    updateCue();
+  });
+  cue.on("closed", () => {
+    cue = null;
+    cueLoaded = false;
+    cueShown = false;
+    stopCueFollow();
+  });
+}
+
+function positionCue() {
+  if (!cue || cue.isDestroyed()) return;
+  const wa = screen.getPrimaryDisplay().workArea;
+  const x = Math.round(wa.x + wa.width - CUE_W);
+  const y = Math.round(wa.y + (wa.height - CUE_H) / 2);
+  if (x === cueLastPos.x && y === cueLastPos.y) return;
+  cueLastPos = { x, y };
+  cue.setBounds({ x, y, width: CUE_W, height: CUE_H });
+}
+
+function stopCueFollow() {
+  if (cueFollowTimer) { clearInterval(cueFollowTimer); cueFollowTimer = null; }
+}
+
+function cueScript(code: string) {
+  if (!cue || cue.isDestroyed() || !cueLoaded) return;
+  cue.webContents.executeJavaScript(code).catch(() => {});
+}
+
+function updateCue() {
+  const item = attentionItems[0];
+  const wanted = !!item && !(ring && !ring.isDestroyed() && ring.isVisible());
+
+  if (!wanted) {
+    stopCueFollow();
+    if (!cue || cue.isDestroyed() || !cueShown) return;
+    cueShown = false;
+    cueScript("window.cueHide && window.cueHide()");
+    if (cueHideTimer) clearTimeout(cueHideTimer);
+    cueHideTimer = setTimeout(() => {
+      cueHideTimer = null;
+      if (cue && !cue.isDestroyed() && !cueShown) cue.hide();
+    }, CUE_FADE_MS);
+    return;
+  }
+
+  if (!cue || cue.isDestroyed()) { createCueWindow(); return; }
+  if (!cueLoaded) return;
+  if (cueHideTimer) { clearTimeout(cueHideTimer); cueHideTimer = null; }
+
+  const data = {
+    title: item.title,
+    text: item.text || "",
+    count: attentionItems.length,
+    accent: lastRingConfig?.accent,
+    announce: cueAnnounce,
+  };
+  cueAnnounce = false;
+  cueScript(`window.cueShow && window.cueShow(${JSON.stringify(data)})`);
+  cueLastPos = { x: NaN, y: NaN };
+  positionCue();
+  if (!cueShown) {
+    cueShown = true;
+    cue.showInactive();
+    cue.setAlwaysOnTop(true, "screen-saver");
+  }
+  if (!cueFollowTimer) cueFollowTimer = setInterval(positionCue, CUE_FOLLOW_MS);
+}
+
+function setAttention(items: unknown) {
+  const next: AttentionItem[] = (Array.isArray(items) ? items : []).filter(
+    (i: any) => i && typeof i.id === "string" && typeof i.title === "string"
+  );
+  const before = new Set(attentionItems.map((i) => `${i.pluginId}\n${i.id}`));
+  const hasNew = next.some((i) => !before.has(`${i.pluginId}\n${i.id}`));
+  attentionItems = next;
+  if (hasNew) cueAnnounce = true;
+  updateCue();
+}
+
 const IS_PACKAGED = app.isPackaged;
 const RESOURCES = IS_PACKAGED ? process.resourcesPath : path.join(__dirname, "..");
 const ASSETS = IS_PACKAGED ? path.join(RESOURCES, "app.asar", "assets") : path.join(__dirname, "..", "assets");
 const CONFIG_FILE = IS_PACKAGED
   ? path.join(RESOURCES, "ui", "index.html")
-  : null; // In dev, load from Vite dev server
-const CONFIG_URL = "http://localhost:5173";
+  : null;
+const CONFIG_URL = `http://localhost:${Number(process.env.ORBIT_UI_PORT) || 9120}`;
 const SERVICE_PATH = IS_PACKAGED
   ? path.join(RESOURCES, "service", "index.js")
   : path.join(__dirname, "..", "service", "dist", "index.js");
 
-/** Release Win32 state that the service may have left behind on crash */
 function releaseWin32State() {
   try {
-    // Spawn a short-lived node process to release ClipCursor and BlockInput
     const cleanupCode = `
       try {
         const koffi = require('koffi');
@@ -59,14 +210,13 @@ function releaseWin32State() {
 
 function startService() {
   console.log("[orbitring] Starting service:", SERVICE_PATH);
-  // Spawn as a child process using Electron's Node runtime with ELECTRON_RUN_AS_NODE
   const nodeExe = IS_PACKAGED ? process.execPath : "node";
   const env = { ...process.env };
   if (IS_PACKAGED) {
     env.ELECTRON_RUN_AS_NODE = "1";
-    // Native modules are in app.asar.unpacked/node_modules
     env.NODE_PATH = path.join(RESOURCES, "app.asar.unpacked", "node_modules")
       + path.delimiter + path.join(RESOURCES, "app.asar", "node_modules");
+    env.ORBIT_PLUGIN_CATALOG = path.join(RESOURCES, "plugins");
   }
   svcProcess = spawn(nodeExe, [SERVICE_PATH], {
     stdio: "inherit",
@@ -75,7 +225,6 @@ function startService() {
   });
   svcProcess.on("exit", (code) => {
     console.log(`[orbitring] Service exited: ${code}`);
-    // Safety: release any Win32 state the service may have left behind (ClipCursor, BlockInput)
     releaseWin32State();
     if (code !== 0) setTimeout(startService, 2000);
   });
@@ -107,7 +256,11 @@ function createRingWindow() {
     console.log("[ring] Window ready");
   });
 
-  // With focusable:false, blur events don't apply
+  ring.webContents.on("did-finish-load", sendRingState);
+
+  ring.on("show", updateCue);
+  ring.on("hide", () => { setTimeout(updateCue, 450); });
+
 }
 
 function createConfigWindow() {
@@ -146,7 +299,11 @@ function createConfigWindow() {
     configWindow.loadURL(CONFIG_URL);
   }
 
-  // Debug: log any load errors
+  configWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith("https://")) shell.openExternal(url).catch(() => {});
+    return { action: "deny" };
+  });
+
   configWindow.webContents.on("did-fail-load", (_e: any, code: number, desc: string) => {
     console.error("[orbitring] Config window failed to load:", code, desc);
   });
@@ -161,7 +318,6 @@ function createConfigWindow() {
     configWindow?.show();
   });
 
-  // Log ALL console messages from the renderer
   configWindow.webContents.on("console-message", (_e: any, level: number, msg: string, line: number, source: string) => {
     console.log(`[ui:${level}] ${msg} (${source}:${line})`);
   });
@@ -194,10 +350,11 @@ function createTray() {
   tray.on("double-click", () => createConfigWindow());
 }
 
+const RING_CONTENT_RADIUS = 190;
+
 function showRing(cursorX?: number, cursorY?: number) {
   if (!ring) return;
 
-  // Don't reposition if already visible — the ring stays locked in place
   if (ring.isVisible()) return;
 
   const cursor = cursorX != null
@@ -206,18 +363,26 @@ function showRing(cursorX?: number, cursorY?: number) {
   const display = screen.getDisplayNearestPoint(cursor);
 
   const size = ringSize;
-  let x = Math.round(cursor.x - size / 2);
-  let y = Math.round(cursor.y - size / 2);
+  const b = display.bounds;
+  const reach = Math.min(RING_CONTENT_RADIUS, Math.floor(Math.min(b.width, b.height) / 2));
+  const centerX = Math.round(Math.max(b.x + reach, Math.min(cursor.x, b.x + b.width - reach)));
+  const centerY = Math.round(Math.max(b.y + reach, Math.min(cursor.y, b.y + b.height - reach)));
+  const x = centerX - size / 2;
+  const y = centerY - size / 2;
 
-  x = Math.max(display.bounds.x, Math.min(x, display.bounds.x + display.bounds.width - size));
-  y = Math.max(display.bounds.y, Math.min(y, display.bounds.y + display.bounds.height - size));
-
-  // Atomic bounds change
   ring.setBounds({ x, y, width: size, height: size });
 
-  // Send config + show signal BEFORE making window visible
-  if (lastRingConfig) ring.webContents.send("ring-config", lastRingConfig);
-  ring.webContents.send("ring-show", { cx: cursor.x - x, cy: cursor.y - y });
+  if ((centerX !== cursor.x || centerY !== cursor.y) && ws?.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: "move_cursor_lock", x: centerX, y: centerY }));
+  }
+
+  const inset = {
+    l: Math.max(0, b.x - x), t: Math.max(0, b.y - y),
+    r: Math.max(0, x + size - (b.x + b.width)), b: Math.max(0, y + size - (b.y + b.height)),
+  };
+
+  sendRingState();
+  ring.webContents.send("ring-show", { cx: centerX - x, cy: centerY - y, inset });
 
   ring.showInactive();
   ring.moveTop();
@@ -228,7 +393,6 @@ function hideRing() {
     ring.webContents.send("ring-hide");
     ring.hide();
   }
-  // Tell service to unlock cursor
   if (ws?.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: "unlock_cursor" }));
   }
@@ -239,6 +403,9 @@ function connectService() {
 
   ws.on("open", () => {
     console.log("[ring] Connected to service");
+    ws?.send(JSON.stringify({ type: "get_plugins" }));
+    ws?.send(JSON.stringify({ type: "get_plugin_states" }));
+    ws?.send(JSON.stringify({ type: "get_attention" }));
   });
 
   ws.on("message", (raw) => {
@@ -256,7 +423,6 @@ function connectService() {
             showRing(msg.x, msg.y);
           }
         }
-        // Release is ignored — click-to-toggle model
       } else if (msg.type === "ring_move") {
         if (ring && ring.isVisible()) {
           ring.webContents.send("ring-move", { dx: msg.dx, dy: msg.dy });
@@ -266,20 +432,23 @@ function connectService() {
         lastRingConfig = r;
         ringSize = 640;
         if (ring) {
-          ring.webContents.send("ring-config", r);
+          ring.webContents.send("ring-config", ringConfigForRenderer());
         }
       } else if (msg.type === "plugins") {
-        // Send plugin actions to ring so it can register icons in CAT
         const pluginActions = (msg.plugins || []).flatMap((p: any) =>
-          (p.actions || []).map((a: any) => ({ id: `plugin:${p.id}:${a.id}`, name: a.name, icon: a.icon, iconActive: a.iconActive }))
+          (p.actions || []).map((a: any) => ({ id: `plugin:${p.id}:${a.id}`, name: a.name, icon: a.icon, iconActive: a.iconActive, keepIcon: a.keepIcon === true, image: typeof a.image === "string" ? a.image : undefined }))
         );
+        lastPluginActions = pluginActions;
         if (ring && pluginActions.length) {
           ring.webContents.send("ring-config", { pluginActions });
+          if (lastPluginStates) ring.webContents.send("ring-config", { pluginStates: lastPluginStates });
         }
+      } else if (msg.type === "attention") {
+        setAttention(msg.items);
       } else if (msg.type === "plugin_states") {
-        console.log("[ring] Got plugin states, forwarding to ring");
+        lastPluginStates = msg.states || {};
         if (ring) {
-          ring.webContents.send("ring-config", { pluginStates: msg.states });
+          ring.webContents.send("ring-config", { pluginStates: lastPluginStates });
         }
       }
     } catch (e) { console.error("[ring] message error:", e); }
@@ -287,6 +456,7 @@ function connectService() {
 
   ws.on("close", () => {
     console.log("[ring] Disconnected, retrying in 2s...");
+    if (attentionItems.length) setAttention([]);
     setTimeout(connectService, 2000);
   });
 
@@ -298,7 +468,6 @@ function connectService() {
 ipcMain.on("execute-action", (_event, action) => {
   console.log("[ring] execute-action received:", JSON.stringify(action).slice(0, 100));
   hideRing();
-  // Small delay to let the ring window hide and previous window regain focus
   setTimeout(() => {
     if (ws?.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ type: "test_action", action }));
@@ -317,24 +486,26 @@ ipcMain.on("hide-ring", () => {
   if (ring) ring.hide();
 });
 
+const IS_FIRST_INSTANCE = !IS_PACKAGED || app.requestSingleInstanceLock();
+if (!IS_FIRST_INSTANCE) app.quit();
+app.on("second-instance", () => createConfigWindow());
+
 app.whenReady().then(() => {
-  // In dev mode (start.js), the service is already running — don't start another
+  if (!IS_FIRST_INSTANCE) return;
   if (IS_PACKAGED) {
     startService();
   }
   createRingWindow();
   createTray();
-  // Open config window on first launch
   createConfigWindow();
-  // Connect to service WebSocket (in dev, it's already running via start.js)
   setTimeout(connectService, IS_PACKAGED ? 1500 : 500);
 });
 
-app.on("window-all-closed", (e: Event) => {
-  e.preventDefault();
-});
+app.on("window-all-closed", () => {});
 
 app.on("before-quit", () => {
+  stopCueFollow();
+  if (cue && !cue.isDestroyed()) cue.destroy();
   releaseWin32State();
   if (svcProcess) svcProcess.kill();
 });

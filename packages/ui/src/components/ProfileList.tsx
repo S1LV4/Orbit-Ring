@@ -110,7 +110,6 @@ export function ProfileList({ config, onSave, onDelete }: ProfileListProps) {
         </div>
       )}
 
-      {/* Default profile */}
       <div className="mb-3 p-4 orbit-card flex items-center gap-3">
         <div
           className="w-9 h-9 rounded-lg flex items-center justify-center"
@@ -130,7 +129,6 @@ export function ProfileList({ config, onSave, onDelete }: ProfileListProps) {
         <ChevronRight className="w-4 h-4 text-[#33333B]" />
       </div>
 
-      {/* App profiles */}
       <div className="space-y-1.5">
         {profiles.map((profile: any) => (
           <div

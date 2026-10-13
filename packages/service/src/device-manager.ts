@@ -1,15 +1,8 @@
 import { EventEmitter } from "events";
 import HID from "node-hid";
-import type { DeviceInfo } from "@m-ring/shared";
-import { startMouseHook, stopMouseHook, lockCursor, unlockCursor, type MouseMoveCallback } from "./win32-mouse-hook";
+import type { DeviceInfo } from "@orbitring/shared";
+import { startMouseHook, stopMouseHook, lockCursor, unlockCursor, moveCursorLock, type MouseMoveCallback } from "./win32-mouse-hook";
 
-/**
- * Manages mouse device discovery and button event capture.
- *
- * - Uses node-hid for device ENUMERATION (listing connected mice)
- * - Uses Win32 Low-Level Mouse Hook for CAPTURING button events
- *   (node-hid can't read mice on Windows — OS holds exclusive lock)
- */
 export class DeviceManager extends EventEmitter {
   private devices: Map<string, DeviceInfo> = new Map();
   private pollTimer: ReturnType<typeof setInterval> | null = null;
@@ -17,17 +10,14 @@ export class DeviceManager extends EventEmitter {
 
   start() {
     this.scan();
-    // Re-scan for new devices every 5 seconds
     this.pollTimer = setInterval(() => this.scan(), 5000);
 
-    // Start the Win32 mouse hook for button capture
     if (process.platform === "win32") {
       startMouseHook((event) => {
         if (this.identifyMode && event.action === "press") {
           this.identifyMode = false;
         }
 
-        // Use first device id or "unknown"
         const deviceId =
           this.devices.size > 0
             ? this.devices.values().next().value!.id
@@ -47,6 +37,10 @@ export class DeviceManager extends EventEmitter {
     lockCursor(onMove);
   }
 
+  moveCursorLock(x: number, y: number) {
+    moveCursorLock(x, y);
+  }
+
   unlockCursor() {
     unlockCursor();
   }
@@ -58,12 +52,10 @@ export class DeviceManager extends EventEmitter {
   private scan() {
     const hidDevices = HID.devices();
 
-    // Filter for mouse-like devices (usage page 1 = Generic Desktop, usage 2 = Mouse)
     const mice = hidDevices.filter(
       (d) => d.usagePage === 1 && d.usage === 2 && d.path
     );
 
-    // Deduplicate by vendorId:productId (a wireless mouse shows multiple HID interfaces)
     const seen = new Set<string>();
     const uniqueMice = mice.filter((m) => {
       const key = `${m.vendorId}:${m.productId}`;

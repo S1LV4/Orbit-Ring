@@ -115,7 +115,6 @@ export function BindingEditor({
     onIdentify();
   };
 
-  // Auto-select button from live event
   if (identifying && lastEvent?.action === "press") {
     setSelectedButton(lastEvent.button);
     setIdentifying(false);
@@ -143,7 +142,6 @@ export function BindingEditor({
       </div>
 
       <div className="grid grid-cols-[260px_1fr] gap-5">
-        {/* Button list */}
         <div className="space-y-1">
           {Object.entries(BUTTON_LABELS).map(([key, { label, description }]) => (
             <button
@@ -169,7 +167,6 @@ export function BindingEditor({
           ))}
         </div>
 
-        {/* Action picker */}
         <div>
           {selectedButton ? (
             <div className="space-y-4">
@@ -205,7 +202,6 @@ export function BindingEditor({
                 </div>
               ))}
 
-              {/* Custom keystroke */}
               <div>
                 <h4 className="text-[10px] font-mono uppercase tracking-wider mb-2 flex items-center gap-2"
                     style={{ color: "var(--accent)" }}>
@@ -239,7 +235,6 @@ export function BindingEditor({
                 </p>
               </div>
 
-              {/* Remove binding */}
               <button
                 onClick={() =>
                   onSave({ button: selectedButton, action: { type: "none" } })

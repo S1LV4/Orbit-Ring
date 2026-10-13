@@ -8,7 +8,6 @@ async function openRing(page: Page) {
   await page.waitForFunction(() => typeof (window as any).pol === "function", null, { timeout: 5000 });
 }
 
-// Simulate gradual mouse delta movement (like real mouse drag)
 async function simulateDelta(page: Page, targetDx: number, targetDy: number, steps: number, pauseMs: number) {
   const stepDx = targetDx / steps;
   const stepDy = targetDy / steps;
@@ -29,12 +28,10 @@ test.describe("Visual Demo — watch the ring in action", () => {
     await page.setViewportSize({ width: 800, height: 800 });
     await page.waitForTimeout(1000);
 
-    // Open the ring
     await page.evaluate(() => {
       (window as any).isOpen = true;
       (window as any).sim.change = (window as any).sim.f;
       (window as any).sim.openP = 1;
-      // Fast-forward nodes to target positions so goo is visible
       var T = (window as any)._targets();
       for (var id in T) {
         (window as any).sim.nodes[id] = { x: T[id].x, y: T[id].y, s: T[id].s, vx: 0, vy: 0, vs: 0 };
@@ -43,7 +40,6 @@ test.describe("Visual Demo — watch the ring in action", () => {
     });
     await page.waitForTimeout(2000);
 
-    // Hover each group slowly
     const groups = await page.evaluate(() => (window as any).groups.map((g: any) => g.id));
     for (const gid of groups) {
       await page.evaluate((id: string) => { (window as any).hover = id; }, gid);
@@ -58,12 +54,10 @@ test.describe("Visual Demo — watch the ring in action", () => {
     await page.setViewportSize({ width: 800, height: 800 });
     await page.waitForTimeout(500);
 
-    // Open ring
     await page.evaluate(() => {
       (window as any).isOpen = true;
       (window as any).sim.change = (window as any).sim.f;
       (window as any).sim.openP = 1;
-      // Fast-forward nodes to target positions so goo is visible
       var T = (window as any)._targets();
       for (var id in T) {
         (window as any).sim.nodes[id] = { x: T[id].x, y: T[id].y, s: T[id].s, vx: 0, vy: 0, vs: 0 };
@@ -74,21 +68,17 @@ test.describe("Visual Demo — watch the ring in action", () => {
     });
     await page.waitForTimeout(1500);
 
-    // Drag upward slowly toward "edit" group (angle -90°)
     await simulateDelta(page, 0, -50, 15, 100);
     await page.waitForTimeout(1500);
 
-    // Continue dragging to reach action zone
     await simulateDelta(page, 0, -40, 12, 100);
     await page.waitForTimeout(2000);
 
-    // Sweep left to right through actions
     await simulateDelta(page, -40, 0, 10, 120);
     await page.waitForTimeout(1500);
     await simulateDelta(page, 80, 0, 20, 120);
     await page.waitForTimeout(1500);
 
-    // Check state
     const state = await page.evaluate(() => ({
       activeGroup: (window as any).activeGroup,
       hover: (window as any).hover,
@@ -101,12 +91,10 @@ test.describe("Visual Demo — watch the ring in action", () => {
     await page.setViewportSize({ width: 800, height: 800 });
     await page.waitForTimeout(500);
 
-    // Open ring
     await page.evaluate(() => {
       (window as any).isOpen = true;
       (window as any).sim.change = (window as any).sim.f;
       (window as any).sim.openP = 1;
-      // Fast-forward nodes to target positions so goo is visible
       var T = (window as any)._targets();
       for (var id in T) {
         (window as any).sim.nodes[id] = { x: T[id].x, y: T[id].y, s: T[id].s, vx: 0, vy: 0, vs: 0 };
@@ -115,22 +103,18 @@ test.describe("Visual Demo — watch the ring in action", () => {
     });
     await page.waitForTimeout(1500);
 
-    // Group 1: drag up (edit)
     await page.evaluate(() => { (window as any).deltaX = 0; (window as any).deltaY = 0; (window as any).activeGroup = null; (window as any).hover = null; });
     await simulateDelta(page, 0, -70, 15, 80);
     await page.waitForTimeout(2000);
 
-    // Reset and go right (nav)
     await page.evaluate(() => { (window as any).deltaX = 0; (window as any).deltaY = 0; (window as any).activeGroup = null; (window as any).hover = null; (window as any).sim.change = (window as any).sim.f; });
     await simulateDelta(page, 55, -40, 15, 80);
     await page.waitForTimeout(2000);
 
-    // Reset and go down-right (win)
     await page.evaluate(() => { (window as any).deltaX = 0; (window as any).deltaY = 0; (window as any).activeGroup = null; (window as any).hover = null; (window as any).sim.change = (window as any).sim.f; });
     await simulateDelta(page, 55, 40, 15, 80);
     await page.waitForTimeout(2000);
 
-    // Close
     await page.evaluate(() => { (window as any).isOpen = false; (window as any).activeGroup = null; (window as any).hover = null; });
     await page.waitForTimeout(1500);
   });

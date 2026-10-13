@@ -47,7 +47,6 @@
     </style>
   </head>
   <body class="bg-[#0A0A0B] text-[#FAFAFA]">
-    <!-- Splash / Loading screen -->
     <div id="splash">
       <svg viewBox="0 0 128 128">
         <circle cx="64" cy="64" r="42" fill="none" stroke="#F7F8F4" stroke-width="8" stroke-linecap="round" stroke-dasharray="183 81" transform="rotate(-53 64 64)"/>
@@ -64,7 +63,6 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Hide splash after React mounts + minimum 2.5s display time
       var splashStart = Date.now();
       var appReady = false;
       function hideSplash() {

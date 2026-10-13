@@ -58,7 +58,6 @@ export function DevicePanel({ devices, lastEvent }: DevicePanelProps) {
         </div>
       )}
 
-      {/* Live event log */}
       {lastEvent && (
         <div className="mt-6">
           <h3 className="text-[10px] font-mono uppercase tracking-widest text-[#71717A] mb-2 flex items-center gap-2">

@@ -1,4 +1,3 @@
-/** Plugin manifest — loaded from manifest.json in each plugin folder */
 export interface PluginManifest {
   id: string;
   name: string;
@@ -9,24 +8,34 @@ export interface PluginManifest {
   actions: PluginActionDef[];
 }
 
-/** Action definition inside a plugin manifest */
 export interface PluginActionDef {
   id: string;
   name: string;
   icon?: string;
+  iconActive?: string;
+  keepIcon?: boolean;
+  image?: string;
+  stateful?: boolean;
   description?: string;
 }
 
-/** A plugin action as exposed to the UI (includes pluginId) */
-export interface PluginAction {
-  id: string;
-  name: string;
-  icon?: string;
-  description?: string;
+export type PluginGetActions = () => PluginActionDef[];
+
+export interface PluginAction extends PluginActionDef {
   pluginId: string;
 }
 
-/** Summary of an installed plugin sent to the UI */
+export interface PluginCatalogEntry {
+  id: string;
+  name: string;
+  version: string;
+  author: string;
+  description: string;
+  actionCount: number;
+  installedVersion: string | null;
+  updateAvailable: boolean;
+}
+
 export interface PluginInfo {
   id: string;
   name: string;
@@ -35,4 +44,40 @@ export interface PluginInfo {
   description: string;
   actions: PluginAction[];
   loaded: boolean;
+}
+
+export type PluginStateStatus = "green" | "amber" | "red";
+
+export interface PluginActionStateObject {
+  active?: boolean;
+  value?: number;
+  text?: string;
+  label?: string;
+  status?: PluginStateStatus;
+}
+
+export type PluginActionState = boolean | PluginActionStateObject;
+
+export type PluginStates = Record<string, Record<string, PluginActionState>>;
+
+export interface AttentionItem {
+  id: string;
+  title: string;
+  text?: string;
+  pluginId?: string;
+  actionIds?: string[];
+  timeoutMs?: number;
+}
+
+export interface ThumbnailOptions {
+  size?: number;
+}
+
+export interface PluginHost {
+  stateChanged(): void;
+  actionsChanged?(): void;
+  attention?(item: AttentionItem | null): void;
+  clearAttention?(id: string): void;
+  getClaudeUsage?(): Promise<unknown>;
+  makeThumbnail?(input: string | Uint8Array, opts?: ThumbnailOptions): Promise<string | null>;
 }

@@ -55,8 +55,6 @@
            placeholder:text-[#71717A];
   }
 }
-
-/* ASCII terrain animation */
 @keyframes terrain-drift {
   0% { transform: translateY(0); }
   100% { transform: translateY(-20px); }

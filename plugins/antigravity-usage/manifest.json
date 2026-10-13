@@ -1,0 +1,34 @@
+{
+  "id": "com.orbitring.antigravity",
+  "name": "Antigravity",
+  "version": "1.0.0",
+  "author": "@S1LV4",
+  "description": "Uso da cota do Google Antigravity (Gemini e Claude/GPT, janelas de 5h e semanal) direto no ring",
+  "main": "index.js",
+  "actions": [
+    {
+      "id": "gemini",
+      "name": "Antigravity · Gemini",
+      "icon": "<path fill='currentColor' stroke='none' d='M20.756 21.205c1.198 .898 2.994 .299 1.347-1.347c-4.939-4.79-3.892-17.962-10.029-17.962c-6.137 0-5.089 13.172-10.029 17.962c-1.796 1.796 .15 2.245 1.347 1.347C8.034 18.062 7.734 12.524 12.075 12.524c4.341 0 4.041 5.538 8.681 8.681Z'/>",
+      "keepIcon": true,
+      "description": "Uso da cota dos modelos Gemini no Antigravity (a janela mais apertada), direto no botão. Clique para atualizar e ver os detalhes em uma notificação.",
+      "stateful": true
+    },
+    {
+      "id": "others",
+      "name": "Antigravity · Claude e GPT",
+      "icon": "<path fill='currentColor' stroke='none' d='M20.756 21.205c1.198 .898 2.994 .299 1.347-1.347c-4.939-4.79-3.892-17.962-10.029-17.962c-6.137 0-5.089 13.172-10.029 17.962c-1.796 1.796 .15 2.245 1.347 1.347C8.034 18.062 7.734 12.524 12.075 12.524c4.341 0 4.041 5.538 8.681 8.681Z'/>",
+      "keepIcon": true,
+      "description": "Uso da cota dos modelos Claude e GPT no Antigravity (a janela mais apertada), direto no botão. Clique para atualizar e ver os detalhes em uma notificação.",
+      "stateful": true
+    },
+    {
+      "id": "worst",
+      "name": "Antigravity · Uso",
+      "icon": "<path fill='currentColor' stroke='none' d='M20.756 21.205c1.198 .898 2.994 .299 1.347-1.347c-4.939-4.79-3.892-17.962-10.029-17.962c-6.137 0-5.089 13.172-10.029 17.962c-1.796 1.796 .15 2.245 1.347 1.347C8.034 18.062 7.734 12.524 12.075 12.524c4.341 0 4.041 5.538 8.681 8.681Z'/>",
+      "keepIcon": true,
+      "description": "A cota mais apertada do Antigravity entre todos os grupos de modelos — o botão para quem quer um só. Clique para atualizar e ver os detalhes em uma notificação.",
+      "stateful": true
+    }
+  ]
+}

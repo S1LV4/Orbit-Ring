@@ -1,8 +1,7 @@
 import type { Action, DeviceInfo, AppProfile, ButtonBinding, RingSettings, AppRingProfileMap } from "./types";
 import type { AgentStatus } from "./agents";
-import type { PluginInfo } from "./plugin-types";
+import type { PluginInfo, PluginStates, AttentionItem, PluginCatalogEntry } from "./plugin-types";
 
-/** Messages sent FROM service TO UI */
 export type ServiceMessage =
   | { type: "devices"; devices: DeviceInfo[] }
   | { type: "button_event"; deviceId: string; button: string; action: "press" | "release"; x?: number; y?: number; timestamp: number }
@@ -14,9 +13,11 @@ export type ServiceMessage =
   | { type: "app_ring_profiles"; profiles: AppRingProfileMap }
   | { type: "profile_switch"; processName: string; groupId: string | null }
   | { type: "plugins"; plugins: PluginInfo[] }
+  | { type: "plugin_states"; states: PluginStates }
+  | { type: "plugin_catalog"; plugins: PluginCatalogEntry[] }
+  | { type: "attention"; items: AttentionItem[] }
   | { type: "error"; message: string };
 
-/** Messages sent FROM UI TO service */
 export type UIMessage =
   | { type: "get_devices" }
   | { type: "get_config" }
@@ -31,6 +32,12 @@ export type UIMessage =
   | { type: "identify_button" }
   | { type: "get_claude_usage" }
   | { type: "get_plugins" }
+  | { type: "open_plugins_folder" }
+  | { type: "get_plugin_catalog" }
+  | { type: "install_plugin"; pluginId: string }
+  | { type: "remove_plugin"; pluginId: string }
+  | { type: "get_plugin_states" }
+  | { type: "get_attention" }
   | { type: "execute_plugin_action"; pluginId: string; actionId: string }
   | { type: "get_app_ring_profiles" }
   | { type: "set_app_ring_profile"; processName: string; groupId: string }

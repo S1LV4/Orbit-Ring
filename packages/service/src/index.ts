@@ -1,22 +1,26 @@
+import { spawn } from "child_process";
 import { WebSocketServer, WebSocket } from "ws";
-import { WS_PORT } from "@m-ring/shared";
+import { WS_PORT } from "@orbitring/shared";
 import { DeviceManager } from "./device-manager";
 import { ConfigStore } from "./config-store";
 import { ActionExecutor } from "./action-executor";
 import { AgentDetector } from "./agent-detector";
 import { AppProfileSwitcher } from "./app-profile-switch";
 import { PluginLoader } from "./plugin-loader";
+import { listCatalog, installFromCatalog, removeInstalled } from "./plugin-catalog";
 import { getClaudeUsage } from "./claude-usage";
-import type { UIMessage, ServiceMessage } from "@m-ring/shared";
+import { makeThumbnail } from "./thumbnail";
+import type { UIMessage, ServiceMessage } from "@orbitring/shared";
 
 const config = new ConfigStore();
 const devices = new DeviceManager();
-const pluginLoader = new PluginLoader();
+const pluginLoader = new PluginLoader({ hostServices: { getClaudeUsage, makeThumbnail } });
 const executor = new ActionExecutor(pluginLoader);
 const agentDetector = new AgentDetector();
 const appSwitcher = new AppProfileSwitcher();
 
-const wss = new WebSocketServer({ port: WS_PORT });
+const PORT = Number(process.env.ORBIT_WS_PORT) || WS_PORT;
+const wss = new WebSocketServer({ port: PORT });
 
 function broadcast(msg: ServiceMessage) {
   const data = JSON.stringify(msg);
@@ -27,14 +31,78 @@ function broadcast(msg: ServiceMessage) {
   }
 }
 
-// Auto-switch ring group when focused app changes
+function pluginStatesMessage(): ServiceMessage {
+  return { type: "plugin_states", states: pluginLoader.getPluginStates() };
+}
+
+let pluginStatesPending = false;
+function broadcastPluginStates() {
+  if (pluginStatesPending) return;
+  pluginStatesPending = true;
+  setImmediate(() => {
+    pluginStatesPending = false;
+    broadcast(pluginStatesMessage());
+  });
+}
+
+function attentionMessage(): ServiceMessage {
+  return { type: "attention", items: pluginLoader.getAttention() };
+}
+
+let attentionPending = false;
+function broadcastAttention() {
+  if (attentionPending) return;
+  attentionPending = true;
+  setImmediate(() => {
+    attentionPending = false;
+    broadcast(attentionMessage());
+  });
+}
+
+let pluginsPending = false;
+const PLUGIN_CATALOG_DIR = process.env.ORBIT_PLUGIN_CATALOG || undefined;
+const pluginCatalog = () => listCatalog(PLUGIN_CATALOG_DIR, pluginLoader.getPluginsDir());
+function broadcastPluginCatalog() {
+  broadcast({ type: "plugin_catalog", plugins: pluginCatalog() });
+}
+
+async function installPlugin(pluginId: string) {
+  await pluginLoader.unload(pluginId);
+  const dir = installFromCatalog(PLUGIN_CATALOG_DIR, pluginId, pluginLoader.getPluginsDir());
+  const ok = await pluginLoader.loadFolder(dir);
+  broadcastPlugins();
+  broadcastPluginCatalog();
+  if (!ok) throw new Error("o plugin foi copiado, mas não carregou");
+}
+
+async function removePlugin(pluginId: string) {
+  const dir = pluginLoader.getPluginDir(pluginId);
+  if (!dir) throw new Error("plugin não está carregado");
+  await pluginLoader.unload(pluginId);
+  try {
+    removeInstalled(dir, pluginLoader.getPluginsDir());
+  } finally {
+    broadcastPlugins();
+    broadcastPluginCatalog();
+  }
+}
+
+function broadcastPlugins() {
+  if (pluginsPending) return;
+  pluginsPending = true;
+  setImmediate(() => {
+    pluginsPending = false;
+    broadcast({ type: "plugins", plugins: pluginLoader.getPlugins() });
+    broadcastPluginStates();
+  });
+}
+
 appSwitcher.onAppChanged((processName) => {
   broadcast({ type: "active_app", processName, title: "" });
   const groupId = config.getGroupForProcess(processName);
   broadcast({ type: "profile_switch", processName, groupId });
 });
 
-// Forward device events to all connected UIs
 devices.on("button", (deviceId, button, action, x, y) => {
   broadcast({
     type: "button_event",
@@ -46,26 +114,19 @@ devices.on("button", (deviceId, button, action, x, y) => {
     timestamp: Date.now(),
   });
 
-  // Ring button: lock cursor on press, unlock only via explicit message (click-to-toggle)
   if (button === "side2") {
     if (action === "press") {
-      // Safety: if no clients connected, don't lock (nobody would unlock)
       if (wss.clients.size === 0) return;
       devices.lockCursor((move) => {
         broadcast({ type: "ring_move", dx: move.dx, dy: move.dy } as any);
       });
     } else if (action === "release") {
-      // Safety fallback: if cursor is still locked after release, start a timeout
-      // In click-to-toggle the ring handles unlock, but if it didn't respond, auto-unlock
       setTimeout(() => {
-        // Check if still locked (no unlock_cursor was received)
-        // The safety timeout in win32-mouse-hook handles this too (30s)
       }, 0);
     }
     return;
   }
 
-  // Execute bound action if not in identify mode
   if (!devices.identifyMode) {
     const binding = config.getBinding(button);
     if (binding) {
@@ -81,7 +142,6 @@ devices.on("devices_changed", () => {
 wss.on("connection", (ws) => {
   console.log("[orbit] UI connected");
 
-  // Send current state
   ws.send(JSON.stringify({ type: "devices", devices: devices.getDevices() }));
   ws.send(JSON.stringify({ type: "config_loaded", config: config.getConfig() }));
   ws.send(JSON.stringify({ type: "ring_config", ring: config.getRingSettings() }));
@@ -92,12 +152,18 @@ wss.on("connection", (ws) => {
     ws.send(JSON.stringify({ type: "claude_usage", usage }));
   });
   ws.send(JSON.stringify({ type: "plugins", plugins: pluginLoader.getPlugins() }));
+  ws.send(JSON.stringify(pluginStatesMessage()));
+  ws.send(JSON.stringify(attentionMessage()));
 
   ws.on("message", (raw) => {
     try {
       const msg = JSON.parse(raw.toString());
       if (msg.type === "unlock_cursor") {
         devices.unlockCursor();
+        return;
+      }
+      if (msg.type === "move_cursor_lock") {
+        if (Number.isFinite(msg.x) && Number.isFinite(msg.y)) devices.moveCursorLock(msg.x, msg.y);
         return;
       }
       handleMessage(msg as UIMessage, ws);
@@ -140,16 +206,15 @@ function handleMessage(msg: UIMessage, ws: WebSocket) {
 
     case "test_action":
       executor.execute(msg.action).then(() => {
-        // If it was a plugin action, broadcast updated states
-        if (msg.action?.action?.startsWith?.("plugin:") || (msg.action?.type === "system" && msg.action?.action?.startsWith?.("plugin:"))) {
-          setTimeout(() => broadcast({ type: "plugin_states", states: pluginLoader.getPluginStates() } as any), 200);
+        const name: unknown = (msg.action as { action?: unknown } | undefined)?.action;
+        if (typeof name === "string" && name.startsWith("plugin:")) {
+          setTimeout(broadcastPluginStates, 200);
         }
       }).catch(() => {});
       break;
 
     case "identify_button":
       devices.identifyMode = true;
-      // Will reset after first button press
       break;
 
     case "get_agents":
@@ -178,36 +243,71 @@ function handleMessage(msg: UIMessage, ws: WebSocket) {
       broadcast({ type: "app_ring_profiles", profiles: config.getAppRingProfiles() });
       break;
 
+    case "open_plugins_folder": {
+      const dir = pluginLoader.getPluginsDir();
+      const cmd = process.platform === "win32" ? "explorer.exe" : process.platform === "darwin" ? "open" : "xdg-open";
+      const child = spawn(cmd, [dir], { detached: true, stdio: "ignore" });
+      child.on("error", (e) => {
+        console.error("[orbit] Failed to open plugins folder:", e.message);
+        ws.send(JSON.stringify({ type: "error", message: "Não foi possível abrir a pasta de plugins: " + dir }));
+      });
+      child.unref();
+      break;
+    }
+
+    case "get_plugin_catalog":
+      ws.send(JSON.stringify({ type: "plugin_catalog", plugins: pluginCatalog() }));
+      break;
+
+    case "install_plugin":
+      installPlugin(String(msg.pluginId)).catch((e) => {
+        console.error("[orbit] install_plugin failed:", e?.message || e);
+        ws.send(JSON.stringify({ type: "error", message: "Não foi possível instalar o plugin: " + (e?.message || e) }));
+      });
+      break;
+
+    case "remove_plugin":
+      removePlugin(String(msg.pluginId)).catch((e) => {
+        console.error("[orbit] remove_plugin failed:", e?.message || e);
+        ws.send(JSON.stringify({ type: "error", message: "Não foi possível remover o plugin: " + (e?.message || e) }));
+      });
+      break;
+
     case "get_plugins":
       ws.send(JSON.stringify({ type: "plugins", plugins: pluginLoader.getPlugins() }));
       break;
 
     case "execute_plugin_action":
       pluginLoader.executePluginAction(msg.pluginId, msg.actionId).then(() => {
-        // Broadcast updated plugin states after action
-        broadcast({ type: "plugin_states", states: pluginLoader.getPluginStates() } as any);
+        broadcastPluginStates();
       }).catch((e) => {
         console.error("[orbit] Plugin action error:", e);
       });
       break;
 
     case "get_plugin_states":
-      ws.send(JSON.stringify({ type: "plugin_states", states: pluginLoader.getPluginStates() }));
+      ws.send(JSON.stringify(pluginStatesMessage()));
+      break;
+
+    case "get_attention":
+      ws.send(JSON.stringify(attentionMessage()));
       break;
   }
 }
 
-console.log(`[orbit] Service running on ws://localhost:${WS_PORT}`);
+console.log(`[orbit] Service running on ws://localhost:${PORT}`);
 devices.start();
 appSwitcher.start();
-executor.setPluginStateCallback(() => {
-  broadcast({ type: "plugin_states", states: pluginLoader.getPluginStates() } as any);
-});
+executor.setPluginStateCallback(broadcastPluginStates);
+pluginLoader.onStateChanged(broadcastPluginStates);
+pluginLoader.onActionsChanged(broadcastPlugins);
+pluginLoader.onAttentionChanged(broadcastAttention);
 pluginLoader.loadAll().then(() => {
   console.log(`[orbit] Plugins loaded (${pluginLoader.getPlugins().length} plugins)`);
+  broadcast({ type: "plugins", plugins: pluginLoader.getPlugins() });
+  broadcastPluginStates();
 });
 
-// Broadcast Claude usage updates every 60 seconds
 const claudeUsageInterval = setInterval(async () => {
   try {
     const usage = await getClaudeUsage();
@@ -217,7 +317,6 @@ const claudeUsageInterval = setInterval(async () => {
   }
 }, 60_000);
 
-// Safety: always unlock cursor on exit/crash
 function cleanup() {
   try { clearInterval(claudeUsageInterval); } catch {}
   try { pluginLoader.unloadAll(); } catch {}

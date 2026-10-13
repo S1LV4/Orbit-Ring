@@ -11,3 +11,6 @@ packages/ring/release/
 packages/ring/src/ring-bundle.js
 discord-token.json
 .claude/worktrees/
+
+!packages/ring/assets/*.png
+!packages/ring/assets/*.ico

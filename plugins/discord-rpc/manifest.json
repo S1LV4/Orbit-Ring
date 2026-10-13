@@ -1,8 +1,8 @@
 {
   "id": "com.orbitring.discord",
   "name": "Discord Voice Control",
-  "version": "1.0.0",
-  "author": "S1LV4",
+  "version": "1.0.1",
+  "author": "@S1LV4",
   "description": "Control Discord voice (mute, deafen)",
   "main": "index.js",
   "actions": [

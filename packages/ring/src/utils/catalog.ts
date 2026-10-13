@@ -1,63 +1,58 @@
-/** Default actions for the 8 ring slots */
-export interface RingAction {
-  type: string;
-  key?: string;
-  modifiers?: string[];
-  action?: string;
-  label?: string;
+import { CFG, type Group } from "../state/sim";
+import { CAT, GI, DEFAULT_GROUPS, FALLBACK_ICON, RING_MAX_GROUPS, pluginImage, type RingCatalogEntry, type RingCatalog } from "@orbitring/shared/src/ring-catalog";
+
+export { CAT, GI, DEFAULT_GROUPS, FALLBACK_ICON, pluginImage };
+export type CatEntry = RingCatalogEntry;
+export type Catalog = RingCatalog;
+
+export interface RawGroup { id: string | number; name?: string; icon?: string; actions?: string[] }
+export function sanitize(gs: RawGroup[] | undefined | null, keepEmpty?: boolean): Group[] {
+  return (gs || []).slice(0, RING_MAX_GROUPS).map(g => ({ id: String(g.id), name: g.name || String(g.id), icon: g.icon as string,
+    actions: (g.actions || []).slice(0, CFG.MA) })).filter(g => keepEmpty || g.actions.length);
 }
 
-export const DEFAULT_ACTIONS: RingAction[] = [
-  { type: "keystroke", key: "c", modifiers: ["ctrl"], label: "Ctrl+C" },
-  { type: "keystroke", key: "v", modifiers: ["ctrl"], label: "Ctrl+V" },
-  { type: "keystroke", key: "z", modifiers: ["ctrl"], label: "Ctrl+Z" },
-  { type: "keystroke", key: "s", modifiers: ["ctrl"], label: "Ctrl+S" },
-  { type: "system", action: "screenshot" },
-  { type: "system", action: "open_terminal" },
-  { type: "system", action: "media_play_pause" },
-  { type: "system", action: "show_desktop" },
-];
+export function iconMarkup(s: string | null | undefined): string {
+  if (!s) return "";
+  const m = /^\s*(?:<\?xml[^>]*>\s*)?<svg\b[^>]*>([\s\S]*)<\/svg>\s*$/i.exec(s);
+  return m ? m[1] : s;
+}
 
-/** SVG path data for each action slot icon */
-export const ACTION_ICONS: string[] = [
-  // Copy
-  '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>',
-  // Paste
-  '<path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>',
-  // Undo
-  '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/>',
-  // Save
-  '<path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',
-  // Screenshot
-  '<path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>',
-  // Terminal
-  '<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>',
-  // Play/Pause
-  '<circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16"/>',
-  // Desktop
-  '<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
-];
+export const pluginState: Record<string, boolean> = {};
 
-/** Labels for each action slot */
-export const ACTION_LABELS: string[] = [
-  "Copiar",
-  "Colar",
-  "Desfazer",
-  "Salvar",
-  "Screenshot",
-  "Terminal",
-  "Play/Pause",
-  "Desktop",
-];
+export interface PluginDisplay {
+  active?: boolean;
+  value?: number;
+  text?: string;
+  label?: string;
+  status?: "green" | "amber" | "red";
+}
+export const pluginDisplay: Record<string, PluginDisplay> = {};
+export function normDisplay(v: unknown): PluginDisplay | null {
+  if (typeof v === "boolean") return { active: v };
+  if (!v || typeof v !== "object") return null;
+  const o = v as Record<string, unknown>, d: PluginDisplay = {};
+  if (typeof o.active === "boolean") d.active = o.active;
+  if (typeof o.value === "number" && isFinite(o.value)) d.value = Math.max(0, Math.min(100, o.value));
+  if (typeof o.text === "string" && o.text) d.text = o.text;
+  if (typeof o.label === "string" && o.label) d.label = o.label;
+  if (o.status === "green" || o.status === "amber" || o.status === "red") d.status = o.status;
+  return d;
+}
 
-/** Precomputed button centers on a circle with R=90 from (160,160) */
-export const BUTTON_CENTERS: { x: number; y: number }[] = [
-  { x: 160, y: 70 },
-  { x: 223, y: 97 },
-  { x: 250, y: 160 },
-  { x: 223, y: 223 },
-  { x: 160, y: 250 },
-  { x: 97, y: 223 },
-  { x: 70, y: 160 },
-  { x: 97, y: 97 },
-];
+export function actionSvg(aid: string): string {
+  const c = CAT[aid];
+  if (!c) return FALLBACK_ICON;
+  return c.sActive && pluginState[aid] === true ? c.sActive : c.s;
+}
+export function actionImage(aid: string): string | undefined {
+  const c = CAT[aid];
+  return c ? c.img : undefined;
+}
+export function keepsIcon(aid: string): boolean {
+  const c = CAT[aid];
+  return !!(c && c.k);
+}
+export function actionLabel(aid: string): string {
+  const d = pluginDisplay[aid], c = CAT[aid];
+  return (d && d.label) || (c ? c.l : aid);
+}

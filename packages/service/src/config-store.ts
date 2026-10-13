@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
-import type { MRingConfig, ButtonBinding, AppProfile, RingSettings, AppRingProfileMap } from "@m-ring/shared";
+import type { OrbitRingConfig, ButtonBinding, AppProfile, RingSettings, AppRingProfileMap } from "@orbitring/shared";
 
 const CONFIG_DIR = path.join(os.homedir(), ".orbit");
 const CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
@@ -20,9 +20,10 @@ const DEFAULT_RING: RingSettings = {
   accent: "#8b5cf6",
   speed: 1,
   liquid: true,
+  ascii: true,
 };
 
-const DEFAULT_CONFIG: MRingConfig = {
+const DEFAULT_CONFIG: OrbitRingConfig = {
   version: 1,
   defaultProfile: {
     bindings: [
@@ -40,14 +41,62 @@ const DEFAULT_CONFIG: MRingConfig = {
   devices: {},
 };
 
-export class ConfigStore {
-  private config: MRingConfig;
+const LEGACY_DISCORD_ACTIONS: Record<string, string | null> = {
+  discord_mute: "plugin:com.orbitring.discord:toggle_mute",
+  discord_deafen: "plugin:com.orbitring.discord:toggle_deafen",
+  discord_screen: null,
+};
 
-  constructor() {
+const isLegacyDiscord = (id: unknown): id is string =>
+  typeof id === "string" && Object.prototype.hasOwnProperty.call(LEGACY_DISCORD_ACTIONS, id);
+
+export function migrateLegacyDiscordActions(config: OrbitRingConfig): boolean {
+  let changed = false;
+  const cfg = config as any;
+
+  const groups = cfg?.ring?.groups;
+  if (Array.isArray(groups)) {
+    for (const group of groups) {
+      if (!group || !Array.isArray(group.actions) || !group.actions.some(isLegacyDiscord)) continue;
+      const next: string[] = [];
+      for (const id of group.actions) {
+        const mapped = isLegacyDiscord(id) ? LEGACY_DISCORD_ACTIONS[id] : id;
+        if (mapped === null || next.includes(mapped)) continue;
+        next.push(mapped);
+      }
+      group.actions = next;
+      changed = true;
+    }
+  }
+
+  const bindingLists: unknown[] = [cfg?.defaultProfile?.bindings];
+  if (Array.isArray(cfg?.appProfiles)) {
+    for (const profile of cfg.appProfiles) bindingLists.push(profile?.bindings);
+  }
+  for (const bindings of bindingLists) {
+    if (!Array.isArray(bindings)) continue;
+    for (const binding of bindings) {
+      const action = binding?.action;
+      if (!action || action.type !== "system" || !isLegacyDiscord(action.action)) continue;
+      const mapped = LEGACY_DISCORD_ACTIONS[action.action];
+      binding.action = mapped === null ? { type: "none" } : { ...action, action: mapped };
+      changed = true;
+    }
+  }
+
+  return changed;
+}
+
+export class ConfigStore {
+  private config: OrbitRingConfig;
+  private readonly configFile: string;
+
+  constructor(configFile: string = CONFIG_FILE) {
+    this.configFile = configFile;
     this.config = this.load();
   }
 
-  getConfig(): MRingConfig {
+  getConfig(): OrbitRingConfig {
     return this.config;
   }
 
@@ -114,8 +163,6 @@ export class ConfigStore {
     this.save();
   }
 
-  // --- App Ring Profiles (auto-switch ring group by focused app) ---
-
   getAppRingProfiles(): AppRingProfileMap {
     return this.config.appRingProfiles ?? {};
   }
@@ -135,7 +182,6 @@ export class ConfigStore {
     }
   }
 
-  /** Look up the ring group ID mapped to a process name (case-insensitive). */
   getGroupForProcess(processName: string): string | null {
     const profiles = this.config.appRingProfiles;
     if (!profiles) return null;
@@ -145,11 +191,17 @@ export class ConfigStore {
     return key ? profiles[key] : null;
   }
 
-  private load(): MRingConfig {
+  private load(): OrbitRingConfig {
     try {
-      if (fs.existsSync(CONFIG_FILE)) {
-        const raw = fs.readFileSync(CONFIG_FILE, "utf-8");
-        return JSON.parse(raw);
+      if (fs.existsSync(this.configFile)) {
+        const raw = fs.readFileSync(this.configFile, "utf-8");
+        const config: OrbitRingConfig = JSON.parse(raw);
+        if (migrateLegacyDiscordActions(config)) {
+          console.log("[orbit] Migrated legacy Discord actions to the Discord plugin");
+          this.config = config;
+          this.save();
+        }
+        return config;
       }
     } catch (e) {
       console.error("[orbit] Failed to load config:", e);
@@ -159,8 +211,8 @@ export class ConfigStore {
 
   private save() {
     try {
-      fs.mkdirSync(CONFIG_DIR, { recursive: true });
-      fs.writeFileSync(CONFIG_FILE, JSON.stringify(this.config, null, 2));
+      fs.mkdirSync(path.dirname(this.configFile), { recursive: true });
+      fs.writeFileSync(this.configFile, JSON.stringify(this.config, null, 2));
     } catch (e) {
       console.error("[orbit] Failed to save config:", e);
     }

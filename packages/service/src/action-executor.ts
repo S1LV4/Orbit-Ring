@@ -1,15 +1,8 @@
-import type { Action } from "@m-ring/shared";
+import type { Action } from "@orbitring/shared";
 import { exec } from "child_process";
 import { getClaudeUsage } from "./claude-usage";
 import type { PluginLoader } from "./plugin-loader";
 
-/**
- * Executes actions by simulating keyboard input or running commands.
- *
- * On Windows, uses PowerShell's SendKeys or native SendInput via ffi.
- * On Linux, uses xdotool.
- * On macOS, uses osascript.
- */
 export class ActionExecutor {
   private platform = process.platform;
   private pluginLoader: PluginLoader | null;
@@ -47,7 +40,6 @@ export class ActionExecutor {
     modifiers: ("ctrl" | "shift" | "alt" | "meta")[]
   ): Promise<void> {
     if (this.platform === "win32") {
-      // Use PowerShell SendKeys for now — will switch to native SendInput later
       const psKey = this.toPowerShellKey(key, modifiers);
       return this.shell(
         `powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('${psKey}')"`
@@ -149,19 +141,8 @@ export class ActionExecutor {
         linux: "wmctrl -k on",
         darwin: "osascript -e 'tell application \"Finder\" to set visible of every process to false'",
       },
-      // Discord shortcuts are in-app only — must focus Discord window first, send keystroke, then restore focus
-      discord_mute: {
-        win32: this.discordKeystrokeCmd(0x4D), // Ctrl+Shift+M
-      },
-      discord_deafen: {
-        win32: this.discordKeystrokeCmd(0x44), // Ctrl+Shift+D
-      },
-      discord_screen: {
-        win32: this.discordKeystrokeCmd(0x53), // Ctrl+Shift+S
-      },
     };
 
-    // Plugin actions — format: "plugin:<pluginId>:<actionId>"
     if (action.startsWith("plugin:") && this.pluginLoader) {
       const parts = action.slice("plugin:".length).split(":");
       if (parts.length >= 2) {
@@ -169,7 +150,6 @@ export class ActionExecutor {
         console.log(`[orbit] Executing plugin action: ${pluginId} → ${actionId}`);
         return this.pluginLoader.executePluginAction(pluginId, actionId).then((result) => {
           console.log(`[orbit] Plugin action result:`, result);
-          // Notify state change after small delay (let plugin update its state)
           setTimeout(() => { if (this.onPluginStateChange) this.onPluginStateChange(); }, 100);
         }).catch(e => console.error(`[orbit] Plugin action error:`, e));
       }
@@ -177,19 +157,16 @@ export class ActionExecutor {
       return;
     }
 
-    // Agent actions
     if (action.startsWith("open_agent:")) {
       const agentId = action.slice("open_agent:".length);
       return this.openAgent(agentId);
     }
     if (action === "agent_approve") {
-      // Send Enter to the focused terminal (approve pending agent action)
       return this.shell(this.platform === "win32"
         ? `powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')"`
         : `xdotool key Return`);
     }
     if (action === "agent_decline") {
-      // Send Escape to decline/cancel
       return this.shell(this.platform === "win32"
         ? `powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('{ESC}')"`
         : `xdotool key Escape`);
@@ -225,7 +202,6 @@ export class ActionExecutor {
     if (modifiers.includes("ctrl")) ps += "^";
     if (modifiers.includes("alt")) ps += "%";
     if (modifiers.includes("shift")) ps += "+";
-    // Map common key names
     const keyMap: Record<string, string> = {
       Enter: "{ENTER}",
       Tab: "{TAB}",
@@ -246,37 +222,6 @@ export class ActionExecutor {
     };
     ps += keyMap[key] || key.toLowerCase();
     return ps;
-  }
-
-  private discordKeystrokeCmd(vk: number): string {
-    // Find Discord window, save current foreground window, focus Discord,
-    // send Ctrl+Shift+<key>, then restore original foreground window.
-    // Uses -EncodedCommand to avoid all cmd.exe/PowerShell escaping issues.
-    const vkHex = "0x" + vk.toString(16).toUpperCase();
-    const script = `
-Add-Type -MemberDefinition @'
-[DllImport("user32.dll")]public static extern IntPtr GetForegroundWindow();
-[DllImport("user32.dll")]public static extern bool SetForegroundWindow(IntPtr hWnd);
-[DllImport("user32.dll")]public static extern void keybd_event(byte bVk,byte bScan,uint dwFlags,UIntPtr dwExtraInfo);
-'@ -Name W -Namespace K
-$prev = [K.W]::GetForegroundWindow()
-$disc = Get-Process Discord -ErrorAction SilentlyContinue | Where-Object {$_.MainWindowHandle -ne 0} | Select-Object -First 1
-if ($disc) {
-  [K.W]::SetForegroundWindow($disc.MainWindowHandle) | Out-Null
-  Start-Sleep -Milliseconds 150
-  [K.W]::keybd_event(0x11,0,0,[UIntPtr]::Zero)
-  [K.W]::keybd_event(0x10,0,0,[UIntPtr]::Zero)
-  [K.W]::keybd_event(${vkHex},0,0,[UIntPtr]::Zero)
-  [K.W]::keybd_event(${vkHex},0,2,[UIntPtr]::Zero)
-  [K.W]::keybd_event(0x10,0,2,[UIntPtr]::Zero)
-  [K.W]::keybd_event(0x11,0,2,[UIntPtr]::Zero)
-  Start-Sleep -Milliseconds 50
-  [K.W]::SetForegroundWindow($prev) | Out-Null
-} else {
-  Write-Warning 'Discord not found'
-}`;
-    const encoded = Buffer.from(script, "utf16le").toString("base64");
-    return `powershell -NoProfile -EncodedCommand ${encoded}`;
   }
 
   private async showAgentStatus(): Promise<void> {

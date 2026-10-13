@@ -1,10 +1,4 @@
-// ═══════════════════════════════════════════
-// ring-logic.js — Pure functions extracted from ring.html for testability
-// ═══════════════════════════════════════════
-
 var RAMP = ' .:-=+*#%@';
-
-// ── Geometry helpers ──
 
 function pol(r, d) {
   var t = d * Math.PI / 180;
@@ -21,7 +15,6 @@ function sideOf(a) {
   return c > 0.38 ? "l" : c < -0.38 ? "r" : (Math.sin(t) < 0 ? "t" : "b");
 }
 
-// Spiral arm bezier: f=0→origin, f=1→(tx,ty)
 function arm(tx, ty, f) {
   var L = Math.hypot(tx, ty) || 1, bend = 0.42;
   var cx = tx / 2 + (-ty / L) * L * bend, cy = ty / 2 + (tx / L) * L * bend;
@@ -33,8 +26,6 @@ function spring(o, k, v, tgt, stiff, damp) {
   o[v] = (o[v] + (tgt - o[k]) * stiff) * damp;
   o[k] += o[v];
 }
-
-// ── Targets computation ──
 
 function targets(groups, isOpen, activeGroup, hover, R1, R2, STEP) {
   var T = {};
@@ -64,8 +55,6 @@ function targets(groups, isOpen, activeGroup, hover, R1, R2, STEP) {
   return T;
 }
 
-// ── Config application ──
-
 function applyConfig(cfg, state) {
   if (cfg.groups) {
     state.groups = cfg.groups;
@@ -85,18 +74,13 @@ function applyConfig(cfg, state) {
   return state;
 }
 
-// ── Delta-based selection ──
-
-// Given accumulated (dx, dy) from cursor delta, determine which group/action is hovered.
-// Returns { groupId, actionId } or nulls.
 function selectFromDelta(dx, dy, groups, activeGroup, R1, R2) {
   var dist = Math.hypot(dx, dy);
-  if (dist < 15) return { groupId: null, actionId: null }; // dead zone at center
+  if (dist < 15) return { groupId: null, actionId: null };
 
-  var angle = Math.atan2(dy, dx) * 180 / Math.PI; // -180..180
+  var angle = Math.atan2(dy, dx) * 180 / Math.PI;
 
   if (!activeGroup) {
-    // Select group by angle
     var best = null, bestDiff = 999;
     groups.forEach(function (g, gi) {
       var ga = (gi / groups.length) * 360 - 90;
@@ -106,14 +90,12 @@ function selectFromDelta(dx, dy, groups, activeGroup, R1, R2) {
     return { groupId: best, actionId: null };
   }
 
-  // Active group: select action by angle
   var g = null;
   for (var i = 0; i < groups.length; i++) {
     if (groups[i].id === activeGroup) { g = groups[i]; break; }
   }
   if (!g) return { groupId: activeGroup, actionId: null };
 
-  // If distance hasn't reached action ring, stay on group (no action selected)
   if (dist < R1 * 0.8) return { groupId: activeGroup, actionId: null };
 
   var gi = groups.indexOf(g);
@@ -133,16 +115,12 @@ function angleDiff(a, b) {
   return Math.abs(d);
 }
 
-// ── Toggle logic ──
-
 function toggle(isOpen, activeGroup) {
   if (isOpen && activeGroup) {
     return { isOpen: true, activeGroup: null, hover: null };
   }
   return { isOpen: !isOpen, activeGroup: null, hover: null };
 }
-
-// ── Catalog validation ──
 
 function validateGroups(groups, catalog) {
   var errors = [];
@@ -161,7 +139,6 @@ function validateGroups(groups, catalog) {
   return errors;
 }
 
-// ── Exports (CommonJS for Node test runners, no-op in browser) ──
 if (typeof module !== "undefined" && module.exports) {
   module.exports = { pol, hash, sideOf, arm, spring, targets, applyConfig, toggle, validateGroups, selectFromDelta, angleDiff, RAMP };
 }

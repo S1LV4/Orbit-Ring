@@ -1,15 +1,5 @@
 import { execFile } from "child_process";
 
-/**
- * Detects the currently focused application window on Windows
- * and notifies listeners when the focused app changes.
- *
- * Uses koffi (Win32 FFI) for GetForegroundWindow / GetWindowThreadProcessId,
- * then falls back to a lightweight PowerShell call to resolve PID → process name.
- *
- * On non-Windows platforms this module is a silent no-op.
- */
-
 type AppChangedCallback = (appName: string) => void;
 
 const POLL_INTERVAL_MS = 1500;
@@ -19,7 +9,6 @@ export class AppProfileSwitcher {
   private callbacks: AppChangedCallback[] = [];
   private currentApp = "";
 
-  // Win32 FFI handles — lazily loaded
   private getForegroundWindow: (() => number) | null = null;
   private getWindowThreadProcessId: ((hwnd: number, pidBuf: Buffer) => number) | null = null;
 
@@ -34,7 +23,6 @@ export class AppProfileSwitcher {
   }
 
   private initWin32() {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const koffi = require("koffi");
     const user32 = koffi.load("user32.dll");
 
@@ -46,17 +34,14 @@ export class AppProfileSwitcher {
     ) as (hwnd: number, pidBuf: Buffer) => number;
   }
 
-  /** Register a callback fired when the focused app changes. */
   onAppChanged(callback: AppChangedCallback): void {
     this.callbacks.push(callback);
   }
 
-  /** Return the last detected foreground process name (e.g. "Code.exe"). */
   getActiveApp(): string {
     return this.currentApp;
   }
 
-  /** Begin polling for the foreground window. */
   start(): void {
     if (process.platform !== "win32") return;
     if (this.pollTimer) return;
@@ -68,11 +53,9 @@ export class AppProfileSwitcher {
       this.poll();
     }, POLL_INTERVAL_MS);
 
-    // Run once immediately
     this.poll();
   }
 
-  /** Stop polling. */
   stop(): void {
     if (this.pollTimer) {
       clearInterval(this.pollTimer);
@@ -92,20 +75,16 @@ export class AppProfileSwitcher {
 
       this.resolveProcessName(pid);
     } catch (e) {
-      // Silently ignore — polling will retry
     }
   }
 
   private resolveProcessName(pid: number): void {
-    // Use wmic (fast, no PowerShell startup overhead)
-    // wmic is available on all supported Windows versions
     execFile(
       "tasklist",
       ["/FI", `PID eq ${pid}`, "/FO", "CSV", "/NH"],
       { windowsHide: true, timeout: 3000 },
       (err, stdout) => {
         if (err) return;
-        // Output format: "process.exe","1234","Console","1","12,345 K"
         const match = stdout.match(/^"([^"]+)"/m);
         if (!match) return;
 
