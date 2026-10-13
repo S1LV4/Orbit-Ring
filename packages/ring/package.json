@@ -1,0 +1,16 @@
+{
+  "name": "@m-ring/ring",
+  "version": "0.1.0",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "dev": "electron ."
+  },
+  "dependencies": {
+    "electron": "^33.0.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.10"
+  }
+}

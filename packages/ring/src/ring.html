@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:320px; height:320px; overflow:hidden; background:transparent; user-select:none; font-family:'Segoe UI',sans-serif; }
+
+.b {
+  position:absolute; width:46px; height:46px; border-radius:50%;
+  background:#222228; border:2px solid #3a3a42;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; z-index:5;
+  opacity:0; transform:scale(0);
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1),
+              opacity .15s, border-color .15s, box-shadow .15s, background .15s;
+}
+.b.in { opacity:1; transform:scale(1); }
+.b.hov {
+  transform:scale(1.25) !important;
+  border-color:#8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.2), 0 0 14px rgba(139,92,246,0.25);
+  background:#2a2a32;
+}
+.b svg { width:20px; height:20px; stroke:rgba(255,255,255,0.65); fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; transition:stroke .15s; }
+.b.hov svg { stroke:#fff; }
+
+.lbl {
+  position:absolute; padding:3px 8px; border-radius:4px;
+  background:#222228; color:#eee; font-size:10px; font-weight:500;
+  white-space:nowrap; pointer-events:none; z-index:15;
+  opacity:0; transform:scale(0.9); transition:opacity .12s, transform .15s;
+}
+.lbl.on { opacity:1; transform:scale(1); }
+
+.cx {
+  position:absolute; left:148px; top:148px; width:24px; height:24px; border-radius:50%;
+  background:#2a2a2e; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; z-index:10;
+  opacity:0; transition:opacity .12s, transform .3s, box-shadow .3s;
+}
+.cx.in { opacity:1; }
+.cx.glow {
+  box-shadow: 0 0 12px rgba(139,92,246,0.35);
+  background:#333;
+}
+.cx:hover { background:#3a3a3e; }
+.cx svg { width:10px; height:10px; stroke:rgba(255,255,255,0.5); stroke-width:2; fill:none; stroke-linecap:round; }
+
+canvas { position:absolute; left:0; top:0; width:320px; height:320px; pointer-events:none; z-index:2; }
+</style>
+</head>
+<body>
+
+<canvas id="cv" width="320" height="320"></canvas>
+
+<div class="cx" id="closeBtn">
+  <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+</div>
+
+<!-- 8 bubbles: CX=160, CY=160, R=90 -->
+<div class="b" style="left:137px;top:47px"  data-i="0"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></div>
+<div class="lbl" id="l0" style="left:160px;top:28px;transform:translateX(-50%)">Copiar</div>
+
+<div class="b" style="left:200px;top:74px"  data-i="1"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></div>
+<div class="lbl" id="l1" style="left:254px;top:82px">Colar</div>
+
+<div class="b" style="left:227px;top:137px" data-i="2"><svg viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg></div>
+<div class="lbl" id="l2" style="left:280px;top:145px">Desfazer</div>
+
+<div class="b" style="left:200px;top:200px" data-i="3"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></div>
+<div class="lbl" id="l3" style="left:254px;top:208px">Salvar</div>
+
+<div class="b" style="left:137px;top:227px" data-i="4"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+<div class="lbl" id="l4" style="left:160px;top:278px;transform:translateX(-50%)">Screenshot</div>
+
+<div class="b" style="left:74px;top:200px"  data-i="5"><svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+<div class="lbl" id="l5" style="right:228px;top:208px">Terminal</div>
+
+<div class="b" style="left:47px;top:137px"  data-i="6"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16"/></svg></div>
+<div class="lbl" id="l6" style="right:256px;top:145px">Play/Pause</div>
+
+<div class="b" style="left:74px;top:74px"   data-i="7"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+<div class="lbl" id="l7" style="right:228px;top:82px">Desktop</div>
+
+<script>
+var actions = [
+  {type:"keystroke",key:"c",modifiers:["ctrl"],label:"Ctrl+C"},
+  {type:"keystroke",key:"v",modifiers:["ctrl"],label:"Ctrl+V"},
+  {type:"keystroke",key:"z",modifiers:["ctrl"],label:"Ctrl+Z"},
+  {type:"keystroke",key:"s",modifiers:["ctrl"],label:"Ctrl+S"},
+  {type:"system",action:"screenshot"},
+  {type:"system",action:"open_terminal"},
+  {type:"system",action:"media_play_pause"},
+  {type:"system",action:"show_desktop"}
+];
+
+var bubbles = document.querySelectorAll(".b");
+var labels = [];
+var closeBtn = document.getElementById("closeBtn");
+var cv = document.getElementById("cv");
+var ctx = cv.getContext("2d");
+var hov = -1;
+var CX = 160, CY = 160;
+
+var centers = [
+  {x:160,y:70}, {x:223,y:97}, {x:250,y:160}, {x:223,y:223},
+  {x:160,y:250},{x:97,y:223}, {x:70,y:160},  {x:97,y:97}
+];
+
+// Smooth animated values
+var lineTargets = centers.map(function() { return {str:0, cx:0, cy:0}; });
+var lineSmooth = centers.map(function() { return {str:0}; });
+var centerGlow = 0, centerGlowTarget = 0;
+var mouseX = CX, mouseY = CY;
+var visible = false;
+
+for (var i = 0; i < 8; i++) labels.push(document.getElementById("l"+i));
+
+bubbles.forEach(function(el) {
+  var idx = parseInt(el.getAttribute("data-i"));
+  el.addEventListener("click", function() {
+    try { window.ring.executeAction(actions[idx]); } catch(e) {}
+  });
+});
+closeBtn.addEventListener("click", function() {
+  try { window.ring.close(); } catch(e) {}
+});
+
+document.addEventListener("mousemove", function(e) {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+
+  var ci = -1, cd = 999;
+  for (var i = 0; i < centers.length; i++) {
+    var d = Math.hypot(mouseX - centers[i].x, mouseY - centers[i].y);
+    if (d < 40 && d < cd) { ci = i; cd = d; }
+  }
+
+  if (ci !== hov) {
+    if (hov >= 0) { bubbles[hov].classList.remove("hov"); labels[hov].classList.remove("on"); }
+    hov = ci;
+    if (ci >= 0) {
+      bubbles[ci].classList.add("hov");
+      labels[ci].classList.add("on");
+      closeBtn.classList.add("glow");
+      centerGlowTarget = 1;
+    } else {
+      closeBtn.classList.remove("glow");
+      centerGlowTarget = 0;
+    }
+  }
+
+  // Update line targets
+  for (var i = 0; i < centers.length; i++) {
+    var d = Math.hypot(mouseX - centers[i].x, mouseY - centers[i].y);
+    lineTargets[i].str = i === hov ? 1 : Math.max(0, 1 - d / 120) * 0.15;
+  }
+});
+
+// Animation loop — fluid curves from center to bubbles
+function draw() {
+  ctx.clearRect(0, 0, 320, 320);
+  if (!visible) { requestAnimationFrame(draw); return; }
+
+  centerGlow += (centerGlowTarget - centerGlow) * 0.15;
+
+  for (var i = 0; i < centers.length; i++) {
+    var t = lineTargets[i];
+    var s = lineSmooth[i];
+    s.str += (t.str - s.str) * 0.12;
+
+    if (s.str < 0.01) continue;
+
+    var bx = centers[i].x, by = centers[i].y;
+
+    // Control point: pull toward mouse position for fluid curve
+    var mx = (CX + bx) / 2;
+    var my = (CY + by) / 2;
+    if (hov === i) {
+      mx += (mouseX - mx) * 0.3;
+      my += (mouseY - my) * 0.3;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.quadraticCurveTo(mx, my, bx, by);
+
+    var alpha = s.str * (hov === i ? 0.4 : 0.12);
+    ctx.strokeStyle = "rgba(139,92,246," + alpha + ")";
+    ctx.lineWidth = hov === i ? 2.5 : 1.2;
+    ctx.stroke();
+
+    // Glow dot at bubble end when hovered
+    if (hov === i && s.str > 0.5) {
+      ctx.beginPath();
+      ctx.arc(bx, by, 4, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(139,92,246," + (s.str * 0.35) + ")";
+      ctx.fill();
+    }
+  }
+
+  // Center pulse
+  if (centerGlow > 0.01) {
+    ctx.beginPath();
+    ctx.arc(CX, CY, 6, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(139,92,246," + (centerGlow * 0.2) + ")";
+    ctx.fill();
+  }
+
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+function showRing() {
+  visible = true;
+  closeBtn.classList.add("in");
+  bubbles.forEach(function(el, i) {
+    el.classList.remove("in","hov");
+    setTimeout(function() { el.classList.add("in"); }, 15 + i * 25);
+  });
+  for (var i = 0; i < labels.length; i++) labels[i].classList.remove("on");
+  // Reset smooth values
+  for (var i = 0; i < lineSmooth.length; i++) lineSmooth[i].str = 0;
+  centerGlow = 0;
+  hov = -1;
+}
+
+function hideRing() {
+  visible = false;
+  closeBtn.classList.remove("in","glow");
+  bubbles.forEach(function(el) { el.classList.remove("in","hov"); });
+  for (var i = 0; i < labels.length; i++) labels[i].classList.remove("on");
+  centerGlowTarget = 0;
+  hov = -1;
+  ctx.clearRect(0, 0, 320, 320);
+}
+
+try {
+  window.ring.onShow(function() { showRing(); });
+  window.ring.onHide(function() { hideRing(); });
+  window.ring.onRelease(function() {
+    if (hov >= 0) try { window.ring.executeAction(actions[hov]); } catch(e) {}
+    else try { window.ring.close(); } catch(e) {}
+  });
+} catch(e) { showRing(); }
+</script>
+</body>
+</html>

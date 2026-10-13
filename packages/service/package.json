@@ -1,0 +1,20 @@
+{
+  "name": "@m-ring/service",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js --external:node-hid --external:koffi --format=cjs && node dist/index.js",
+    "build": "esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js --external:node-hid --external:koffi --format=cjs"
+  },
+  "dependencies": {
+    "koffi": "^3.3.3",
+    "node-hid": "^3.1.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.10",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}
