@@ -4,3 +4,10 @@ build/
 *.tsbuildinfo
 .env
 .env.local
+*.png
+*.ico
+test-results/
+packages/ring/release/
+packages/ring/src/ring-bundle.js
+discord-token.json
+.claude/worktrees/

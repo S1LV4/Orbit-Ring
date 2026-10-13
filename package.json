@@ -10,6 +10,11 @@
   "scripts": {
     "dev:service": "npm run dev -w packages/service",
     "dev:ui": "npm run dev -w packages/ui",
-    "build": "npm run build -w packages/shared && npm run build -w packages/service && npm run build -w packages/ui"
+    "build": "npm run build -w packages/shared && npm run build -w packages/service && npm run build -w packages/ui",
+    "test": "npm run test -w packages/ring",
+    "test:e2e": "npm run test:e2e -w packages/ring"
+  },
+  "dependencies": {
+    "sharp": "^0.35.5"
   }
 }

@@ -3,24 +3,12 @@ import {
   Mouse,
   Keyboard,
   Terminal,
-  Volume2,
   Play,
-  Camera,
   Monitor,
-  ChevronRight,
-  Zap,
   Search,
-  ArrowLeft,
-  ArrowRight,
-  Maximize2,
-  Minimize2,
   X,
   Layout,
   Globe,
-  Mail,
-  Lock,
-  Sun,
-  Moon,
 } from "lucide-react";
 
 interface BindingEditorProps {
@@ -32,71 +20,71 @@ interface BindingEditorProps {
 }
 
 const BUTTON_LABELS: Record<string, { label: string; description: string }> = {
-  side1: { label: "Botão Lateral 1", description: "Thumb / Back" },
-  side2: { label: "Botão Lateral 2", description: "Forward" },
-  side3: { label: "Botão Lateral 3", description: "Extra" },
-  side4: { label: "Botão Lateral 4", description: "Extra" },
-  dpi: { label: "Botão DPI", description: "Geralmente no topo" },
-  scroll_left: { label: "Scroll Esquerda", description: "Scroll tilt" },
-  scroll_right: { label: "Scroll Direita", description: "Scroll tilt" },
+  side1: { label: "Side Button 1", description: "Thumb / Back" },
+  side2: { label: "Side Button 2", description: "Forward" },
+  side3: { label: "Side Button 3", description: "Extra" },
+  side4: { label: "Side Button 4", description: "Extra" },
+  dpi: { label: "DPI Button", description: "Usually on top" },
+  scroll_left: { label: "Scroll Left", description: "Scroll tilt" },
+  scroll_right: { label: "Scroll Right", description: "Scroll tilt" },
 };
 
 const ACTION_PRESETS = [
   {
-    category: "Navegação",
-    icon: <Globe className="w-4 h-4" />,
+    category: "Navigate",
+    icon: <Globe className="w-3.5 h-3.5" />,
     actions: [
-      { label: "Voltar", action: { type: "keystroke", key: "BrowserBack", modifiers: [], label: "Back" } },
-      { label: "Avançar", action: { type: "keystroke", key: "BrowserForward", modifiers: [], label: "Forward" } },
-      { label: "Nova aba", action: { type: "keystroke", key: "t", modifiers: ["ctrl"], label: "Ctrl+T" } },
-      { label: "Fechar aba", action: { type: "keystroke", key: "w", modifiers: ["ctrl"], label: "Ctrl+W" } },
-      { label: "Reabrir aba", action: { type: "keystroke", key: "t", modifiers: ["ctrl", "shift"], label: "Ctrl+Shift+T" } },
+      { label: "Back", action: { type: "keystroke", key: "BrowserBack", modifiers: [], label: "Back" } },
+      { label: "Forward", action: { type: "keystroke", key: "BrowserForward", modifiers: [], label: "Forward" } },
+      { label: "New Tab", action: { type: "keystroke", key: "t", modifiers: ["ctrl"], label: "Ctrl+T" } },
+      { label: "Close Tab", action: { type: "keystroke", key: "w", modifiers: ["ctrl"], label: "Ctrl+W" } },
+      { label: "Reopen Tab", action: { type: "keystroke", key: "t", modifiers: ["ctrl", "shift"], label: "Ctrl+Shift+T" } },
     ],
   },
   {
-    category: "Sistema",
-    icon: <Monitor className="w-4 h-4" />,
+    category: "System",
+    icon: <Monitor className="w-3.5 h-3.5" />,
     actions: [
-      { label: "Mostrar Desktop", action: { type: "system", action: "show_desktop" } },
+      { label: "Show Desktop", action: { type: "system", action: "show_desktop" } },
       { label: "Task View", action: { type: "system", action: "task_view" } },
       { label: "Screenshot", action: { type: "system", action: "screenshot" } },
-      { label: "Bloquear Tela", action: { type: "system", action: "lock_screen" } },
-      { label: "Abrir Terminal", action: { type: "system", action: "open_terminal" } },
+      { label: "Lock Screen", action: { type: "system", action: "lock_screen" } },
+      { label: "Open Terminal", action: { type: "system", action: "open_terminal" } },
     ],
   },
   {
-    category: "Janela",
-    icon: <Layout className="w-4 h-4" />,
+    category: "Window",
+    icon: <Layout className="w-3.5 h-3.5" />,
     actions: [
-      { label: "Minimizar", action: { type: "system", action: "minimize_window" } },
-      { label: "Maximizar", action: { type: "system", action: "maximize_window" } },
-      { label: "Fechar", action: { type: "system", action: "close_window" } },
-      { label: "Desktop Esquerda", action: { type: "system", action: "switch_desktop_left" } },
-      { label: "Desktop Direita", action: { type: "system", action: "switch_desktop_right" } },
+      { label: "Minimize", action: { type: "system", action: "minimize_window" } },
+      { label: "Maximize", action: { type: "system", action: "maximize_window" } },
+      { label: "Close", action: { type: "system", action: "close_window" } },
+      { label: "Desktop Left", action: { type: "system", action: "switch_desktop_left" } },
+      { label: "Desktop Right", action: { type: "system", action: "switch_desktop_right" } },
     ],
   },
   {
-    category: "Mídia",
-    icon: <Play className="w-4 h-4" />,
+    category: "Media",
+    icon: <Play className="w-3.5 h-3.5" />,
     actions: [
       { label: "Play / Pause", action: { type: "system", action: "media_play_pause" } },
-      { label: "Próxima", action: { type: "system", action: "media_next" } },
-      { label: "Anterior", action: { type: "system", action: "media_prev" } },
+      { label: "Next", action: { type: "system", action: "media_next" } },
+      { label: "Previous", action: { type: "system", action: "media_prev" } },
       { label: "Volume +", action: { type: "system", action: "volume_up" } },
       { label: "Volume -", action: { type: "system", action: "volume_down" } },
-      { label: "Mudo", action: { type: "system", action: "volume_mute" } },
+      { label: "Mute", action: { type: "system", action: "volume_mute" } },
     ],
   },
   {
-    category: "Atalhos",
-    icon: <Keyboard className="w-4 h-4" />,
+    category: "Shortcuts",
+    icon: <Keyboard className="w-3.5 h-3.5" />,
     actions: [
-      { label: "Copiar", action: { type: "keystroke", key: "c", modifiers: ["ctrl"], label: "Ctrl+C" } },
-      { label: "Colar", action: { type: "keystroke", key: "v", modifiers: ["ctrl"], label: "Ctrl+V" } },
-      { label: "Desfazer", action: { type: "keystroke", key: "z", modifiers: ["ctrl"], label: "Ctrl+Z" } },
-      { label: "Refazer", action: { type: "keystroke", key: "y", modifiers: ["ctrl"], label: "Ctrl+Y" } },
-      { label: "Salvar", action: { type: "keystroke", key: "s", modifiers: ["ctrl"], label: "Ctrl+S" } },
-      { label: "Buscar", action: { type: "keystroke", key: "f", modifiers: ["ctrl"], label: "Ctrl+F" } },
+      { label: "Copy", action: { type: "keystroke", key: "c", modifiers: ["ctrl"], label: "Ctrl+C" } },
+      { label: "Paste", action: { type: "keystroke", key: "v", modifiers: ["ctrl"], label: "Ctrl+V" } },
+      { label: "Undo", action: { type: "keystroke", key: "z", modifiers: ["ctrl"], label: "Ctrl+Z" } },
+      { label: "Redo", action: { type: "keystroke", key: "y", modifiers: ["ctrl"], label: "Ctrl+Y" } },
+      { label: "Save", action: { type: "keystroke", key: "s", modifiers: ["ctrl"], label: "Ctrl+S" } },
+      { label: "Find", action: { type: "keystroke", key: "f", modifiers: ["ctrl"], label: "Ctrl+F" } },
     ],
   },
 ];
@@ -115,7 +103,7 @@ export function BindingEditor({
 
   const getActionLabel = (button: string): string => {
     const binding = bindings.find((b: any) => b.button === button);
-    if (!binding || binding.action.type === "none") return "Sem ação";
+    if (!binding || binding.action.type === "none") return "No action";
     if (binding.action.label) return binding.action.label;
     if (binding.action.type === "system") return binding.action.action.replace(/_/g, " ");
     if (binding.action.type === "command") return binding.action.command;
@@ -136,44 +124,46 @@ export function BindingEditor({
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Mouse className="w-5 h-5 text-zinc-400" />
-          Configurar Botões
+        <h2 className="text-base font-semibold flex items-center gap-2 text-[#FAFAFA]">
+          <Mouse className="w-4 h-4 text-[#71717A]" />
+          Button Bindings
         </h2>
         <button
           onClick={handleIdentify}
-          className={`px-3 py-1.5 rounded-lg text-sm flex items-center gap-2 transition-colors ${
+          className={`orbit-btn flex items-center gap-2 border ${
             identifying
-              ? "bg-violet-600 text-white animate-pulse"
-              : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+              ? "text-[#0A0A0B] animate-pulse"
+              : "border-[#2A2A30] text-[#71717A] hover:border-[var(--accent)] hover:text-[var(--accent)]"
           }`}
+          style={identifying ? { background: "var(--accent)", borderColor: "var(--accent)" } : undefined}
         >
-          <Search className="w-4 h-4" />
-          {identifying ? "Pressione um botão..." : "Identificar Botão"}
+          <Search className="w-3.5 h-3.5" />
+          <span className="text-xs font-mono">{identifying ? "press a button..." : "Identify"}</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-[280px_1fr] gap-6">
+      <div className="grid grid-cols-[260px_1fr] gap-5">
         {/* Button list */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           {Object.entries(BUTTON_LABELS).map(([key, { label, description }]) => (
             <button
               key={key}
               onClick={() => setSelectedButton(key)}
-              className={`w-full text-left p-3 rounded-lg border transition-all ${
+              className={`w-full text-left p-3 rounded-lg border transition-all duration-150 ${
                 selectedButton === key
-                  ? "bg-violet-600/10 border-violet-600/50 text-violet-300"
+                  ? "border-[var(--accent)]"
                   : lastEvent?.button === key && lastEvent?.action === "press"
-                  ? "bg-emerald-600/10 border-emerald-600/30"
-                  : "bg-zinc-900 border-zinc-800 hover:border-zinc-700"
+                  ? "border-[var(--accent)] opacity-60"
+                  : "border-[#2A2A30] bg-[#17171B] hover:border-[#33333B]"
               }`}
+              style={selectedButton === key ? { background: `color-mix(in srgb, var(--accent) 8%, #17171B)` } : undefined}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-medium">{label}</div>
-                  <div className="text-xs text-zinc-500 mt-0.5">{description}</div>
+                  <div className="text-xs font-medium text-[#efeee7]">{label}</div>
+                  <div className="text-[10px] font-mono text-[#71717A] mt-0.5">{description}</div>
                 </div>
-                <div className="text-xs text-zinc-500">{getActionLabel(key)}</div>
+                <div className="text-[10px] font-mono text-[#33333B]">{getActionLabel(key)}</div>
               </div>
             </button>
           ))}
@@ -183,16 +173,17 @@ export function BindingEditor({
         <div>
           {selectedButton ? (
             <div className="space-y-4">
-              <h3 className="text-sm font-medium text-zinc-400">
-                Ação para: {BUTTON_LABELS[selectedButton]?.label ?? selectedButton}
+              <h3 className="text-[10px] font-mono uppercase tracking-widest text-[#71717A]">
+                Action for: {BUTTON_LABELS[selectedButton]?.label ?? selectedButton}
               </h3>
               {ACTION_PRESETS.map((category) => (
                 <div key={category.category}>
-                  <h4 className="text-xs font-medium text-zinc-500 mb-2 flex items-center gap-2">
+                  <h4 className="text-[10px] font-mono uppercase tracking-wider mb-2 flex items-center gap-2"
+                      style={{ color: "var(--accent)" }}>
                     {category.icon}
                     {category.category}
                   </h4>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-1.5">
                     {category.actions.map((preset) => (
                       <button
                         key={preset.label}
@@ -200,11 +191,11 @@ export function BindingEditor({
                           onSave({ button: selectedButton, action: preset.action });
                           onTest(preset.action);
                         }}
-                        className="p-2.5 text-left bg-zinc-900 border border-zinc-800 rounded-lg hover:border-violet-600/50 hover:bg-violet-600/5 transition-colors"
+                        className="p-2.5 text-left orbit-card hover:border-[var(--accent)] transition-colors"
                       >
-                        <div className="text-sm">{preset.label}</div>
+                        <div className="text-xs text-[#efeee7]">{preset.label}</div>
                         {"label" in preset.action && (
-                          <div className="text-xs text-zinc-500 mt-0.5">
+                          <div className="text-[10px] font-mono text-[#33333B] mt-0.5">
                             {(preset.action as any).label}
                           </div>
                         )}
@@ -216,15 +207,16 @@ export function BindingEditor({
 
               {/* Custom keystroke */}
               <div>
-                <h4 className="text-xs font-medium text-zinc-500 mb-2 flex items-center gap-2">
-                  <Terminal className="w-4 h-4" />
-                  Atalho Personalizado
+                <h4 className="text-[10px] font-mono uppercase tracking-wider mb-2 flex items-center gap-2"
+                    style={{ color: "var(--accent)" }}>
+                  <Terminal className="w-3.5 h-3.5" />
+                  Custom Shortcut
                 </h4>
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="Ex: ctrl+shift+p"
-                    className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm focus:border-violet-600 focus:outline-none"
+                    placeholder="e.g. ctrl+shift+p"
+                    className="orbit-input flex-1 font-mono text-xs"
                     onKeyDown={(e) => {
                       e.preventDefault();
                       const modifiers: string[] = [];
@@ -242,8 +234,8 @@ export function BindingEditor({
                     }}
                   />
                 </div>
-                <p className="text-xs text-zinc-600 mt-1">
-                  Pressione a combinação de teclas desejada
+                <p className="text-[10px] font-mono text-[#33333B] mt-1.5">
+                  press the key combination you want
                 </p>
               </div>
 
@@ -252,18 +244,18 @@ export function BindingEditor({
                 onClick={() =>
                   onSave({ button: selectedButton, action: { type: "none" } })
                 }
-                className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 mt-4"
+                className="text-[10px] font-mono text-red-400/60 hover:text-red-400 flex items-center gap-1 mt-4 transition-colors"
               >
                 <X className="w-3 h-3" />
-                Remover ação deste botão
+                remove action
               </button>
             </div>
           ) : (
-            <div className="text-center py-16 text-zinc-500">
-              <Keyboard className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">Selecione um botão para configurar</p>
-              <p className="text-xs mt-1">
-                Ou clique "Identificar Botão" e pressione o botão no mouse
+            <div className="text-center py-16 text-[#71717A]">
+              <Keyboard className="w-10 h-10 mx-auto mb-3 opacity-15" />
+              <p className="text-sm text-[#efeee7]">Select a button to configure</p>
+              <p className="text-[10px] font-mono mt-2 text-[#33333B]">
+                or click "Identify" and press a button on your mouse
               </p>
             </div>
           )}

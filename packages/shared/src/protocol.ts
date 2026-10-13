@@ -1,4 +1,6 @@
-import type { Action, DeviceInfo, AppProfile, ButtonBinding } from "./types";
+import type { Action, DeviceInfo, AppProfile, ButtonBinding, RingSettings, AppRingProfileMap } from "./types";
+import type { AgentStatus } from "./agents";
+import type { PluginInfo } from "./plugin-types";
 
 /** Messages sent FROM service TO UI */
 export type ServiceMessage =
@@ -6,19 +8,32 @@ export type ServiceMessage =
   | { type: "button_event"; deviceId: string; button: string; action: "press" | "release"; x?: number; y?: number; timestamp: number }
   | { type: "active_app"; processName: string; title: string }
   | { type: "config_loaded"; config: unknown }
+  | { type: "ring_config"; ring: RingSettings }
+  | { type: "agents"; agents: AgentStatus[] }
+  | { type: "claude_usage"; usage: import("./types").ClaudeUsage }
+  | { type: "app_ring_profiles"; profiles: AppRingProfileMap }
+  | { type: "profile_switch"; processName: string; groupId: string | null }
+  | { type: "plugins"; plugins: PluginInfo[] }
   | { type: "error"; message: string };
 
 /** Messages sent FROM UI TO service */
 export type UIMessage =
   | { type: "get_devices" }
   | { type: "get_config" }
+  | { type: "get_agents" }
   | { type: "save_binding"; profileId: string | null; binding: ButtonBinding }
   | { type: "save_profile"; profile: AppProfile }
   | { type: "delete_profile"; profileId: string }
+  | { type: "save_ring"; ring: RingSettings }
   | { type: "test_action"; action: Action }
   | { type: "start_macro_record" }
   | { type: "stop_macro_record" }
-  | { type: "identify_button" };
+  | { type: "identify_button" }
+  | { type: "get_claude_usage" }
+  | { type: "get_plugins" }
+  | { type: "execute_plugin_action"; pluginId: string; actionId: string }
+  | { type: "get_app_ring_profiles" }
+  | { type: "set_app_ring_profile"; processName: string; groupId: string }
+  | { type: "remove_app_ring_profile"; processName: string };
 
 export const WS_PORT = 9119;
-export const WS_URL = `ws://localhost:${WS_PORT}`;

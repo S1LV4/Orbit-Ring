@@ -1,0 +1,22 @@
+{
+  "id": "com.orbitring.claude-usage",
+  "name": "Claude Usage",
+  "version": "1.0.0",
+  "author": "S1LV4",
+  "description": "Shows Claude Code usage stats via toast notification or data return",
+  "main": "index.js",
+  "actions": [
+    {
+      "id": "show_usage",
+      "name": "Show Usage",
+      "icon": "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M12 20V10'/><path d='M18 20V4'/><path d='M6 20v-4'/></svg>",
+      "description": "Show Claude Code usage as a Windows toast notification"
+    },
+    {
+      "id": "usage_gauge",
+      "name": "Usage Gauge",
+      "icon": "<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><circle cx='12' cy='12' r='10'/><path d='M12 6v6l4 2'/></svg>",
+      "description": "Returns Claude Code usage data for display"
+    }
+  ]
+}

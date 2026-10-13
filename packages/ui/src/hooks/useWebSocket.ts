@@ -3,12 +3,20 @@ import { useEffect, useRef, useState, useCallback } from "react";
 const WS_URL = "ws://localhost:9119";
 
 type ConnectionState = "connecting" | "connected" | "disconnected";
+type MessageHandler = (msg: any) => void;
 
 export function useWebSocket() {
   const wsRef = useRef<WebSocket | null>(null);
   const [state, setState] = useState<ConnectionState>("disconnected");
-  const [lastMessage, setLastMessage] = useState<any>(null);
+  const handlersRef = useRef<MessageHandler[]>([]);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  const onMessage = useCallback((handler: MessageHandler) => {
+    handlersRef.current.push(handler);
+    return () => {
+      handlersRef.current = handlersRef.current.filter((h) => h !== handler);
+    };
+  }, []);
 
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
@@ -22,14 +30,14 @@ export function useWebSocket() {
 
     ws.onmessage = (event) => {
       try {
-        setLastMessage(JSON.parse(event.data));
+        const msg = JSON.parse(event.data);
+        for (const h of handlersRef.current) h(msg);
       } catch {}
     };
 
     ws.onclose = () => {
       setState("disconnected");
       wsRef.current = null;
-      // Auto-reconnect after 2s
       reconnectTimer.current = setTimeout(connect, 2000);
     };
 
@@ -54,5 +62,5 @@ export function useWebSocket() {
     };
   }, [connect]);
 
-  return { state, lastMessage, send };
+  return { state, onMessage, send };
 }

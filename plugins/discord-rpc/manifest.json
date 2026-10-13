@@ -1,0 +1,26 @@
+{
+  "id": "com.orbitring.discord",
+  "name": "Discord Voice Control",
+  "version": "1.0.0",
+  "author": "S1LV4",
+  "description": "Control Discord voice (mute, deafen)",
+  "main": "index.js",
+  "actions": [
+    {
+      "id": "toggle_mute",
+      "name": "Toggle Mute",
+      "icon": "<path d='M12 2a3 3 0 00-3 3v7a3 3 0 006 0V5a3 3 0 00-3-3z'/><path d='M19 10v2a7 7 0 01-14 0v-2'/><line x1='12' y1='19' x2='12' y2='22'/>",
+      "iconActive": "<path d='M12 2a3 3 0 00-3 3v7a3 3 0 006 0V5a3 3 0 00-3-3z'/><path d='M19 10v2a7 7 0 01-14 0v-2'/><line x1='12' y1='19' x2='12' y2='22'/><line x1='1' y1='1' x2='23' y2='23' stroke='red' stroke-width='2.5'/>",
+      "description": "Toggle Discord microphone mute",
+      "stateful": true
+    },
+    {
+      "id": "toggle_deafen",
+      "name": "Toggle Deafen",
+      "icon": "<path d='M3 18v-6a9 9 0 0118 0v6'/><path d='M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3z'/><path d='M3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z'/>",
+      "iconActive": "<path d='M3 18v-6a9 9 0 0118 0v6'/><path d='M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3z'/><path d='M3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z'/><line x1='1' y1='1' x2='23' y2='23' stroke='red' stroke-width='2.5'/>",
+      "description": "Toggle Discord audio deafen",
+      "stateful": true
+    }
+  ]
+}

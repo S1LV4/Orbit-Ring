@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import HID from "node-hid";
 import type { DeviceInfo } from "@m-ring/shared";
-import { startMouseHook, stopMouseHook } from "./win32-mouse-hook";
+import { startMouseHook, stopMouseHook, lockCursor, unlockCursor, type MouseMoveCallback } from "./win32-mouse-hook";
 
 /**
  * Manages mouse device discovery and button event capture.
@@ -41,6 +41,14 @@ export class DeviceManager extends EventEmitter {
   stop() {
     if (this.pollTimer) clearInterval(this.pollTimer);
     stopMouseHook();
+  }
+
+  lockCursor(onMove: MouseMoveCallback) {
+    lockCursor(onMove);
+  }
+
+  unlockCursor() {
+    unlockCursor();
   }
 
   getDevices(): DeviceInfo[] {
@@ -84,7 +92,7 @@ export class DeviceManager extends EventEmitter {
 
     if (this.devices.size !== prevCount) {
       console.log(
-        `[m-ring] Found ${this.devices.size} mouse device(s):`,
+        `[orbit] Found ${this.devices.size} mouse device(s):`,
         Array.from(this.devices.values())
           .map((d) => d.name)
           .join(", ")

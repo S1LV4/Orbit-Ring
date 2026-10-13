@@ -43,7 +43,10 @@ export interface SystemAction {
     | "switch_desktop_left"
     | "switch_desktop_right"
     | "show_desktop"
-    | "task_view";
+    | "task_view"
+    | "discord_mute"
+    | "discord_deafen"
+    | "discord_screen";
 }
 
 export interface CommandAction {
@@ -105,6 +108,44 @@ export interface DeviceInfo {
   buttonCount?: number;
 }
 
+/** A ring group containing action IDs */
+export interface RingGroup {
+  id: string;
+  name: string;
+  icon: string; // icon ID from catalog
+  actions: string[]; // action IDs
+}
+
+export type RingTheme = "dark" | "light";
+
+export interface RingSettings {
+  groups: RingGroup[];
+  theme: RingTheme;
+  size: number;
+  accent: string; // hex color
+  speed: number; // animation speed multiplier (0.5–2)
+  liquid: boolean; // goo/liquid effect
+}
+
+/** Claude Code usage tier (session or weekly) */
+export interface ClaudeUsageTier {
+  used: number;
+  limit: number;
+  percent: number;
+  resetsAt?: number;
+}
+
+/** Claude Code usage tracking result */
+export interface ClaudeUsage {
+  available: boolean;
+  session: ClaudeUsageTier;
+  weekly: ClaudeUsageTier;
+  status: "green" | "amber" | "red";
+}
+
+/** Maps process names to ring group IDs for auto-switch */
+export type AppRingProfileMap = Record<string, string>;
+
 /** Top-level user configuration */
 export interface MRingConfig {
   version: 1;
@@ -113,4 +154,7 @@ export interface MRingConfig {
   };
   appProfiles: AppProfile[];
   devices: Record<string, { name?: string; enabled: boolean }>;
+  ring?: RingSettings;
+  /** Maps process names → ring group IDs for auto-switch on focused window change */
+  appRingProfiles?: AppRingProfileMap;
 }

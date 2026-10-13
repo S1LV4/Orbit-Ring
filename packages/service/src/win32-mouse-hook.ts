@@ -74,47 +74,114 @@ export type MouseButtonEvent = {
   timestamp: number;
 };
 
+export type MouseMoveEvent = {
+  dx: number;
+  dy: number;
+};
+
 export type MouseHookCallback = (event: MouseButtonEvent) => void;
+export type MouseMoveCallback = (event: MouseMoveEvent) => void;
+
+// Win32 functions for cursor lock
+const SetCursorPos = user32.func("SetCursorPos", "int", ["int", "int"]);
+const GetCursorPos = user32.func("GetCursorPos", "int", ["void *"]);
+const ClipCursor = user32.func("ClipCursor", "int", ["void *"]);
 
 /** Set of buttons to CONSUME (block from reaching apps) */
 const consumedButtons = new Set<string>(["side2"]);
-
-/** Add a button to the consumed set — its events won't reach other apps */
-export function consumeButton(button: string) {
-  consumedButtons.add(button);
-}
-
-/** Remove a button from the consumed set */
-export function releaseButton(button: string) {
-  consumedButtons.delete(button);
-}
 
 let hookHandle: any = null;
 let callbackRef: any = null;
 let pumpInterval: ReturnType<typeof setInterval> | null = null;
 
+// Cursor lock state
+let cursorLocked = false;
+let lockX = 0;
+let lockY = 0;
+let moveCallback: MouseMoveCallback | null = null;
+let lockSafetyTimer: ReturnType<typeof setTimeout> | null = null;
+
+const LOCK_SAFETY_TIMEOUT_MS = 30000;
+
+/** Lock cursor at its current position. Mouse deltas are sent to the move callback. */
+export function lockCursor(onMove: MouseMoveCallback): void {
+  const buf = Buffer.alloc(8);
+  GetCursorPos(buf);
+  lockX = buf.readInt32LE(0);
+  lockY = buf.readInt32LE(4);
+  moveCallback = onMove;
+  cursorLocked = true;
+  // Don't use ClipCursor — it prevents delta generation
+  // Instead, SetCursorPos resets position in the hook callback
+
+  // Safety: auto-unlock after timeout in case release event is lost
+  if (lockSafetyTimer) clearTimeout(lockSafetyTimer);
+  lockSafetyTimer = setTimeout(() => {
+    if (cursorLocked) {
+      console.warn("[orbit] Safety timeout: auto-unlocking cursor after " + LOCK_SAFETY_TIMEOUT_MS + "ms");
+      unlockCursor();
+    }
+  }, LOCK_SAFETY_TIMEOUT_MS);
+}
+
+/** Unlock cursor — restore normal mouse movement */
+export function unlockCursor(): void {
+  cursorLocked = false;
+  moveCallback = null;
+  if (lockSafetyTimer) {
+    clearTimeout(lockSafetyTimer);
+    lockSafetyTimer = null;
+  }
+  // Release clip — pass null to restore full screen movement
+  ClipCursor(null);
+}
+
 export function startMouseHook(callback: MouseHookCallback): void {
   if (hookHandle) {
-    console.warn("[m-ring] Mouse hook already running");
+    console.warn("[orbit] Mouse hook already running");
     return;
   }
 
   callbackRef = koffi.register(
     (nCode: number, wParam: number, lParam: number): number => {
-      if (nCode >= 0 && lParam) {
-        const buf = koffi.decode(lParam, MSLLHOOKSTRUCT);
-        const event = parseMouseEvent(wParam, buf);
-        if (event) {
-          try {
-            callback(event);
-          } catch {}
+      // SAFETY: always call CallNextHookEx on any error — never block clicks by accident
+      try {
+        if (nCode >= 0 && lParam) {
+          const buf = koffi.decode(lParam, MSLLHOOKSTRUCT);
 
-          // CONSUME the event: return 1 to block the OS from processing it
-          // This prevents "browser forward/back" from firing
-          if (consumedButtons.has(event.button)) {
+          // Handle cursor lock: intercept mouse movement and send deltas
+          if (cursorLocked && wParam === WM_MOUSEMOVE) {
+            // Skip events injected by our own SetCursorPos (flags bit 0 = injected)
+            if (buf.flags & 1) {
+              return CallNextHookEx(hookHandle || 0, nCode, wParam, lParam);
+            }
+            const dx = buf.x - lockX;
+            const dy = buf.y - lockY;
+            if (dx !== 0 || dy !== 0) {
+              SetCursorPos(lockX, lockY);
+              if (moveCallback) {
+                try { moveCallback({ dx, dy }); } catch {}
+              }
+            }
             return 1;
           }
+
+          const event = parseMouseEvent(wParam, buf);
+          if (event) {
+            try {
+              callback(event);
+            } catch {}
+
+            // CONSUME the event: return 1 to block the OS from processing it
+            // This prevents "browser forward/back" from firing
+            if (consumedButtons.has(event.button)) {
+              return 1;
+            }
+          }
         }
+      } catch (e) {
+        // On ANY error, pass the event through — never block the user's mouse
+        console.error("[orbit] Hook callback error, passing event through:", e);
       }
       return CallNextHookEx(hookHandle || 0, nCode, wParam, lParam);
     },
@@ -124,21 +191,23 @@ export function startMouseHook(callback: MouseHookCallback): void {
   hookHandle = SetWindowsHookExW(WH_MOUSE_LL, callbackRef, 0, 0);
 
   if (!hookHandle) {
-    console.error("[m-ring] Failed to set mouse hook");
+    console.error("[orbit] Failed to set mouse hook");
     return;
   }
 
-  console.log("[m-ring] Win32 mouse hook installed");
+  console.log("[orbit] Win32 mouse hook installed");
 
   const msgBuf = Buffer.alloc(48);
   pumpInterval = setInterval(() => {
     while (PeekMessageW(msgBuf, 0, 0, 0, 1)) {
       // message consumed
     }
-  }, 5);
+  }, 8);
 }
 
 export function stopMouseHook(): void {
+  // Always release cursor clip on shutdown
+  unlockCursor();
   if (pumpInterval) {
     clearInterval(pumpInterval);
     pumpInterval = null;
@@ -146,7 +215,7 @@ export function stopMouseHook(): void {
   if (hookHandle) {
     UnhookWindowsHookEx(hookHandle);
     hookHandle = null;
-    console.log("[m-ring] Mouse hook removed");
+    console.log("[orbit] Mouse hook removed");
   }
 }
 

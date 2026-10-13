@@ -3,6 +3,67 @@
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, -apple-system, sans-serif;
+  --accent: #C6F432;
+  --accent-rgb: 198, 244, 50;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2A2A30 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: #2A2A30;
+  border-radius: 3px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #33333B;
+}
+
+@layer base {
+  body {
+    background: #0A0A0B;
+    color: #FAFAFA;
+  }
+}
+
+@layer components {
+  .orbit-card {
+    @apply bg-[#17171B] border border-[#2A2A30] rounded-xl;
+  }
+  .orbit-surface {
+    @apply bg-[#141417];
+  }
+  .orbit-pill {
+    @apply px-2.5 py-1 rounded-full text-xs font-mono border border-[#2A2A30] bg-[#17171B];
+  }
+  .orbit-btn {
+    @apply px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200;
+  }
+  .orbit-input {
+    @apply bg-[#141417] border border-[#2A2A30] rounded-lg px-3 py-2 text-sm text-[#FAFAFA]
+           focus:outline-none
+           placeholder:text-[#71717A];
+  }
+}
+
+/* ASCII terrain animation */
+@keyframes terrain-drift {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-20px); }
+}
+
+.ascii-terrain {
+  animation: terrain-drift 8s ease-in-out infinite alternate;
+  user-select: none;
+  pointer-events: none;
 }

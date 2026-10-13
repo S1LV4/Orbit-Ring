@@ -1,10 +1,26 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
-import type { MRingConfig, ButtonBinding, AppProfile, Action } from "@m-ring/shared";
+import type { MRingConfig, ButtonBinding, AppProfile, RingSettings, AppRingProfileMap } from "@m-ring/shared";
 
-const CONFIG_DIR = path.join(os.homedir(), ".m-ring");
+const CONFIG_DIR = path.join(os.homedir(), ".orbit");
 const CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
+
+const DEFAULT_RING: RingSettings = {
+  groups: [
+    { id: "edit", name: "Edição", icon: "edit", actions: ["copy", "paste", "undo"] },
+    { id: "nav", name: "Navegação", icon: "compass", actions: ["back", "forward", "refresh"] },
+    { id: "win", name: "Janelas", icon: "layers", actions: ["minimize", "maximize", "close"] },
+    { id: "media", name: "Mídia", icon: "music", actions: ["playpause", "volmute"] },
+    { id: "cap", name: "Captura", icon: "aperture", actions: ["screenshot"] },
+    { id: "sys", name: "Sistema", icon: "settings", actions: ["save", "explorer", "find"] },
+  ],
+  theme: "dark",
+  size: 320,
+  accent: "#8b5cf6",
+  speed: 1,
+  liquid: true,
+};
 
 const DEFAULT_CONFIG: MRingConfig = {
   version: 1,
@@ -36,7 +52,6 @@ export class ConfigStore {
   }
 
   getBinding(button: string, processName?: string): ButtonBinding | undefined {
-    // Check app-specific profile first
     if (processName) {
       const profile = this.config.appProfiles.find(
         (p) => p.processMatch.toLowerCase() === processName.toLowerCase()
@@ -46,13 +61,11 @@ export class ConfigStore {
         if (binding) return binding;
       }
     }
-    // Fall back to default profile
     return this.config.defaultProfile.bindings.find((b) => b.button === button);
   }
 
   saveBinding(profileId: string | null, binding: ButtonBinding) {
     if (profileId === null) {
-      // Default profile
       const idx = this.config.defaultProfile.bindings.findIndex(
         (b) => b.button === binding.button
       );
@@ -92,6 +105,46 @@ export class ConfigStore {
     this.save();
   }
 
+  getRingSettings(): RingSettings {
+    return this.config.ring ?? DEFAULT_RING;
+  }
+
+  saveRingSettings(ring: RingSettings) {
+    this.config.ring = ring;
+    this.save();
+  }
+
+  // --- App Ring Profiles (auto-switch ring group by focused app) ---
+
+  getAppRingProfiles(): AppRingProfileMap {
+    return this.config.appRingProfiles ?? {};
+  }
+
+  setAppRingProfile(processName: string, groupId: string) {
+    if (!this.config.appRingProfiles) {
+      this.config.appRingProfiles = {};
+    }
+    this.config.appRingProfiles[processName] = groupId;
+    this.save();
+  }
+
+  removeAppRingProfile(processName: string) {
+    if (this.config.appRingProfiles) {
+      delete this.config.appRingProfiles[processName];
+      this.save();
+    }
+  }
+
+  /** Look up the ring group ID mapped to a process name (case-insensitive). */
+  getGroupForProcess(processName: string): string | null {
+    const profiles = this.config.appRingProfiles;
+    if (!profiles) return null;
+    const key = Object.keys(profiles).find(
+      (k) => k.toLowerCase() === processName.toLowerCase()
+    );
+    return key ? profiles[key] : null;
+  }
+
   private load(): MRingConfig {
     try {
       if (fs.existsSync(CONFIG_FILE)) {
@@ -99,7 +152,7 @@ export class ConfigStore {
         return JSON.parse(raw);
       }
     } catch (e) {
-      console.error("[m-ring] Failed to load config:", e);
+      console.error("[orbit] Failed to load config:", e);
     }
     return { ...DEFAULT_CONFIG };
   }
@@ -109,7 +162,7 @@ export class ConfigStore {
       fs.mkdirSync(CONFIG_DIR, { recursive: true });
       fs.writeFileSync(CONFIG_FILE, JSON.stringify(this.config, null, 2));
     } catch (e) {
-      console.error("[m-ring] Failed to save config:", e);
+      console.error("[orbit] Failed to save config:", e);
     }
   }
 }

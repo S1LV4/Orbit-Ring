@@ -1,0 +1,52 @@
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:320px; height:320px; overflow:hidden; background:transparent; user-select:none; font-family:'Segoe UI',sans-serif; }
+
+.b {
+  position:absolute; width:46px; height:46px; border-radius:50%;
+  background:#222228; border:2px solid #3a3a42;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; z-index:5;
+  opacity:0; transform:scale(0);
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1),
+              opacity .15s, border-color .15s, box-shadow .15s, background .15s;
+  /* Animate in immediately when rendered */
+  animation: pop-in .25s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes pop-in {
+  from { opacity:0; transform:scale(0); }
+  to   { opacity:1; transform:scale(1); }
+}
+.b.hov {
+  transform:scale(1.25) !important;
+  border-color:#8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139,92,246,0.2), 0 0 14px rgba(139,92,246,0.25);
+  background:#2a2a32;
+}
+.b svg { width:20px; height:20px; stroke:rgba(255,255,255,0.65); fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; transition:stroke .15s; }
+.b.hov svg { stroke:#fff; }
+
+.lbl {
+  position:absolute; padding:3px 8px; border-radius:4px;
+  background:#222228; color:#eee; font-size:10px; font-weight:500;
+  white-space:nowrap; pointer-events:none; z-index:15;
+  opacity:0; transform:scale(0.9); transition:opacity .12s, transform .15s;
+}
+.lbl.on { opacity:1; transform:scale(1); }
+
+.cx {
+  position:absolute; left:148px; top:148px; width:24px; height:24px; border-radius:50%;
+  background:#2a2a2e; display:flex; align-items:center; justify-content:center;
+  cursor:pointer; z-index:10;
+  opacity:0; transition:opacity .12s, transform .3s, box-shadow .3s;
+}
+.cx.in { opacity:1; }
+.cx.glow {
+  box-shadow: 0 0 12px rgba(139,92,246,0.35);
+  background:#333;
+}
+.cx:hover { background:#3a3a3e; }
+.cx svg { width:10px; height:10px; stroke:rgba(255,255,255,0.5); stroke-width:2; fill:none; stroke-linecap:round; }
+
+canvas { position:absolute; left:0; top:0; width:320px; height:320px; pointer-events:none; z-index:2; }
+
+#stage { width:320px; height:320px; position:relative; }

@@ -4,17 +4,8 @@ import {
   Settings,
   Layers,
   Zap,
-  Keyboard,
-  Monitor,
-  Terminal,
-  Volume2,
-  Play,
-  Camera,
-  Globe,
-  ChevronRight,
-  Plus,
-  Trash2,
   CircleDot,
+  Puzzle,
   Wifi,
   WifiOff,
   Loader2,
@@ -24,71 +15,110 @@ import { DevicePanel } from "./components/DevicePanel";
 import { BindingEditor } from "./components/BindingEditor";
 import { ProfileList } from "./components/ProfileList";
 import { RingEditor } from "./components/RingEditor";
+import { PluginManager } from "./components/PluginManager";
+import type { PluginInfo } from "./components/PluginManager";
 
-type Tab = "devices" | "bindings" | "ring" | "profiles" | "settings";
+type Tab = "devices" | "bindings" | "ring" | "profiles" | "plugins" | "settings";
 
 export function App() {
-  const { state, lastMessage, send } = useWebSocket();
+  const { state, onMessage, send } = useWebSocket();
   const [tab, setTab] = useState<Tab>("ring");
   const [devices, setDevices] = useState<any[]>([]);
   const [config, setConfig] = useState<any>(null);
   const [lastEvent, setLastEvent] = useState<any>(null);
+  const [plugins, setPlugins] = useState<PluginInfo[]>([]);
+  const [ringSettings, setRingSettings] = useState<any>({
+    groups: [
+      { id: "edit", name: "Edicao", icon: "edit", actions: ["copy", "paste", "undo"] },
+      { id: "nav", name: "Navegacao", icon: "compass", actions: ["back", "forward", "refresh"] },
+      { id: "win", name: "Janelas", icon: "layers", actions: ["minimize", "maximize", "close"] },
+      { id: "media", name: "Midia", icon: "music", actions: ["playpause", "volmute"] },
+      { id: "cap", name: "Captura", icon: "aperture", actions: ["screenshot"] },
+      { id: "sys", name: "Sistema", icon: "settings", actions: ["save", "explorer", "find"] },
+    ],
+    theme: "dark",
+    size: 320,
+    accent: "#C6F432",
+    speed: 1,
+    liquid: true,
+  });
+
+  const accentRaw = ringSettings.accent || "#C6F432";
+  const accent = accentRaw === "#FFFFFF" ? "#E0E0E0"
+    : accentRaw === "#000000" ? "#888888"
+    : accentRaw;
 
   useEffect(() => {
-    if (!lastMessage) return;
-    switch (lastMessage.type) {
-      case "devices":
-        setDevices(lastMessage.devices);
-        break;
-      case "config_loaded":
-        setConfig(lastMessage.config);
-        break;
-      case "button_event":
-        setLastEvent(lastMessage);
-        break;
-    }
-  }, [lastMessage]);
+    document.documentElement.style.setProperty("--accent", accent);
+    const r = parseInt(accent.slice(1, 3), 16);
+    const g = parseInt(accent.slice(3, 5), 16);
+    const b = parseInt(accent.slice(5, 7), 16);
+    document.documentElement.style.setProperty("--accent-rgb", `${r}, ${g}, ${b}`);
+  }, [accent]);
+
+  useEffect(() => {
+    return onMessage((msg: any) => {
+      switch (msg.type) {
+        case "devices": setDevices(msg.devices); break;
+        case "config_loaded": setConfig(msg.config); break;
+        case "ring_config": setRingSettings(msg.ring); break;
+        case "button_event": setLastEvent(msg); break;
+        case "plugins": setPlugins(msg.plugins); break;
+      }
+    });
+  }, [onMessage]);
 
   const connectionIcon = {
-    connected: <Wifi className="w-4 h-4 text-emerald-400" />,
-    connecting: <Loader2 className="w-4 h-4 text-yellow-400 animate-spin" />,
-    disconnected: <WifiOff className="w-4 h-4 text-red-400" />,
+    connected: <Wifi className="w-3.5 h-3.5" style={{ color: accent }} />,
+    connecting: <Loader2 className="w-3.5 h-3.5 text-yellow-400 animate-spin" />,
+    disconnected: <WifiOff className="w-3.5 h-3.5 text-red-400" />,
   }[state];
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: "ring", label: "Actions Ring", icon: <CircleDot className="w-5 h-5" /> },
-    { id: "bindings", label: "Botões", icon: <Mouse className="w-5 h-5" /> },
-    { id: "devices", label: "Dispositivos", icon: <Zap className="w-5 h-5" /> },
-    { id: "profiles", label: "Perfis", icon: <Layers className="w-5 h-5" /> },
-    { id: "settings", label: "Config", icon: <Settings className="w-5 h-5" /> },
+    { id: "ring", label: "Ring", icon: <CircleDot className="w-4 h-4" /> },
+    { id: "bindings", label: "Buttons", icon: <Mouse className="w-4 h-4" /> },
+    { id: "devices", label: "Devices", icon: <Zap className="w-4 h-4" /> },
+    { id: "profiles", label: "Profiles", icon: <Layers className="w-4 h-4" /> },
+    { id: "plugins", label: "Plugins", icon: <Puzzle className="w-4 h-4" /> },
+    { id: "settings", label: "Settings", icon: <Settings className="w-4 h-4" /> },
   ];
 
   return (
-    <div className="flex h-screen bg-zinc-950">
+    <div className="flex h-screen bg-[#0A0A0B]">
+      {/* Draggable title bar area */}
+      <div className="fixed top-0 left-0 right-0 h-9 z-50" style={{ WebkitAppRegion: "drag" } as any} />
+
       {/* Sidebar */}
-      <aside className="w-56 bg-zinc-900 border-r border-zinc-800 flex flex-col">
-        <div className="p-4 border-b border-zinc-800">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center">
-              <Mouse className="w-5 h-5 text-white" />
-            </div>
+      <aside className="w-48 bg-[#141417] border-r border-[#2A2A30] flex flex-col">
+        {/* Logo */}
+        <div className="px-4 py-5 border-b border-[#2A2A30]" style={{ WebkitAppRegion: "drag" } as any}>
+          <div className="flex items-center gap-2.5">
+            <svg viewBox="0 0 128 128" className="w-7 h-7 flex-shrink-0">
+              <circle cx="64" cy="64" r="42" fill="none" stroke="#F7F8F4" strokeWidth="8" strokeLinecap="round" strokeDasharray="183 81" transform="rotate(-53 64 64)"/>
+              <circle cx="64" cy="64" r="26" fill="none" stroke="#F7F8F4" strokeWidth="6" opacity=".34"/>
+              <path d="M64 38 V48 M64 80 V90 M38 64 H48 M80 64 H90" stroke="#F7F8F4" strokeWidth="4" strokeLinecap="round" opacity=".55"/>
+              <circle cx="64" cy="64" r="10" fill={accent}/>
+              <circle cx="99.9" cy="42.4" r="8" fill={accent}/>
+            </svg>
             <div>
-              <h1 className="text-sm font-bold text-zinc-100">M-Ring</h1>
-              <p className="text-xs text-zinc-500">Any mouse, your rules</p>
+              <h1 className="text-sm text-[#FAFAFA] tracking-tight leading-none"><span className="font-bold">orbit</span><span className="font-light">Ring</span></h1>
+              <p className="text-[10px] font-mono text-[#71717A] tracking-wide mt-0.5">v0.1.0</p>
             </div>
           </div>
         </div>
 
-        <nav className="flex-1 p-2">
+        {/* Nav */}
+        <nav className="flex-1 px-2 py-3 space-y-0.5" style={{ WebkitAppRegion: "no-drag" } as any}>
           {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
                 tab === t.id
-                  ? "bg-violet-600/20 text-violet-300"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                  ? "text-[#0A0A0B]"
+                  : "text-[#71717A] hover:text-[#FAFAFA] hover:bg-[#17171B]"
               }`}
+              style={tab === t.id ? { background: accent, color: "#0A0A0B" } : undefined}
             >
               {t.icon}
               {t.label}
@@ -96,29 +126,38 @@ export function App() {
           ))}
         </nav>
 
-        {/* Connection status */}
-        <div className="p-3 border-t border-zinc-800">
-          <div className="flex items-center gap-2 text-xs text-zinc-500">
+        {/* Connection */}
+        <div className="px-3 py-3 border-t border-[#2A2A30]">
+          <div className="flex items-center gap-2 text-[10px] font-mono text-[#71717A]">
             {connectionIcon}
             <span>
               {state === "connected"
-                ? "Serviço conectado"
+                ? "connected"
                 : state === "connecting"
-                ? "Conectando..."
-                : "Serviço offline"}
+                ? "connecting..."
+                : "offline"}
             </span>
           </div>
           {devices.length > 0 && (
-            <div className="mt-1 text-xs text-zinc-600">
-              {devices.length} dispositivo{devices.length > 1 ? "s" : ""}
+            <div className="mt-1 text-[10px] font-mono text-[#33333B]">
+              {devices.length} device{devices.length > 1 ? "s" : ""}
             </div>
           )}
         </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-auto">
-        {tab === "ring" && <RingEditor />}
+      {/* Main content — pt-9 accounts for titleBarOverlay height */}
+      <main className="flex-1 overflow-auto relative pt-9">
+        {/* ASCII terrain background removed */}
+
+        <div className="relative z-10">
+        {tab === "ring" && (
+          <RingEditor
+            settings={ringSettings}
+            onSave={(ring) => send({ type: "save_ring", ring })}
+            plugins={plugins}
+          />
+        )}
         {tab === "devices" && (
           <DevicePanel devices={devices} lastEvent={lastEvent} />
         )}
@@ -140,28 +179,52 @@ export function App() {
             onDelete={(id) => send({ type: "delete_profile", profileId: id })}
           />
         )}
+        {tab === "plugins" && (
+          <PluginManager
+            plugins={plugins}
+            onRemove={(pluginId) =>
+              send({ type: "remove_plugin", pluginId })
+            }
+            onToggle={(pluginId, enabled) =>
+              send({ type: "toggle_plugin", pluginId, enabled })
+            }
+            onOpenFolder={() =>
+              send({ type: "open_plugins_folder" })
+            }
+          />
+        )}
         {tab === "settings" && (
           <div className="p-6">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Settings className="w-5 h-5 text-zinc-400" />
-              Configurações
+            <h2 className="text-base font-semibold mb-5 flex items-center gap-2 text-[#FAFAFA]">
+              <Settings className="w-4 h-4 text-[#71717A]" />
+              Settings
             </h2>
-            <div className="space-y-4 max-w-md">
-              <label className="flex items-center justify-between p-3 bg-zinc-900 rounded-lg border border-zinc-800">
-                <span className="text-sm">Iniciar com o sistema</span>
-                <input type="checkbox" className="accent-violet-600" />
-              </label>
-              <label className="flex items-center justify-between p-3 bg-zinc-900 rounded-lg border border-zinc-800">
-                <span className="text-sm">Minimizar na bandeja</span>
-                <input type="checkbox" defaultChecked className="accent-violet-600" />
-              </label>
-              <label className="flex items-center justify-between p-3 bg-zinc-900 rounded-lg border border-zinc-800">
-                <span className="text-sm">Notificações</span>
-                <input type="checkbox" defaultChecked className="accent-violet-600" />
-              </label>
+            <div className="space-y-2 max-w-md">
+              {[
+                { label: "Start with system", key: "autostart", defaultChecked: false },
+                { label: "Minimize to tray", key: "tray", defaultChecked: true },
+                { label: "Notifications", key: "notify", defaultChecked: true },
+              ].map((opt) => (
+                <label
+                  key={opt.key}
+                  className="flex items-center justify-between p-3 orbit-card cursor-pointer hover:border-[#33333B] transition-colors"
+                >
+                  <span className="text-sm text-[#efeee7]">{opt.label}</span>
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      defaultChecked={opt.defaultChecked}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-[#2A2A30] rounded-full peer-checked:bg-[var(--accent)] transition-colors" />
+                    <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-[#0A0A0B] rounded-full transition-transform peer-checked:translate-x-4" />
+                  </div>
+                </label>
+              ))}
             </div>
           </div>
         )}
+        </div>
       </main>
     </div>
   );
