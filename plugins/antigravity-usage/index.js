@@ -28,9 +28,9 @@ const ACTIONS = {
   others: { kind: "others" },
   worst: { kind: null },
 };
-const GROUP_NAME = { gemini: "Gemini", others: "Claude e GPT" };
+const i18n = require("./i18n")(__dirname);
+const groupName = (kind) => i18n.t(`groups.${kind}`);
 const MARK = (require("./manifest.json").actions.find((a) => a.keepIcon) || {}).icon;
-const ACTION_TITLE = { gemini: "Gemini", others: "Claude e GPT", worst: "Uso" };
 
 let host = null;
 let timer = null;
@@ -338,46 +338,34 @@ function notifyIfChanged() {
 
 function desktopReason(d) {
   switch (d.reason) {
-    case "no_cmdline": return "sem acesso à linha de comando do servidor local";
-    case "no_token": return "servidor local sem --csrf_token";
-    case "no_ports": return "servidor local sem porta aberta (iniciando?)";
-    case "unauthorized": return "token recusado pelo servidor local (401/403)";
-    case "timeout": return "servidor local não respondeu a tempo";
-    case "bad_response": return `resposta inesperada do servidor local${d.http ? ` (HTTP ${d.http})` : ""}`;
-    case "no_quota": return "sem dados de cota · faça login no Antigravity";
-    case "scan_error": return "não foi possível listar os processos";
-    default: return "servidor local não respondeu";
+    case "no_cmdline": case "no_token": case "no_ports": case "unauthorized": case "timeout": case "no_quota": case "scan_error":
+      return i18n.t(`desktopReason.${d.reason}`);
+    case "bad_response": return i18n.t("desktopReason.bad_response", { http: d.http ? i18n.t("desktopReason.httpCode", { code: d.http }) : "" });
+    default: return i18n.t("desktopReason.default");
   }
 }
 
 function cliReason(reason) {
   switch (reason) {
-    case "wsl_stopped": return "WSL parado";
-    case "expired": return "token expirado · abra o agy no WSL";
-    case "unauthorized": return "login recusado · abra o agy no WSL";
-    case "forbidden": return "acesso negado pela API de cota (403)";
-    case "rate_limited": return "API de cota limitou as consultas (429)";
-    case "no_quota": return "API sem dados de cota";
-    case "bad_token_file": return "arquivo de login do agy ilegível";
-    case "no_login": return "sem login do agy";
-    case "cloud_off": return "CLI fechado · consulta à nuvem desativada";
-    case "unreachable": return "CLI em execução · porta local inacessível";
-    default: return "falha na API de cota";
+    case "wsl_stopped": case "expired": case "unauthorized": case "forbidden": case "rate_limited":
+    case "no_quota": case "bad_token_file": case "no_login": case "cloud_off": case "unreachable":
+      return i18n.t(`cliReason.${reason}`);
+    default: return i18n.t("cliReason.default");
   }
 }
 
 function staleNote(acc) {
   for (const id of acc.locs) {
     if (id === "win") {
-      if (desktop.state === "scan_error") return "Antigravity · não foi possível listar os processos";
-      if (desktop.state !== "live") return "Antigravity fechado";
+      if (desktop.state === "scan_error") return i18n.t("stale.scanError");
+      if (desktop.state !== "live") return i18n.t("stale.closed");
       continue;
     }
     const w = wsl.get(id);
-    if (!w) return /^wsl:/.test(id) ? "Antigravity · WSL parado" : "Antigravity · CLI fechado";
-    if (w.state !== "live") return `Antigravity · ${cliReason(w.reason)}`;
+    if (!w) return /^wsl:/.test(id) ? i18n.t("stale.wslStopped") : i18n.t("stale.cliClosed");
+    if (w.state !== "live") return i18n.t("stale.reason", { reason: cliReason(w.reason) });
   }
-  return "Antigravity · sem dados novos";
+  return i18n.t("stale.noNews");
 }
 
 function bucketsOf(acc, kind, t) {
@@ -404,9 +392,10 @@ function accountMax(acc, kind, t) {
 }
 
 function bucketText(b, t, brief) {
-  const pct = b.used === null ? "?" : b.renewed ? "renovado" : `${Math.round(b.used)}%`;
+  const pct = b.used === null ? "?" : b.renewed ? i18n.t("bucket.renewed") : `${Math.round(b.used)}%`;
   const left = !b.renewed && typeof b.resetAt === "number" && b.resetAt > t ? formatRemaining(b.resetAt, t) : null;
-  return `${b.window} ${pct}${left ? (brief ? ` (${left})` : ` (renova em ${left})`) : ""}`;
+  const windowName = b.window ? i18n.t(`windows.${b.window}`) : "";
+  return i18n.t("bucket.usage", { window: windowName, pct, left: left ? i18n.t(brief ? "bucket.leftBrief" : "bucket.left", { left }) : "" });
 }
 
 const groupText = (acc, kind, t, brief) => bucketsOf(acc, kind, t).map((b) => bucketText(b, t, brief)).join(" · ");
@@ -424,24 +413,24 @@ function pickAccount(list, kind, t) {
 }
 
 function fallbackState() {
-  if (phase === "loading") return { text: "…", label: "Antigravity · carregando uso…" };
+  if (phase === "loading") return { text: "…", label: i18n.t("fallback.loading") };
   const cliPart = (() => {
-    for (const w of wsl.values()) if (w.state !== "live" && w.reason && w.reason !== "no_login") return `CLI no ${w.label}: ${cliReason(w.reason)}`;
+    for (const w of wsl.values()) if (w.state !== "live" && w.reason && w.reason !== "no_login") return i18n.t("fallback.cliPart", { where: w.label, reason: cliReason(w.reason) });
     return "";
   })();
   let label;
-  if (desktop.state === "error" || desktop.state === "scan_error") label = `Antigravity · uso indisponível (${desktopReason(desktop)})`;
-  else if (desktop.state === "unsupported") label = cliPart ? "Antigravity" : "Antigravity · disponível apenas no Windows";
-  else label = "Antigravity fechado · abra para ver o uso";
-  return { text: "–", label: cliPart ? `${label} · ${cliPart}` : label };
+  if (desktop.state === "error" || desktop.state === "scan_error") label = i18n.t("fallback.unavailable", { reason: desktopReason(desktop) });
+  else if (desktop.state === "unsupported") label = cliPart ? "Antigravity" : i18n.t("fallback.windowsOnly");
+  else label = i18n.t("fallback.closed");
+  return { text: "–", label: cliPart ? i18n.t("fallback.withCli", { label, cli: cliPart }) : label };
 }
 
 function accountState(acc, kind, t, extra) {
   const where = whereOf(acc);
-  const plan = acc.plan ? ` · plano ${acc.plan}` : "";
+  const plan = acc.plan ? i18n.t("state.plan", { plan: acc.plan }) : "";
   const tail = `${plan}${extra || ""}`;
   const brief = !acc.live;
-  const head = acc.live ? `Antigravity · ${where}` : `${staleNote(acc)} · último valor ${formatAge(t - acc.at)} · ${where}`;
+  const head = acc.live ? i18n.t("state.headLive", { where }) : i18n.t("state.headStale", { note: staleNote(acc), age: formatAge(t - acc.at), where });
   const finish = (pct, label) => {
     const v = Math.max(0, Math.min(100, Math.round(pct)));
     const st = { value: v, text: `${v}%`, label };
@@ -452,17 +441,17 @@ function accountState(acc, kind, t, extra) {
   if (kind) {
     const buckets = bucketsOf(acc, kind, t);
     const top = worstBucket(buckets);
-    if (!top) return { text: "–", label: `${head} · ${GROUP_NAME[kind]} · sem dados de cota${tail}` };
-    const perModel = acc.perModel ? ` · por modelo${top.model ? ` (${top.model})` : ""}` : "";
-    return finish(top.used, `${head} · ${GROUP_NAME[kind]} · ${groupText(acc, kind, t, brief)}${perModel}${tail}`);
+    if (!top) return { text: "–", label: i18n.t("state.groupNoData", { head, group: groupName(kind), tail }) };
+    const perModel = acc.perModel ? (top.model ? i18n.t("state.perModelWith", { model: top.model }) : i18n.t("state.perModel")) : "";
+    return finish(top.used, i18n.t("state.group", { head, group: groupName(kind), text: groupText(acc, kind, t, brief), perModel, tail }));
   }
   const tops = ["gemini", "others"].map((k) => ({ k, b: worstBucket(bucketsOf(acc, k, t)) })).filter((x) => x.b);
-  if (tops.length === 0) return { text: "–", label: `${head} · sem dados de cota${tail}` };
+  if (tops.length === 0) return { text: "–", label: i18n.t("state.noData", { head, tail }) };
   tops.sort((a, b) => b.b.used - a.b.used);
   const main = tops[0];
-  const other = tops[1] ? ` · ${GROUP_NAME[tops[1].k]} ${Math.round(tops[1].b.used)}%` : "";
-  const perModel = acc.perModel ? " · por modelo" : "";
-  return finish(main.b.used, `${head} · ${GROUP_NAME[main.k]} ${bucketText(main.b, t, brief)}${other}${perModel}${tail}`);
+  const other = tops[1] ? i18n.t("state.otherGroup", { group: groupName(tops[1].k), percent: Math.round(tops[1].b.used) }) : "";
+  const perModel = acc.perModel ? i18n.t("state.perModel") : "";
+  return finish(main.b.used, i18n.t("state.worst", { head, group: groupName(main.k), bucket: bucketText(main.b, t, brief), other, perModel, tail }));
 }
 
 function pinnable() {
@@ -473,7 +462,7 @@ function pinnable() {
 function accountName(acc, list) {
   const base = whereOf(acc);
   const clash = list.some((o) => o !== acc && whereOf(o) === base);
-  return clash ? `${base} (${acc.plan || `conta ${acc.id.slice(0, 4)}`})` : base;
+  return clash ? `${base} (${acc.plan || i18n.t("accountId", { id: acc.id.slice(0, 4) })})` : base;
 }
 
 function buildActions() {
@@ -484,11 +473,11 @@ function buildActions() {
     for (const key of Object.keys(ACTIONS)) {
       defs.push({
         id: `${key}.${acc.id}`,
-        name: `Antigravity · ${ACTION_TITLE[key]} · ${name}`,
+        name: i18n.t("dyn.name", { title: groupName(key), name }),
         icon: MARK,
         keepIcon: true,
         stateful: true,
-        description: `Cota do Antigravity (${ACTION_TITLE[key]}) da conta vista em ${name}.`,
+        description: i18n.t("dyn.description", { title: groupName(key), name }),
       });
     }
   }
@@ -504,14 +493,14 @@ function buildState() {
     if (shown.length === 0) { out[key] = fallbackState(); continue; }
     const acc = pickAccount(shown, kind, t) || shown.slice().sort((a, b) => Number(b.live) - Number(a.live))[0];
     const others = shown.length - 1;
-    out[key] = accountState(acc, kind, t, others > 0 ? ` · +${others} conta${others > 1 ? "s" : ""}` : "");
+    out[key] = accountState(acc, kind, t, others > 0 ? i18n.t("moreAccounts", { count: others }) : "");
   }
   for (const acc of pinnable()) {
     const visible = shown.includes(acc);
     for (const key of Object.keys(ACTIONS)) {
       out[`${key}.${acc.id}`] = visible
         ? accountState(acc, ACTIONS[key].kind, t, "")
-        : { text: "–", label: `Antigravity · ${whereOf(acc)} · sem dados recentes` };
+        : { text: "–", label: i18n.t("state.recentNone", { where: whereOf(acc) }) };
     }
   }
   return out;
@@ -551,11 +540,11 @@ $xml.LoadXml('${toastXml(title, message)}')
 }
 
 function accountLines(acc, t) {
-  const head = `${whereOf(acc)}${acc.plan ? ` · plano ${acc.plan}` : ""}${acc.live ? "" : ` · ${staleNote(acc).replace(/^Antigravity · /, "")} · ${formatAge(t - acc.at)}`}`;
+  const head = `${whereOf(acc)}${acc.plan ? i18n.t("state.plan", { plan: acc.plan }) : ""}${acc.live ? "" : i18n.t("toast.staleTail", { note: staleNote(acc).replace(/^Antigravity · /, ""), age: formatAge(t - acc.at) })}`;
   const lines = [head];
   for (const kind of ["gemini", "others"]) {
     const text = groupText(acc, kind, t, true);
-    if (text) lines.push(`${GROUP_NAME[kind]}: ${text}${acc.perModel ? " (por modelo)" : ""}`);
+    if (text) lines.push(i18n.t("toast.groupLine", { group: groupName(kind), text, perModel: acc.perModel ? i18n.t("toast.perModel") : "" }));
   }
   return lines;
 }
@@ -565,10 +554,10 @@ function usageToast(only) {
   const shown = only ? [only] : shownAccounts(t).sort((a, b) => Number(b.live) - Number(a.live) || (accountMax(b, null, t) || 0) - (accountMax(a, null, t) || 0));
   if (shown.length === 0) return fallbackState().label.replace(/^Antigravity · /, "");
   if (shown.length === 1) return accountLines(shown[0], t).join("\n");
-  const lines = [`${shown.length} contas`];
+  const lines = [i18n.t("toast.accounts", { count: shown.length })];
   for (const acc of shown) {
     const [head, ...rest] = accountLines(acc, t);
-    lines.push(`${head} — ${rest.join(" | ") || "sem dados de cota"}`);
+    lines.push(`${head} — ${rest.join(" | ") || i18n.t("toast.noData")}`);
   }
   return lines.join("\n");
 }
@@ -587,6 +576,7 @@ function summary() {
 module.exports = {
   onLoad(h) {
     host = h && typeof h === "object" ? h : null;
+    if (host && host.locale) i18n.setLocale(host.locale);
     console.log("[antigravity] Plugin loaded");
     loadCache();
     actionsSnapshot = JSON.stringify(buildActions());
@@ -610,11 +600,18 @@ module.exports = {
     await refresh(true);
     const only = dyn ? accounts.get(dyn[2]) : null;
     if (dyn && !only) {
-      showToast("Antigravity · Uso", "Conta indisponível");
+      showToast(i18n.t("toast.title"), i18n.t("toast.accountUnavailable"));
       return { available: false, reason: "account_unavailable" };
     }
-    showToast("Antigravity · Uso", usageToast(only));
+    showToast(i18n.t("toast.title"), usageToast(only));
     return summary();
+  },
+
+  onLocaleChanged(locale) {
+    i18n.setLocale(locale);
+    lastSnapshot = "";
+    syncActions();
+    if (host && typeof host.stateChanged === "function") host.stateChanged();
   },
 
   getState() {

@@ -1,3 +1,5 @@
+process.env.ORBIT_PLUGIN_LOCALE = "pt-BR";
+
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -437,7 +439,9 @@ describe("manifesto", () => {
   test("id, ações e ícones no formato do ring", () => {
     const manifest = JSON.parse(fs.readFileSync(path.join(PLUGIN_DIR, "manifest.json"), "utf8"));
     expect(manifest).toMatchObject({ id: "com.orbitring.gemini", name: "Gemini CLI", main: "index.js" });
-    expect(manifest.actions.map((a) => [a.id, a.name])).toEqual([["pro", "Gemini · Pro"], ["flash", "Gemini · Flash"], ["worst", "Gemini · Uso"]]);
+    expect(manifest.actions.map((a) => [a.id, a.name])).toEqual([["pro", "Gemini · Pro"], ["flash", "Gemini · Flash"], ["worst", "Gemini · Usage"]]);
+    const pt = JSON.parse(fs.readFileSync(path.join(PLUGIN_DIR, "locales", "pt-BR.json"), "utf8")).manifest;
+    expect(Object.entries(pt.actions).map(([id, a]) => [id, a.name])).toEqual([["pro", "Gemini · Pro"], ["flash", "Gemini · Flash"], ["worst", "Gemini · Uso"]]);
     for (const a of manifest.actions) {
       expect(a.stateful).toBe(true);
       expect(a.icon).not.toMatch(/<svg|"/);

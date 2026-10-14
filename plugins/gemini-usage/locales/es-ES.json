@@ -1,0 +1,81 @@
+{
+  "manifest": {
+    "name": "Gemini CLI",
+    "description": "Cuota de Gemini CLI (modelos Pro y Flash, en todas las cuentas de Windows y WSL) directamente en el ring",
+    "actions": {
+      "pro": {
+        "name": "Gemini · Pro",
+        "description": "Cuota de los modelos Pro de Gemini CLI (el más cercano al límite), directamente en el botón. Haz clic para actualizar y ver los detalles en una notificación."
+      },
+      "flash": {
+        "name": "Gemini · Flash",
+        "description": "Cuota de los modelos Flash y Flash-Lite de Gemini CLI (el más cercano al límite), directamente en el botón. Haz clic para actualizar y ver los detalles en una notificación."
+      },
+      "worst": {
+        "name": "Gemini · Uso",
+        "description": "El modelo de Gemini CLI más cercano al límite, entre todos. Haz clic para actualizar y ver los detalles en una notificación."
+      }
+    }
+  },
+  "common": {
+    "moments": "instantes",
+    "days": {
+      "one": "{count} día",
+      "other": "{count} días"
+    },
+    "date": "{day}/{month}"
+  },
+  "groups": {
+    "pro": "Pro",
+    "flash": "Flash",
+    "worst": "Uso"
+  },
+  "errors": {
+    "expired": "token caducado · abre Gemini CLI",
+    "noProject": "proyecto no configurado · abre Gemini CLI",
+    "api": "falló la API de cuota"
+  },
+  "bucket": {
+    "usage": "{group} {percent}% · {model}",
+    "renewed": " · cuota renovada",
+    "renews": " · se renueva en {left}",
+    "read": " · leído hace {age}"
+  },
+  "staleWsl": " · WSL detenido",
+  "state": {
+    "loading": "Gemini · {name} · cargando la cuota…",
+    "error": "Gemini · {name} · {error}{stale}",
+    "noQuota": "Gemini · {name} · {group} sin cuota informada{stale}",
+    "usage": "Gemini · {name} · {bucket}{stale}",
+    "accountUnavailable": "Gemini · {name} · cuenta no disponible"
+  },
+  "empty": {
+    "loading": "Gemini CLI · cargando la cuota…",
+    "apiKey": "Gemini con clave de API · sin cuota que mostrar",
+    "notConnected": "Gemini CLI · no conectado (inicia sesión con `gemini`)"
+  },
+  "dyn": {
+    "name": "Gemini · {group} · {account}",
+    "descWorst": "Modelo más cercano al límite en la cuenta de Gemini CLI en {account}.",
+    "descGroup": "Cuota de los modelos {group} de la cuenta de Gemini CLI en {account}."
+  },
+  "moreAccounts": {
+    "one": " · +{count} cuenta",
+    "other": " · +{count} cuentas"
+  },
+  "detail": {
+    "loading": "cargando la cuota…",
+    "noQuota": "{group}: sin cuota informada",
+    "renewed": "cuota renovada",
+    "usage": "{group}: {percent}% · {model}{left}",
+    "renews": " · se renueva en {left}",
+    "live": "en vivo",
+    "read": "leído hace {age}"
+  },
+  "apiKeyLine": "{place}: clave de API (sin cuota que mostrar)",
+  "toast": {
+    "title": "Gemini CLI · Cuota",
+    "accountUnavailable": "{name}: cuenta no disponible",
+    "account": "Cuenta"
+  }
+}

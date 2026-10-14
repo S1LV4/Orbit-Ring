@@ -1,0 +1,99 @@
+{
+  "manifest": {
+    "name": "Claude Code",
+    "description": "Uso do Claude Code (sessão de 5h e semana, em todas as contas do Windows e do WSL) e aprovação de pedidos de confirmação direto no ring",
+    "actions": {
+      "show_usage": {
+        "name": "Claude · Sessão (5h)",
+        "description": "Uso da sessão de 5h do Claude Code, direto no botão. Clique para atualizar e ver os detalhes em uma notificação."
+      },
+      "usage_gauge": {
+        "name": "Claude · Semana",
+        "description": "Uso semanal do Claude Code, direto no botão. Clique para atualizar e ver os detalhes em uma notificação."
+      },
+      "approve": {
+        "name": "Claude · Aprovar",
+        "description": "Aprova o pedido de confirmação mais antigo do Claude Code. O botão acende enquanto houver um pedido aguardando."
+      },
+      "decline": {
+        "name": "Claude · Recusar",
+        "description": "Recusa o pedido de confirmação mais antigo do Claude Code."
+      }
+    }
+  },
+  "tiers": {
+    "session": "Sessão",
+    "weekly": "Semana",
+    "sessionLong": "Sessão (5h):",
+    "weeklyLong": "Semana:"
+  },
+  "moments": "instantes",
+  "accountId": "conta {id}",
+  "staleWsl": " · WSL parado",
+  "reasons": {
+    "noCredentials": "faça login no Claude Code",
+    "unauthorized": "sessão expirada — abra o Claude Code",
+    "api": "falha na API de uso"
+  },
+  "state": {
+    "unavailable": "Claude · uso indisponível ({reason})",
+    "loading": "Claude · {who}carregando uso…",
+    "unavailableFor": "Claude · {who}uso indisponível ({reason})",
+    "usage": "Claude · {who}{summary}{stale}",
+    "accountUnavailable": "Claude · {name} · conta indisponível"
+  },
+  "summary": {
+    "usage": "{tier} {percent}%{left}",
+    "renews": " · renova em {left}"
+  },
+  "moreAccounts": {
+    "one": " · +{count} conta",
+    "other": " · +{count} contas"
+  },
+  "dyn": {
+    "name": "Claude · {tier} · {account}",
+    "descSession": "Uso da sessão de 5h da conta do Claude Code em {account}.",
+    "descWeek": "Uso semanal da conta do Claude Code em {account}."
+  },
+  "approvals": {
+    "portBusy": "Claude · aprovações indisponíveis (porta ocupada)",
+    "nothing": "Claude · nada pendente",
+    "approve": "Aprovar · {summary}",
+    "decline": "Recusar · {summary}",
+    "attentionTitle": "Claude pede confirmação"
+  },
+  "line": {
+    "unavailable": "{name}: indisponível ({reason})",
+    "part": "{tier} {percent}%{left}"
+  },
+  "toast": {
+    "title": "Claude · Uso",
+    "accountUnavailable": "{name}: conta indisponível",
+    "account": "Conta"
+  },
+  "hook": {
+    "denied": "Recusado pelo usuário no OrbitRing.",
+    "unknownOption": "Opção desconhecida: {option}",
+    "settingsPath": "--settings precisa de um caminho",
+    "timeout": "--timeout precisa ser um número de segundos (>= 5)",
+    "scriptMissing": "Script do hook não encontrado: {path}",
+    "badJson": "{file} não é um JSON válido ({error}) — nada foi alterado.",
+    "notObject": "{file} não contém um objeto JSON — nada foi alterado.",
+    "hooksNotObject": "\"hooks\" em {file} não é um objeto — nada foi alterado.",
+    "eventNotList": "\"hooks.{event}\" em {file} não é uma lista — nada foi alterado.",
+    "removed": "Hook removido. Vale para as próximas sessões do Claude Code.",
+    "installed": "Hook instalado. Abra uma nova sessão do Claude Code (ou confira em /hooks) para ele valer."
+  },
+  "simulate": {
+    "noToken": "token não encontrado em {path}",
+    "badAnswer": "resposta inválida",
+    "description": "Pedido de teste do OrbitRing",
+    "serviceOk": "Serviço de aprovações OK em http://127.0.0.1:{port} — {count} pedido(s) pendente(s).",
+    "sent": "Pedido enviado: {tool}: {detail}",
+    "instructions": "Veja o aviso ao lado do cursor, abra o ring e escolha Aprovar ou Recusar (60 s)…",
+    "allowed": "APROVADO (allow)",
+    "denied": "RECUSADO (deny)",
+    "noAnswer": "SEM RESPOSTA (ask) — o Claude Code mostraria o prompt normal no terminal",
+    "decision": "Decisão: {text}"
+  }
+}

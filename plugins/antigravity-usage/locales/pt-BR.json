@@ -1,0 +1,118 @@
+{
+  "manifest": {
+    "name": "Antigravity",
+    "description": "Uso da cota do Google Antigravity (Gemini e Claude/GPT, janelas de 5h e semanal) direto no ring",
+    "actions": {
+      "gemini": {
+        "name": "Antigravity · Gemini",
+        "description": "Uso da cota dos modelos Gemini no Antigravity (a janela mais apertada), direto no botão. Clique para atualizar e ver os detalhes em uma notificação."
+      },
+      "others": {
+        "name": "Antigravity · Claude e GPT",
+        "description": "Uso da cota dos modelos Claude e GPT no Antigravity (a janela mais apertada), direto no botão. Clique para atualizar e ver os detalhes em uma notificação."
+      },
+      "worst": {
+        "name": "Antigravity · Uso",
+        "description": "A cota mais apertada do Antigravity entre todos os grupos de modelos — o botão para quem quer um só. Clique para atualizar e ver os detalhes em uma notificação."
+      }
+    }
+  },
+  "groups": {
+    "gemini": "Gemini",
+    "others": "Claude e GPT",
+    "worst": "Uso"
+  },
+  "windows": {
+    "5h": "5h",
+    "day": "dia",
+    "week": "semana",
+    "month": "mês"
+  },
+  "desktopReason": {
+    "no_cmdline": "sem acesso à linha de comando do servidor local",
+    "no_token": "servidor local sem --csrf_token",
+    "no_ports": "servidor local sem porta aberta (iniciando?)",
+    "unauthorized": "token recusado pelo servidor local (401/403)",
+    "timeout": "servidor local não respondeu a tempo",
+    "bad_response": "resposta inesperada do servidor local{http}",
+    "httpCode": " (HTTP {code})",
+    "no_quota": "sem dados de cota · faça login no Antigravity",
+    "scan_error": "não foi possível listar os processos",
+    "default": "servidor local não respondeu"
+  },
+  "cliReason": {
+    "wsl_stopped": "WSL parado",
+    "expired": "token expirado · abra o agy no WSL",
+    "unauthorized": "login recusado · abra o agy no WSL",
+    "forbidden": "acesso negado pela API de cota (403)",
+    "rate_limited": "API de cota limitou as consultas (429)",
+    "no_quota": "API sem dados de cota",
+    "bad_token_file": "arquivo de login do agy ilegível",
+    "no_login": "sem login do agy",
+    "cloud_off": "CLI fechado · consulta à nuvem desativada",
+    "unreachable": "CLI em execução · porta local inacessível",
+    "default": "falha na API de cota"
+  },
+  "stale": {
+    "scanError": "Antigravity · não foi possível listar os processos",
+    "closed": "Antigravity fechado",
+    "wslStopped": "Antigravity · WSL parado",
+    "cliClosed": "Antigravity · CLI fechado",
+    "reason": "Antigravity · {reason}",
+    "noNews": "Antigravity · sem dados novos"
+  },
+  "fallback": {
+    "loading": "Antigravity · carregando uso…",
+    "cliPart": "CLI no {where}: {reason}",
+    "unavailable": "Antigravity · uso indisponível ({reason})",
+    "windowsOnly": "Antigravity · disponível apenas no Windows",
+    "closed": "Antigravity fechado · abra para ver o uso",
+    "withCli": "{label} · {cli}"
+  },
+  "state": {
+    "plan": " · plano {plan}",
+    "headLive": "Antigravity · {where}",
+    "headStale": "{note} · último valor {age} · {where}",
+    "groupNoData": "{head} · {group} · sem dados de cota{tail}",
+    "group": "{head} · {group} · {text}{perModel}{tail}",
+    "noData": "{head} · sem dados de cota{tail}",
+    "worst": "{head} · {group} {bucket}{other}{perModel}{tail}",
+    "otherGroup": " · {group} {percent}%",
+    "perModelWith": " · por modelo ({model})",
+    "perModel": " · por modelo",
+    "recentNone": "Antigravity · {where} · sem dados recentes"
+  },
+  "moreAccounts": {
+    "one": " · +{count} conta",
+    "other": " · +{count} contas"
+  },
+  "bucket": {
+    "renewed": "renovado",
+    "usage": "{window} {pct}{left}",
+    "leftBrief": " ({left})",
+    "left": " (renova em {left})"
+  },
+  "accountId": "conta {id}",
+  "dyn": {
+    "name": "Antigravity · {title} · {name}",
+    "description": "Cota do Antigravity ({title}) da conta vista em {name}."
+  },
+  "toast": {
+    "title": "Antigravity · Uso",
+    "accountUnavailable": "Conta indisponível",
+    "accounts": {
+      "one": "{count} conta",
+      "other": "{count} contas"
+    },
+    "noData": "sem dados de cota",
+    "groupLine": "{group}: {text}{perModel}",
+    "perModel": " (por modelo)",
+    "staleTail": " · {note} · {age}"
+  },
+  "age": {
+    "justNow": "agora há pouco",
+    "minutes": "há {count} min",
+    "hours": "há {count} h",
+    "days": "há {count} d"
+  }
+}

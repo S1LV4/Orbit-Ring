@@ -1,23 +1,23 @@
 {
   "id": "com.orbitring.powertoys",
   "name": "PowerToys",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "@S1LV4",
-  "description": "Aciona os utilitários do Microsoft PowerToys direto no ring (Color Picker, Always On Top, FancyZones, Régua de Tela, Extrator de Texto, Peek…). Requer o PowerToys instalado: o plugin verifica a instalação e avisa quando ele ou um módulo não está disponível.",
+  "description": "Triggers Microsoft PowerToys utilities straight from the ring (Color Picker, Always On Top, FancyZones, Screen Ruler, Text Extractor, Peek…). Needs PowerToys installed: the plugin checks the installation and tells you when it or a module is not available.",
   "main": "index.js",
   "actions": [
     {
       "id": "color_picker",
       "name": "PowerToys · Color Picker",
       "icon": "<path d='M14.5 5.5l4 4'/><path d='M16.5 3.5a2.1 2.1 0 013 3l-2.5 2.5-3-3z'/><path d='M13 7l4 4-8 8H5v-4z'/>",
-      "description": "Abre o seletor de cores do PowerToys para copiar a cor de qualquer ponto da tela.",
+      "description": "Opens the PowerToys Color Picker to copy the color of any point on the screen.",
       "stateful": true
     },
     {
       "id": "always_on_top",
       "name": "PowerToys · Always On Top",
       "icon": "<path d='M9 3h6l-1 6 3 3H7l3-3z'/><path d='M12 12v9'/>",
-      "description": "Fixa (ou solta) a janela ativa sempre no topo das outras.",
+      "description": "Pins (or unpins) the active window above the others.",
       "stateful": true
     },
     {
@@ -25,140 +25,140 @@
       "name": "PowerToys · Awake",
       "icon": "<path d='M6 9h10v4a5 5 0 01-10 0z'/><path d='M16 10h1.5a2 2 0 010 4H16'/><path d='M5 20h12'/>",
       "iconActive": "<path d='M6 9h10v4a5 5 0 01-10 0z'/><path d='M16 10h1.5a2 2 0 010 4H16'/><path d='M5 20h12'/><path d='M9 3v3'/><path d='M13 3v3'/>",
-      "description": "Mostra se o Awake está mantendo o computador acordado. O clique abre a página do Awake nas configurações do PowerToys (o plugin não altera configurações).",
+      "description": "Shows whether Awake is keeping the computer awake. Clicking opens the Awake page in PowerToys settings (the plugin does not change settings).",
       "stateful": true
     },
     {
       "id": "fancyzones_editor",
-      "name": "PowerToys · Editor do FancyZones",
+      "name": "PowerToys · FancyZones Editor",
       "icon": "<rect x='3' y='4' width='18' height='16' rx='2'/><path d='M12 4v16'/><path d='M12 12h9'/>",
-      "description": "Abre o editor de layouts do FancyZones.",
+      "description": "Opens the FancyZones layout editor.",
       "stateful": true
     },
     {
       "id": "measure_tool",
-      "name": "PowerToys · Régua de Tela",
+      "name": "PowerToys · Screen Ruler",
       "icon": "<rect x='2' y='8' width='20' height='8' rx='1'/><path d='M6 8v3'/><path d='M10 8v4'/><path d='M14 8v3'/><path d='M18 8v4'/>",
-      "description": "Abre a Régua de Tela (Screen Ruler) para medir distâncias em pixels.",
+      "description": "Opens Screen Ruler to measure distances in pixels.",
       "stateful": true
     },
     {
       "id": "text_extractor",
-      "name": "PowerToys · Extrator de Texto",
+      "name": "PowerToys · Text Extractor",
       "icon": "<path d='M4 8V5a1 1 0 011-1h3'/><path d='M16 4h3a1 1 0 011 1v3'/><path d='M20 16v3a1 1 0 01-1 1h-3'/><path d='M8 20H5a1 1 0 01-1-1v-3'/><path d='M9 9h6'/><path d='M12 9v7'/>",
-      "description": "Seleciona uma área da tela e copia o texto reconhecido (OCR).",
+      "description": "Selects an area of the screen and copies the recognized text (OCR).",
       "stateful": true
     },
     {
       "id": "peek",
       "name": "PowerToys · Peek",
       "icon": "<path d='M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z'/><circle cx='12' cy='12' r='3'/>",
-      "description": "Pré-visualiza o arquivo selecionado no Explorador de Arquivos (o Explorador precisa ser a janela ativa).",
+      "description": "Previews the file selected in File Explorer (Explorer must be the active window).",
       "stateful": true
     },
     {
       "id": "shortcut_guide",
-      "name": "PowerToys · Guia de Atalhos",
+      "name": "PowerToys · Shortcut Guide",
       "icon": "<rect x='2' y='6' width='20' height='12' rx='2'/><path d='M6 10h.01'/><path d='M10 10h.01'/><path d='M14 10h.01'/><path d='M18 10h.01'/><path d='M7 14h10'/>",
-      "description": "Mostra o guia de atalhos de teclado do Windows.",
+      "description": "Shows the Windows keyboard shortcut guide.",
       "stateful": true
     },
     {
       "id": "find_my_mouse",
-      "name": "PowerToys · Localizar Mouse",
+      "name": "PowerToys · Find My Mouse",
       "icon": "<circle cx='12' cy='12' r='9'/><circle cx='12' cy='12' r='4'/><path d='M12 3v2'/><path d='M12 19v2'/><path d='M3 12h2'/><path d='M19 12h2'/>",
-      "description": "Destaca a posição do ponteiro do mouse na tela.",
+      "description": "Highlights where the mouse pointer is on the screen.",
       "stateful": true
     },
     {
       "id": "mouse_highlighter",
-      "name": "PowerToys · Realçador do Mouse",
+      "name": "PowerToys · Mouse Highlighter",
       "icon": "<path d='M5 3l5 14 2-6 6-2z'/><path d='M17 15v6'/><path d='M14 18h6'/>",
-      "description": "Liga ou desliga o realce dos cliques do mouse.",
+      "description": "Turns mouse click highlighting on or off.",
       "stateful": true
     },
     {
       "id": "mouse_crosshairs",
-      "name": "PowerToys · Mira do Ponteiro",
+      "name": "PowerToys · Mouse Pointer Crosshairs",
       "icon": "<path d='M12 2v8'/><path d='M12 14v8'/><path d='M2 12h8'/><path d='M14 12h8'/><circle cx='12' cy='12' r='1.5'/>",
-      "description": "Liga ou desliga a mira centrada no ponteiro do mouse.",
+      "description": "Turns the crosshairs centered on the mouse pointer on or off.",
       "stateful": true
     },
     {
       "id": "mouse_jump",
       "name": "PowerToys · Mouse Jump",
       "icon": "<rect x='2' y='5' width='9' height='7' rx='1'/><rect x='13' y='12' width='9' height='7' rx='1'/><path d='M8 16c1 3 4 3 5 0'/><path d='M11 14l2 2-3 1'/>",
-      "description": "Abre a miniatura das telas para saltar o ponteiro para outro monitor.",
+      "description": "Opens a thumbnail of the screens to jump the pointer to another monitor.",
       "stateful": true
     },
     {
       "id": "crop_and_lock_thumbnail",
-      "name": "PowerToys · Crop And Lock (miniatura)",
+      "name": "PowerToys · Crop And Lock (thumbnail)",
       "icon": "<path d='M6 2v14a2 2 0 002 2h14'/><path d='M2 6h14a2 2 0 012 2v14'/><rect x='10' y='10' width='4' height='4'/>",
-      "description": "Recorta uma área da janela ativa em uma miniatura ao vivo.",
+      "description": "Crops an area of the active window into a live thumbnail.",
       "stateful": true
     },
     {
       "id": "crop_and_lock_reparent",
-      "name": "PowerToys · Crop And Lock (recortar janela)",
+      "name": "PowerToys · Crop And Lock (reparent)",
       "icon": "<path d='M6 2v14a2 2 0 002 2h14'/><path d='M2 6h14a2 2 0 012 2v14'/>",
-      "description": "Recorta a janela ativa, mantendo-a interativa dentro de uma janela menor.",
+      "description": "Crops the active window, keeping it interactive inside a smaller window.",
       "stateful": true
     },
     {
       "id": "command_palette",
-      "name": "PowerToys · Paleta de Comandos",
+      "name": "PowerToys · Command Palette",
       "icon": "<rect x='3' y='4' width='18' height='16' rx='2'/><path d='M7 10l3 2-3 2'/><path d='M12 15h5'/>",
-      "description": "Abre a Paleta de Comandos (Command Palette) do PowerToys.",
+      "description": "Opens the PowerToys Command Palette.",
       "stateful": true
     },
     {
       "id": "powertoys_run",
       "name": "PowerToys · PowerToys Run",
       "icon": "<circle cx='10.5' cy='10.5' r='6.5'/><path d='M15.5 15.5L21 21'/><path d='M9 8l3.5 2.5L9 13z'/>",
-      "description": "Abre o lançador PowerToys Run.",
+      "description": "Opens the PowerToys Run launcher.",
       "stateful": true
     },
     {
       "id": "advanced_paste",
-      "name": "PowerToys · Colagem Avançada",
+      "name": "PowerToys · Advanced Paste",
       "icon": "<rect x='5' y='4' width='14' height='17' rx='2'/><rect x='9' y='2' width='6' height='4' rx='1'/><path d='M9 11h6'/><path d='M9 15h4'/>",
-      "description": "Abre a Colagem Avançada (Advanced Paste) na janela ativa.",
+      "description": "Opens Advanced Paste in the active window.",
       "stateful": true
     },
     {
       "id": "workspaces",
-      "name": "PowerToys · Editor de Workspaces",
+      "name": "PowerToys · Workspaces Editor",
       "icon": "<rect x='3' y='3' width='8' height='8' rx='1'/><rect x='13' y='3' width='8' height='5' rx='1'/><rect x='13' y='10' width='8' height='11' rx='1'/><rect x='3' y='13' width='8' height='8' rx='1'/>",
-      "description": "Abre o editor de Workspaces.",
+      "description": "Opens the Workspaces editor.",
       "stateful": true
     },
     {
       "id": "zoomit",
       "name": "PowerToys · ZoomIt (zoom)",
       "icon": "<circle cx='10.5' cy='10.5' r='6.5'/><path d='M15.5 15.5L21 21'/><path d='M10.5 8v5'/><path d='M8 10.5h5'/>",
-      "description": "Ativa o zoom de tela do ZoomIt.",
+      "description": "Turns on ZoomIt screen zoom.",
       "stateful": true
     },
     {
       "id": "zoomit_draw",
-      "name": "PowerToys · ZoomIt (desenhar)",
+      "name": "PowerToys · ZoomIt (draw)",
       "icon": "<path d='M4 20l1-4L16 5l3 3L8 19z'/><path d='M14 7l3 3'/><path d='M13 20h7'/>",
-      "description": "Ativa o modo de desenho na tela do ZoomIt.",
+      "description": "Turns on ZoomIt screen drawing.",
       "stateful": true
     },
     {
       "id": "light_switch",
       "name": "PowerToys · Light Switch",
       "icon": "<circle cx='12' cy='12' r='8'/><path d='M12 4v16'/><path d='M12 8l5 0'/><path d='M12 12h8'/><path d='M12 16h5'/>",
-      "description": "Alterna o Windows entre o tema claro e o escuro.",
+      "description": "Switches Windows between the light and dark theme.",
       "stateful": true
     },
     {
       "id": "settings",
-      "name": "PowerToys · Configurações",
+      "name": "PowerToys · Settings",
       "icon": "<circle cx='12' cy='12' r='3'/><path d='M12 2v3'/><path d='M12 19v3'/><path d='M2 12h3'/><path d='M19 12h3'/><path d='M4.9 4.9l2.1 2.1'/><path d='M17 17l2.1 2.1'/><path d='M4.9 19.1L7 17'/><path d='M17 7l2.1-2.1'/>",
-      "description": "Abre as configurações do PowerToys.",
+      "description": "Opens the PowerToys settings.",
       "stateful": true
     }
   ]

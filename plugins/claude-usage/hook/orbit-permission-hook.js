@@ -4,6 +4,8 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const i18n = require("../i18n")(require("path").join(__dirname, ".."));
+if (!process.env.ORBIT_PLUGIN_LOCALE) i18n.setLocale(Intl.DateTimeFormat().resolvedOptions().locale);
 
 const DEFAULT_PORT = 9123;
 const DEFAULT_TIMEOUT_MS = 70_000;
@@ -81,7 +83,7 @@ function hookOutput(decision) {
   if (decision !== "allow" && decision !== "deny") return "";
   const d = decision === "allow"
     ? { behavior: "allow" }
-    : { behavior: "deny", message: "Recusado pelo usuário no OrbitRing." };
+    : { behavior: "deny", message: i18n.t("hook.denied") };
   return JSON.stringify({ hookSpecificOutput: { hookEventName: EVENT, decision: d } });
 }
 

@@ -3,6 +3,8 @@
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
+const i18n = require("../i18n")(require("path").join(__dirname, ".."));
+if (!process.env.ORBIT_PLUGIN_LOCALE) i18n.setLocale(Intl.DateTimeFormat().resolvedOptions().locale);
 
 const EVENT = "PermissionRequest";
 const MARKER = "orbit-permission-hook.js";
@@ -17,10 +19,10 @@ function parseArgs(argv) {
     else if (a === "--settings") o.settings = argv[++i];
     else if (a === "--timeout") o.timeout = Number.parseInt(argv[++i], 10);
     else if (a === "--help" || a === "-h") o.help = true;
-    else throw new Error(`Opção desconhecida: ${a}`);
+    else throw new Error(i18n.t("hook.unknownOption", { option: a }));
   }
-  if (o.settings === undefined) throw new Error("--settings precisa de um caminho");
-  if (!Number.isInteger(o.timeout) || o.timeout < 5) throw new Error("--timeout precisa ser um número de segundos (>= 5)");
+  if (o.settings === undefined) throw new Error(i18n.t("hook.settingsPath"));
+  if (!Number.isInteger(o.timeout) || o.timeout < 5) throw new Error(i18n.t("hook.timeout"));
   return o;
 }
 
@@ -77,7 +79,7 @@ function main() {
   }
   const file = path.resolve(opts.settings || path.join(os.homedir(), ".claude", "settings.json"));
   const script = path.join(__dirname, MARKER);
-  if (!opts.uninstall && !fs.existsSync(script)) throw new Error(`Script do hook não encontrado: ${script}`);
+  if (!opts.uninstall && !fs.existsSync(script)) throw new Error(i18n.t("hook.scriptMissing", { path: script }));
 
   const exists = fs.existsSync(file);
   let rawText = "";
@@ -86,17 +88,17 @@ function main() {
     rawText = fs.readFileSync(file, "utf8");
     if (rawText.trim()) {
       try { current = JSON.parse(rawText.replace(/^﻿/, "")); }
-      catch (e) { throw new Error(`${file} não é um JSON válido (${e.message}) — nada foi alterado.`); }
+      catch (e) { throw new Error(i18n.t("hook.badJson", { file, error: e.message })); }
       if (!current || typeof current !== "object" || Array.isArray(current)) {
-        throw new Error(`${file} não contém um objeto JSON — nada foi alterado.`);
+        throw new Error(i18n.t("hook.notObject", { file }));
       }
     }
   }
   if (current.hooks !== undefined && (typeof current.hooks !== "object" || current.hooks === null || Array.isArray(current.hooks))) {
-    throw new Error(`"hooks" em ${file} não é um objeto — nada foi alterado.`);
+    throw new Error(i18n.t("hook.hooksNotObject", { file }));
   }
   if (current.hooks && current.hooks[EVENT] !== undefined && !Array.isArray(current.hooks[EVENT])) {
-    throw new Error(`"hooks.${EVENT}" em ${file} não é uma lista — nada foi alterado.`);
+    throw new Error(i18n.t("hook.eventNotList", { event: EVENT, file }));
   }
 
   const command = hookCommand(script);
@@ -138,8 +140,8 @@ function main() {
   fs.writeFileSync(tmp, JSON.stringify(next, null, 2) + "\n");
   fs.renameSync(tmp, file);
   console.log(opts.uninstall
-    ? "Hook removido. Vale para as próximas sessões do Claude Code."
-    : "Hook instalado. Abra uma nova sessão do Claude Code (ou confira em /hooks) para ele valer.");
+    ? i18n.t("hook.removed")
+    : i18n.t("hook.installed"));
   return 0;
 }
 

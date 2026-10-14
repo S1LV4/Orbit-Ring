@@ -1,3 +1,5 @@
+process.env.ORBIT_PLUGIN_LOCALE = "pt-BR";
+
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -122,7 +124,9 @@ describe("manifesto", () => {
     expect(manifest.name).toBe("Antigravity");
     expect(manifest.main).toBe("index.js");
     expect(manifest.actions.map((a) => a.id)).toEqual(["gemini", "others", "worst"]);
-    expect(manifest.actions.map((a) => a.name)).toEqual(["Antigravity · Gemini", "Antigravity · Claude e GPT", "Antigravity · Uso"]);
+    expect(manifest.actions.map((a) => a.name)).toEqual(["Antigravity · Gemini", "Antigravity · Claude and GPT", "Antigravity · Usage"]);
+    const pt = JSON.parse(fs.readFileSync(path.join(PLUGIN_DIR, "locales", "pt-BR.json"), "utf8")).manifest;
+    expect(Object.values(pt.actions).map((a) => a.name)).toEqual(["Antigravity · Gemini", "Antigravity · Claude e GPT", "Antigravity · Uso"]);
     for (const a of manifest.actions) {
       expect(a.stateful).toBe(true);
       expect(a.icon).not.toMatch(/<svg/i);
@@ -392,7 +396,7 @@ describe("Antigravity fechado → último valor", () => {
     expect(acc.id).toMatch(/^[0-9a-f]{8}$/);
     expect(acc.groups.gemini).toEqual([
       { id: "gemini-5h", window: "5h", used: 42, resetAt: T0 + 130 * 60_000 },
-      { id: "gemini-weekly", window: "semana", used: 18, resetAt: T0 + 4 * DAY + 2 * HOUR },
+      { id: "gemini-weekly", window: "week", used: 18, resetAt: T0 + 4 * DAY + 2 * HOUR },
     ]);
     expect(raw).not.toContain(CSRF);
     expect(raw).not.toContain("99999999-aaaa-bbbb");

@@ -1,0 +1,16 @@
+{
+  "manifest": {
+    "name": "Control de voz de Discord",
+    "description": "Controla la voz de Discord (silenciar y ensordecer)",
+    "actions": {
+      "toggle_mute": {
+        "name": "Alternar silencio",
+        "description": "Activa o desactiva el micrófono en Discord"
+      },
+      "toggle_deafen": {
+        "name": "Alternar ensordecer",
+        "description": "Activa o desactiva el audio de Discord"
+      }
+    }
+  }
+}

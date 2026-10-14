@@ -1,3 +1,5 @@
+process.env.ORBIT_PLUGIN_LOCALE = "pt-BR";
+
 const fs = require("fs");
 const os = require("os");
 const path = require("path");

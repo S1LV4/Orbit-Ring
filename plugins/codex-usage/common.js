@@ -18,6 +18,8 @@ function timed(promise, ms) {
   });
 }
 
+const i18n = require("./i18n")(__dirname);
+
 function statusFor(percent) {
   return percent > 85 ? "red" : percent >= 60 ? "amber" : "green";
 }
@@ -27,7 +29,7 @@ const clampPct = (p) => Math.max(0, Math.min(100, Math.round(p)));
 function formatRemaining(resetsAt, t) {
   if (typeof resetsAt !== "number" || !Number.isFinite(resetsAt)) return null;
   const mins = Math.max(0, Math.round((resetsAt - t) / 60000));
-  if (mins < 1) return "instantes";
+  if (mins < 1) return i18n.t("common.moments");
   if (mins < 60) return `${mins}min`;
   if (mins < 24 * 60) return `${Math.floor(mins / 60)}h${String(mins % 60).padStart(2, "0")}`;
   const hours = Math.round(mins / 60);
@@ -37,25 +39,25 @@ function formatRemaining(resetsAt, t) {
 
 function formatAge(ms) {
   const mins = Math.max(0, Math.floor(ms / 60000));
-  if (mins < 1) return "instantes";
+  if (mins < 1) return i18n.t("common.moments");
   if (mins < 60) return `${mins}min`;
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours}h`;
   const days = Math.floor(hours / 24);
-  return days === 1 ? "1 dia" : `${days} dias`;
+  return i18n.t("common.days", { count: days });
 }
 
 function formatWhen(ms, t) {
   const d = new Date(ms);
   if (Number.isNaN(d.getTime())) return "?";
   const p2 = (n) => String(n).padStart(2, "0");
-  const date = `${p2(d.getDate())}/${p2(d.getMonth() + 1)}`;
+  const date = i18n.t("common.date", { day: p2(d.getDate()), month: p2(d.getMonth() + 1) });
   const sameYear = d.getFullYear() === new Date(t).getFullYear();
   return `${date}${sameYear ? "" : `/${d.getFullYear()}`} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
 }
 
 function formatNumber(n, digits) {
-  try { return Number(n).toLocaleString("pt-BR", { maximumFractionDigits: digits == null ? 2 : digits }); }
+  try { return Number(n).toLocaleString(i18n.locale, { maximumFractionDigits: digits == null ? 2 : digits }); }
   catch { return String(n); }
 }
 

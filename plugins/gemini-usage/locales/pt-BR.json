@@ -1,0 +1,81 @@
+{
+  "manifest": {
+    "name": "Gemini CLI",
+    "description": "Cota do Gemini CLI (modelos Pro e Flash, em todas as contas do Windows e do WSL) direto no ring",
+    "actions": {
+      "pro": {
+        "name": "Gemini · Pro",
+        "description": "Cota dos modelos Pro do Gemini CLI (o mais perto do limite), direto no botão. Clique para atualizar e ver os detalhes em uma notificação."
+      },
+      "flash": {
+        "name": "Gemini · Flash",
+        "description": "Cota dos modelos Flash e Flash-Lite do Gemini CLI (o mais perto do limite), direto no botão. Clique para atualizar e ver os detalhes em uma notificação."
+      },
+      "worst": {
+        "name": "Gemini · Uso",
+        "description": "O modelo do Gemini CLI mais perto do limite, entre todos. Clique para atualizar e ver os detalhes em uma notificação."
+      }
+    }
+  },
+  "common": {
+    "moments": "instantes",
+    "days": {
+      "one": "{count} dia",
+      "other": "{count} dias"
+    },
+    "date": "{day}/{month}"
+  },
+  "groups": {
+    "pro": "Pro",
+    "flash": "Flash",
+    "worst": "Uso"
+  },
+  "errors": {
+    "expired": "token expirado · abra o Gemini CLI",
+    "noProject": "projeto não configurado · abra o Gemini CLI",
+    "api": "falha na API de cota"
+  },
+  "bucket": {
+    "usage": "{group} {percent}% · {model}",
+    "renewed": " · cota renovada",
+    "renews": " · renova em {left}",
+    "read": " · lido há {age}"
+  },
+  "staleWsl": " · WSL parado",
+  "state": {
+    "loading": "Gemini · {name} · carregando cota…",
+    "error": "Gemini · {name} · {error}{stale}",
+    "noQuota": "Gemini · {name} · {group} sem cota informada{stale}",
+    "usage": "Gemini · {name} · {bucket}{stale}",
+    "accountUnavailable": "Gemini · {name} · conta indisponível"
+  },
+  "empty": {
+    "loading": "Gemini CLI · carregando cota…",
+    "apiKey": "Gemini com chave de API · sem cota para mostrar",
+    "notConnected": "Gemini CLI · não conectado (faça login com `gemini`)"
+  },
+  "dyn": {
+    "name": "Gemini · {group} · {account}",
+    "descWorst": "Modelo mais perto do limite na conta do Gemini CLI em {account}.",
+    "descGroup": "Cota dos modelos {group} da conta do Gemini CLI em {account}."
+  },
+  "moreAccounts": {
+    "one": " · +{count} conta",
+    "other": " · +{count} contas"
+  },
+  "detail": {
+    "loading": "carregando cota…",
+    "noQuota": "{group}: sem cota informada",
+    "renewed": "cota renovada",
+    "usage": "{group}: {percent}% · {model}{left}",
+    "renews": " · renova em {left}",
+    "live": "ao vivo",
+    "read": "lido há {age}"
+  },
+  "apiKeyLine": "{place}: chave de API (sem cota para mostrar)",
+  "toast": {
+    "title": "Gemini CLI · Cota",
+    "accountUnavailable": "{name}: conta indisponível",
+    "account": "Conta"
+  }
+}

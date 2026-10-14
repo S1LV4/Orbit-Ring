@@ -1,0 +1,105 @@
+{
+  "manifest": {
+    "name": "Steam",
+    "description": "Muestra en el ring el juego en ejecución, la descarga en curso y los juegos jugados recientemente (cada uno con su portada), y abre la biblioteca, la tienda, los amigos y Big Picture. Necesita Steam instalado; solo lee el registro y los archivos locales de Steam, sin iniciar sesión y sin la Web API.",
+    "actions": {
+      "playing": {
+        "name": "Steam · Jugando",
+        "description": "Muestra el juego en ejecución y el tiempo de la sesión. Al hacer clic se abre la biblioteca de Steam."
+      },
+      "downloads": {
+        "name": "Steam · Descargas",
+        "description": "Progreso de la descarga o actualización en curso. Al hacer clic se abre la página de descargas."
+      },
+      "library": {
+        "name": "Steam · Biblioteca",
+        "description": "Abre la biblioteca de juegos de Steam."
+      },
+      "store": {
+        "name": "Steam · Tienda",
+        "description": "Abre la tienda de Steam."
+      },
+      "friends": {
+        "name": "Steam · Amigos",
+        "description": "Abre la lista de amigos de Steam."
+      },
+      "big_picture": {
+        "name": "Steam · Big Picture",
+        "description": "Abre el modo Big Picture."
+      },
+      "status_online": {
+        "name": "Steam · Conectarse",
+        "description": "Cambia tu estado en el chat de Steam a conectado."
+      },
+      "status_away": {
+        "name": "Steam · Ausente",
+        "description": "Cambia tu estado en el chat de Steam a ausente."
+      },
+      "status_invisible": {
+        "name": "Steam · Invisible",
+        "description": "Cambia tu estado en el chat de Steam a invisible."
+      },
+      "status_offline": {
+        "name": "Steam · Desconectarse",
+        "description": "Sale del chat de amigos de Steam (estado desconectado)."
+      }
+    }
+  },
+  "notWindows": "Steam: solo en Windows por ahora",
+  "notInstalled": "Steam no está instalado",
+  "checking": "comprobando Steam…",
+  "idle": {
+    "library": "abrir la biblioteca",
+    "store": "abrir la tienda",
+    "friends": "abrir la lista de amigos",
+    "big_picture": "abrir el modo Big Picture",
+    "status_online": "conectarse",
+    "status_away": "ponerse ausente",
+    "status_invisible": "ponerse invisible",
+    "status_offline": "desconectarse del chat"
+  },
+  "game": "juego",
+  "playing": {
+    "withTime": "{name} · {time}",
+    "noTime": "{name} · en ejecución",
+    "nothing": "nada en ejecución"
+  },
+  "gameState": {
+    "runningWithTime": "en ejecución · {time}",
+    "running": "en ejecución",
+    "updating": "actualizando",
+    "updatingPercent": "actualizando {percent}%",
+    "updatePaused": "actualización pausada al {percent}%",
+    "played": "{name} · {ago}"
+  },
+  "download": {
+    "nothing": "nada descargando",
+    "preparing": "{name} · preparando la descarga",
+    "paused": "{name} · pausado al {percent}%",
+    "installing": "{name} · instalando",
+    "progress": "{name} · {percent}% · {done} de {total}"
+  },
+  "played": {
+    "justNow": "jugado hace un momento",
+    "minutes": "jugado hace {count} min",
+    "hours": "jugado hace {count} h",
+    "yesterday": "jugado ayer",
+    "days": {
+      "one": "jugado hace {count} día",
+      "other": "jugado hace {count} días"
+    },
+    "months": {
+      "one": "jugado hace {count} mes",
+      "other": "jugado hace {count} meses"
+    },
+    "years": {
+      "one": "jugado hace {count} año",
+      "other": "jugado hace {count} años"
+    }
+  },
+  "toast": {
+    "openFailed": "No se pudo abrir Steam.",
+    "alreadyRunning": "{name} ya está en ejecución.",
+    "notInstalled": "Steam no está instalado."
+  }
+}

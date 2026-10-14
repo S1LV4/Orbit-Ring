@@ -1,3 +1,5 @@
+process.env.ORBIT_PLUGIN_LOCALE = "pt-BR";
+
 const http = require("http");
 const fs = require("fs");
 const os = require("os");
@@ -515,24 +517,22 @@ describe("hook/install-hook.js", () => {
 
 describe("PluginLoader: host.attention() → lista de atenção do serviço", () => {
   function loadPluginLoader() {
-    const src = fs.readFileSync(path.join(__dirname, "plugin-loader.ts"), "utf8");
-    const { code } = require("esbuild").transformSync(src, { loader: "ts", format: "cjs", target: "node18" });
     const out = path.join(home, "plugin-loader.compiled.js");
-    fs.writeFileSync(out, code);
+    require("esbuild").buildSync({ entryPoints: [path.join(__dirname, "plugin-loader.ts")], bundle: true, platform: "node", format: "cjs", target: "node18", outfile: out, logLevel: "silent" });
     return require(out).PluginLoader;
   }
 
   test("pedido → atenção publicada com pluginId; approve pela ação do plugin → allow e lista vazia", async () => {
     const pluginsDir = path.join(home, "plugins");
     const dest = path.join(pluginsDir, "claude-usage");
-    fs.mkdirSync(dest, { recursive: true });
-    for (const f of ["index.js", "permission.js", "manifest.json"]) fs.copyFileSync(path.join(PLUGIN_DIR, f), path.join(dest, f));
+    fs.cpSync(PLUGIN_DIR, dest, { recursive: true });
 
     process.env.ORBIT_HOME = home;
     process.env.ORBIT_CLAUDE_PORT = "0";
     const PluginLoader = loadPluginLoader();
     const loader = new PluginLoader({
       pluginsDir,
+      locale: "pt-BR",
       hostServices: { getClaudeUsage: async () => ({ available: false, reason: "no_credentials" }) },
     });
     const broadcasts = [];

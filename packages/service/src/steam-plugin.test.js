@@ -1,3 +1,5 @@
+process.env.ORBIT_PLUGIN_LOCALE = "pt-BR";
+
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
@@ -312,6 +314,21 @@ describe("library folders and recent games", () => {
     await m.tick();
     expect(plugin.getActions().map((a) => a.id)).toEqual(["game.2", "game.1"]);
     expect(m.actionsChanges).toBe(before + 1);
+  });
+
+  test("speaks the app language: English and Spanish too, numbers formatted for it", () => {
+    const f = (sec) => plugin._internals.fmtPlayedAgo(SEC0 - sec, T0);
+    try {
+      plugin.onLocaleChanged("en-US");
+      expect(f(5 * 60)).toBe("played 5 min ago");
+      expect(f(3 * DAY)).toBe("played 3 days ago");
+      expect(plugin._internals.fmtBytes(4.25 * 1024 ** 3)).toBe("4.3 GB");
+      plugin.onLocaleChanged("es-ES");
+      expect(f(30 * 3600)).toBe("jugado ayer");
+      expect(plugin._internals.fmtBytes(4.25 * 1024 ** 3)).toBe("4,3 GB");
+    } finally {
+      plugin.onLocaleChanged("pt-BR");
+    }
   });
 
   test("played-ago wording", () => {
