@@ -162,12 +162,37 @@ Tests run on developers' real machines, next to their real accounts.
   first, then in the service, then in the UI or ring.
 - The attention cue is discreet and always on the primary monitor.
 
+## Translations (i18n)
+
+- No user-facing text is written in the code of `packages/ui`, `packages/ring` or
+  `packages/shared`. It comes from the dictionaries through `t("namespace.key")`, or
+  ``t.dyn(`prefix.${id}`)`` when the key is built at run time. `i18n-coverage.test.js` fails on any
+  hard-coded label, title, tooltip or JSX text, on a key the code asks for that does not exist, and
+  on a dictionary key no code uses.
+- Dictionaries live in `packages/shared/locales/<tag>/<namespace>.json`: one folder per
+  [BCP 47](https://www.rfc-editor.org/info/bcp47) tag (`en-US`, `pt-BR`, `es-ES`), one JSON file per
+  area. `en-US` is the default and the fallback.
+- Every locale has exactly the same keys and the same `{placeholders}` as `en-US`;
+  `i18n.test.js` checks it. A new or changed text is changed in every locale in the same change.
+- Values are plain strings with `{name}` placeholders. A text that depends on a number is an
+  object with [CLDR plural categories](https://cldr.unicode.org/index/cldr-spec/plural-rules)
+  (`one`, `other`, …), chosen with `Intl.PluralRules` from `{count}`. Never build plurals in code.
+  A sentence is one key; split it only around inline markup (a link, a `<kbd>`), one key per piece.
+- The language follows the system: `navigator.languages` in the windows,
+  `app.getPreferredSystemLanguages()` in the Electron main process, the system locale in the
+  service (default group names of a new config). A regional variant falls back to the language
+  (`es-MX` → `es-ES`), anything else to `en-US`.
+- To add a language: create the folder with every namespace, register it in
+  `packages/shared/src/i18n.ts`, add a case to `packages/ui/e2e/i18n.e2e.test.ts`.
+- Tests that read the screen run with `locale: "pt-BR"` (set in both Playwright configs).
+- Plugins are not translated yet: their action names and states come from each plugin.
+
 ## Code conventions
 
 - TypeScript in `packages/*` (strict); plain CommonJS JavaScript in `plugins/` and in the jest
   suites.
-- Code, identifiers, comments and commit messages are in English. User-facing strings follow the
-  file they are in.
+- Code, identifiers, comments and commit messages are in English. User-facing strings live in the
+  dictionaries (see Translations).
 - **Comments:** comment only what well-written code cannot express — a non-obvious why, an
   external constraint. Never comment what the code does. The codebase carries no comments today;
   a new one has to earn its place under this rule.
