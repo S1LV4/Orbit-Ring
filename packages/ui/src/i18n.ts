@@ -1,5 +1,4 @@
-import { createTranslator, resolveLocale } from "@orbitring/shared/src/i18n";
+import { createBrowserTranslator } from "@orbitring/shared/src/i18n-browser";
 
-export const t = createTranslator(resolveLocale(typeof navigator !== "undefined" ? navigator.languages : []));
-
-if (typeof document !== "undefined") document.documentElement.lang = t.locale;
+export { applyLocaleSetting, storedLocaleSetting } from "@orbitring/shared/src/i18n-browser";
+export const t = createBrowserTranslator();

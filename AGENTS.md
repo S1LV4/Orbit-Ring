@@ -182,6 +182,11 @@ Tests run on developers' real machines, next to their real accounts.
   `app.getPreferredSystemLanguages()` in the Electron main process, the system locale in the
   service (default group names of a new config). A regional variant falls back to the language
   (`es-MX` → `es-ES`), anything else to `en-US`.
+- The user can pick a language in Settings. The choice is `locale` in the config (`"system"` or a
+  shipped tag), changed with `set_locale` and announced to every client with `locale`
+  (`protocol.ts`). `localeFor()` turns the setting into a locale. The windows keep the last choice
+  in `localStorage` and reload when it changes, because texts are resolved when a window loads;
+  the main process rebuilds the tray menu.
 - To add a language: create the folder with every namespace, register it in
   `packages/shared/src/i18n.ts`, add a case to `packages/ui/e2e/i18n.e2e.test.ts`.
 - Tests that read the screen run with `locale: "pt-BR"` (set in both Playwright configs).

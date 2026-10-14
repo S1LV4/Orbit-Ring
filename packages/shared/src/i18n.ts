@@ -61,6 +61,17 @@ export function resolveLocale(preferred: readonly (string | null | undefined)[] 
   return DEFAULT_LOCALE;
 }
 
+export const SYSTEM_LOCALE = "system";
+export type LocaleSetting = typeof SYSTEM_LOCALE | Locale;
+
+export function isLocaleSetting(v: unknown): v is LocaleSetting {
+  return v === SYSTEM_LOCALE || (typeof v === "string" && (LOCALES as string[]).includes(v));
+}
+
+export function localeFor(setting: unknown, system: readonly (string | null | undefined)[]): Locale {
+  return isLocaleSetting(setting) && setting !== SYSTEM_LOCALE ? setting : resolveLocale(system);
+}
+
 function lookup(messages: unknown, key: string): string | PluralForms | undefined {
   let v: unknown = messages;
   for (const part of key.split(".")) {

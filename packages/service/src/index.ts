@@ -11,10 +11,12 @@ import { listCatalog, installFromCatalog, removeInstalled } from "./plugin-catal
 import { getClaudeUsage } from "./claude-usage";
 import { makeThumbnail } from "./thumbnail";
 import type { UIMessage, ServiceMessage } from "@orbitring/shared";
+import { localeFor } from "@orbitring/shared/src/i18n";
 
 const config = new ConfigStore();
 const devices = new DeviceManager();
-const pluginLoader = new PluginLoader({ hostServices: { getClaudeUsage, makeThumbnail } });
+const appLocale = () => localeFor(config.getLocale(), [Intl.DateTimeFormat().resolvedOptions().locale]);
+const pluginLoader = new PluginLoader({ hostServices: { getClaudeUsage, makeThumbnail }, locale: appLocale() });
 const executor = new ActionExecutor(pluginLoader);
 const agentDetector = new AgentDetector();
 const appSwitcher = new AppProfileSwitcher();
@@ -61,7 +63,7 @@ function broadcastAttention() {
 
 let pluginsPending = false;
 const PLUGIN_CATALOG_DIR = process.env.ORBIT_PLUGIN_CATALOG || undefined;
-const pluginCatalog = () => listCatalog(PLUGIN_CATALOG_DIR, pluginLoader.getPluginsDir());
+const pluginCatalog = () => listCatalog(PLUGIN_CATALOG_DIR, pluginLoader.getPluginsDir(), appLocale());
 function broadcastPluginCatalog() {
   broadcast({ type: "plugin_catalog", plugins: pluginCatalog() });
 }
@@ -145,6 +147,7 @@ wss.on("connection", (ws) => {
   ws.send(JSON.stringify({ type: "devices", devices: devices.getDevices() }));
   ws.send(JSON.stringify({ type: "config_loaded", config: config.getConfig() }));
   ws.send(JSON.stringify({ type: "ring_config", ring: config.getRingSettings() }));
+  ws.send(JSON.stringify({ type: "locale", locale: config.getLocale() }));
   agentDetector.getAgents().then((agents) => {
     ws.send(JSON.stringify({ type: "agents", agents }));
   });
@@ -202,6 +205,14 @@ function handleMessage(msg: UIMessage, ws: WebSocket) {
     case "save_ring":
       config.saveRingSettings(msg.ring);
       broadcast({ type: "ring_config", ring: msg.ring });
+      break;
+
+    case "set_locale":
+      if (config.setLocale(msg.locale)) {
+        broadcast({ type: "locale", locale: config.getLocale() });
+        pluginLoader.setLocale(appLocale());
+        broadcastPluginCatalog();
+      } else ws.send(JSON.stringify({ type: "error", message: `Unknown language: ${String(msg.locale)}` }));
       break;
 
     case "test_action":

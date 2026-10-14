@@ -78,7 +78,8 @@ and switches those bindings automatically depending on the app in the foreground
 - The app, the ring and the tray menu follow the Windows language: English, Brazilian Portuguese
   or Spanish. Regional variants use their base language (Mexican Spanish gets Spanish); any other
   language gets English.
-- Plugin texts (action names and live states) are still in Portuguese.
+- Prefer another one? Pick it in **Settings → Language**; the change applies right away.
+- Plugins follow the same language, including their action names, live states and notifications.
 
 **Plugins**
 

@@ -5,10 +5,8 @@ const path = require("path");
 let tmp, pluginsDir, loader, warnSpy, errSpy, logSpy;
 
 function loadPluginLoader() {
-  const src = fs.readFileSync(path.join(__dirname, "plugin-loader.ts"), "utf8");
-  const { code } = require("esbuild").transformSync(src, { loader: "ts", format: "cjs", target: "node18" });
   const out = path.join(tmp, "plugin-loader.compiled.js");
-  fs.writeFileSync(out, code);
+  require("esbuild").buildSync({ entryPoints: [path.join(__dirname, "plugin-loader.ts")], bundle: true, platform: "node", format: "cjs", target: "node18", outfile: out, logLevel: "silent" });
   return require(out).PluginLoader;
 }
 
@@ -32,7 +30,7 @@ module.exports = {
 
 async function start() {
   const PluginLoader = loadPluginLoader();
-  loader = new PluginLoader({ pluginsDir });
+  loader = new PluginLoader({ pluginsDir, locale: "pt-BR" });
   await loader.loadAll();
   return loader;
 }
@@ -239,7 +237,7 @@ describe("plugin real do Claude no loader", () => {
     }));
     const dest = path.join(pluginsDir, "claude-usage");
     fs.mkdirSync(dest, { recursive: true });
-    for (const f of ["index.js", "permission.js", "locations.js", "manifest.json"]) fs.copyFileSync(path.join(PLUGIN_SRC, f), path.join(dest, f));
+    fs.cpSync(PLUGIN_SRC, dest, { recursive: true });
 
     await start();
     const id = "com.orbitring.claude-usage";

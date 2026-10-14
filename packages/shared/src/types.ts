@@ -143,4 +143,5 @@ export interface OrbitRingConfig {
   devices: Record<string, { name?: string; enabled: boolean }>;
   ring?: RingSettings;
   appRingProfiles?: AppRingProfileMap;
+  locale?: string;
 }

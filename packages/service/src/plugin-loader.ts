@@ -1,3 +1,4 @@
+import { readManifestText, type ManifestText } from "./plugin-text";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -76,10 +77,12 @@ interface PluginModule {
   onAction?(actionId: string, context?: Record<string, unknown>): unknown | Promise<unknown>;
   getState?(): Record<string, unknown>;
   getActions?(): unknown;
+  onLocaleChanged?(locale: string): void;
 }
 
 interface LoadedPlugin {
   manifest: PluginManifest;
+  text: ManifestText;
   module: PluginModule;
   dir: string;
   dynamic: PluginActionDef[];
@@ -128,6 +131,7 @@ const PLUGINS_DIR = path.join(os.homedir(), ".orbit", "plugins");
 
 export interface PluginLoaderOptions {
   pluginsDir?: string;
+  locale?: string;
   hostServices?: Omit<PluginHost, LoaderHostKeys>;
 }
 
@@ -169,8 +173,11 @@ export class PluginLoader {
   private attention = new Map<string, AttentionEntry>();
   private attentionListener: ((items: AttentionItem[]) => void) | null = null;
 
+  private locale: string;
+
   constructor(opts: PluginLoaderOptions = {}) {
     this.pluginsDir = opts.pluginsDir ?? PLUGINS_DIR;
+    this.locale = opts.locale ?? "en-US";
     this.hostServices = opts.hostServices ?? {};
   }
 
@@ -204,7 +211,34 @@ export class PluginLoader {
   }
 
   private actionsOf(plugin: LoadedPlugin): PluginActionDef[] {
-    return [...(plugin.manifest.actions || []), ...plugin.dynamic];
+    const own = (plugin.manifest.actions || []).map((a) => {
+      const tr = plugin.text.actions[a.id];
+      return tr ? { ...a, name: tr.name ?? a.name, description: tr.description ?? a.description } : a;
+    });
+    return [...own, ...plugin.dynamic];
+  }
+
+  getLocale(): string {
+    return this.locale;
+  }
+
+  setLocale(locale: string): void {
+    if (!locale || locale === this.locale) return;
+    this.locale = locale;
+    for (const [pluginId, plugin] of this.plugins) {
+      plugin.text = readManifestText(plugin.dir, locale);
+      try {
+        if (typeof plugin.module.onLocaleChanged === "function") plugin.module.onLocaleChanged(locale);
+      } catch (e) {
+        console.error(`[orbit] Plugin "${pluginId}" onLocaleChanged() error:`, e);
+      }
+      try { this.actionsListener?.(pluginId); } catch (e) {
+        console.error(`[orbit] Plugin "${pluginId}" actionsChanged handler error:`, e);
+      }
+      try { this.stateListener?.(pluginId); } catch (e) {
+        console.error(`[orbit] Plugin "${pluginId}" stateChanged handler error:`, e);
+      }
+    }
   }
 
   onAttentionChanged(cb: (items: AttentionItem[]) => void): void {
@@ -358,8 +392,12 @@ export class PluginLoader {
     }
 
     const pluginId = manifest.id;
+    const loader = this;
     const host: PluginHost = {
       ...this.hostServices,
+      get locale() {
+        return loader.locale;
+      },
       stateChanged: () => {
         try { this.stateListener?.(pluginId); } catch (e) {
           console.error(`[orbit] Plugin "${pluginId}" stateChanged handler error:`, e);
@@ -401,7 +439,7 @@ export class PluginLoader {
       });
     }
 
-    const loaded: LoadedPlugin = { manifest, module: mod, dir, dynamic: [], retired: new Set(), manifestImages, imageWarned };
+    const loaded: LoadedPlugin = { manifest, text: readManifestText(dir, this.locale), module: mod, dir, dynamic: [], retired: new Set(), manifestImages, imageWarned };
     this.plugins.set(manifest.id, loaded);
     this.refreshDynamicActions(loaded);
     const actionCount = (manifest.actions?.length ?? 0) + loaded.dynamic.length;
@@ -424,10 +462,10 @@ export class PluginLoader {
       const actions: PluginAction[] = this.actionsOf(plugin).map((a) => toPluginAction(a, pluginId));
       result.push({
         id: plugin.manifest.id,
-        name: plugin.manifest.name,
+        name: plugin.text.name ?? plugin.manifest.name,
         version: plugin.manifest.version,
         author: plugin.manifest.author,
-        description: plugin.manifest.description,
+        description: plugin.text.description ?? plugin.manifest.description,
         actions,
         loaded: true,
       });

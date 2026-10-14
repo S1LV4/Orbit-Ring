@@ -24,10 +24,13 @@
     "title": "Ajustes",
     "autostart": "Iniciar con el sistema",
     "tray": "Minimizar a la bandeja",
-    "notify": "Notificaciones"
+    "notify": "Notificaciones",
+    "language": "Idioma",
+    "languageSystem": "Sistema"
   },
   "splash": {
     "loading": "cargando...",
     "ready": "listo"
-  }
+  },
+  "languageName": "Español"
 }

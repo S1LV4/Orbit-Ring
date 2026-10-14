@@ -24,10 +24,13 @@
     "title": "Settings",
     "autostart": "Start with system",
     "tray": "Minimize to tray",
-    "notify": "Notifications"
+    "notify": "Notifications",
+    "language": "Language",
+    "languageSystem": "System"
   },
   "splash": {
     "loading": "loading...",
     "ready": "ready"
-  }
+  },
+  "languageName": "English"
 }

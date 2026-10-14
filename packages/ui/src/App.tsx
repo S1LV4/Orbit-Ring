@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { AuthorCredit } from "./components/AuthorCredit";
-import { t } from "./i18n";
+import { applyLocaleSetting, storedLocaleSetting, t } from "./i18n";
+import { LOCALES, SYSTEM_LOCALE, createTranslator } from "@orbitring/shared/src/i18n";
 import { DEFAULT_GROUPS } from "@orbitring/shared/src/ring-catalog";
 import {
   Mouse,
@@ -59,6 +60,7 @@ export function App() {
         case "devices": setDevices(msg.devices); break;
         case "config_loaded": setConfig(msg.config); break;
         case "ring_config": setRingSettings(msg.ring); break;
+        case "locale": applyLocaleSetting(msg.locale); break;
         case "button_event": setLastEvent(msg); break;
         case "plugins": setPlugins(msg.plugins); break;
         case "plugin_catalog": setCatalog(Array.isArray(msg.plugins) ? msg.plugins : []); break;
@@ -203,6 +205,23 @@ export function App() {
               {t("app.settings.title")}
             </h2>
             <div className="space-y-2 max-w-md">
+              <label className="flex items-center justify-between p-3 orbit-card">
+                <span className="text-sm text-orbit-text-dim">{t("app.settings.language")}</span>
+                <select
+                  data-testid="language-select"
+                  defaultValue={storedLocaleSetting()}
+                  onChange={(e) => {
+                    send({ type: "set_locale", locale: e.target.value });
+                    applyLocaleSetting(e.target.value);
+                  }}
+                  className="orbit-input py-1 text-xs"
+                >
+                  <option value={SYSTEM_LOCALE}>{t("app.settings.languageSystem")}</option>
+                  {LOCALES.map((l) => (
+                    <option key={l} value={l}>{createTranslator(l)("app.languageName")}</option>
+                  ))}
+                </select>
+              </label>
               {[
                 { label: t("app.settings.autostart"), key: "autostart", defaultChecked: false },
                 { label: t("app.settings.tray"), key: "tray", defaultChecked: true },

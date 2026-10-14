@@ -74,6 +74,8 @@ export interface ThumbnailOptions {
 }
 
 export interface PluginHost {
+  /** The language the user reads the app in (BCP 47 tag, e.g. "pt-BR"); changes are announced through onLocaleChanged() */
+  readonly locale?: string;
   stateChanged(): void;
   actionsChanged?(): void;
   attention?(item: AttentionItem | null): void;

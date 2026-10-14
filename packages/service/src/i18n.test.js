@@ -88,6 +88,25 @@ describe("resolveLocale", () => {
   });
 });
 
+describe("language setting", () => {
+  test("accepts \"system\" or a shipped locale, nothing else", () => {
+    for (const v of ["system", "en-US", "pt-BR", "es-ES"]) expect(i18n.isLocaleSetting(v)).toBe(true);
+    for (const v of ["", "pt", "fr-FR", "EN-us", null, undefined, 3]) expect(i18n.isLocaleSetting(v)).toBe(false);
+  });
+
+  test("a chosen language wins over the system; \"system\" or anything invalid follows the system", () => {
+    expect(i18n.localeFor("es-ES", ["pt-BR"])).toBe("es-ES");
+    expect(i18n.localeFor("system", ["pt-BR"])).toBe("pt-BR");
+    expect(i18n.localeFor("fr-FR", ["es-MX"])).toBe("es-ES");
+    expect(i18n.localeFor(undefined, ["de-DE"])).toBe("en-US");
+  });
+
+  test("every locale names itself in its own language", () => {
+    const names = Object.fromEntries(i18n.LOCALES.map((l) => [l, i18n.createTranslator(l)("app.languageName")]));
+    expect(names).toEqual({ "en-US": "English", "pt-BR": "Português (Brasil)", "es-ES": "Español" });
+  });
+});
+
 describe("createTranslator", () => {
   const msgs = {
     "pt-BR": { a: { hello: "Olá, {name}", items: { one: "{count} item", other: "{count} itens" } } },

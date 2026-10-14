@@ -1,5 +1,5 @@
 import { app, BrowserWindow, screen, ipcMain, Tray, Menu, nativeImage, shell } from "electron";
-import { createTranslator, resolveLocale, type MessageKey, type Params, type Translator } from "@orbitring/shared/src/i18n";
+import { SYSTEM_LOCALE, createTranslator, localeFor, type MessageKey, type Params, type Translator } from "@orbitring/shared/src/i18n";
 import { WebSocket } from "ws";
 import { spawn, ChildProcess } from "child_process";
 import * as path from "path";
@@ -8,9 +8,10 @@ import { startUpdater, updateMenuItem, type UpdaterControl, type UpdateStatus } 
 
 app.disableHardwareAcceleration();
 
+let localeSetting: string = SYSTEM_LOCALE;
 let translator: Translator | null = null;
 function t(key: MessageKey, params?: Params): string {
-  translator ??= createTranslator(resolveLocale(app.getPreferredSystemLanguages()));
+  translator ??= createTranslator(localeFor(localeSetting, app.getPreferredSystemLanguages()));
   return translator(key, params);
 }
 
@@ -30,6 +31,7 @@ function sendRingState() {
   if (lastPluginActions) wc.send("ring-config", { pluginActions: lastPluginActions });
   if (lastRingConfig) wc.send("ring-config", ringConfigForRenderer());
   if (lastPluginStates) wc.send("ring-config", { pluginStates: lastPluginStates });
+  wc.send("ring-config", { locale: localeSetting });
 }
 
 interface AttentionItem {
@@ -473,6 +475,11 @@ function connectService() {
         if (ring) {
           ring.webContents.send("ring-config", ringConfigForRenderer());
         }
+      } else if (msg.type === "locale") {
+        localeSetting = String(msg.locale);
+        translator = null;
+        buildTrayMenu();
+        if (ring && !ring.isDestroyed()) ring.webContents.send("ring-config", { locale: localeSetting });
       } else if (msg.type === "plugins") {
         const pluginActions = (msg.plugins || []).flatMap((p: any) =>
           (p.actions || []).map((a: any) => ({ id: `plugin:${p.id}:${a.id}`, name: a.name, icon: a.icon, iconActive: a.iconActive, keepIcon: a.keepIcon === true, image: typeof a.image === "string" ? a.image : undefined }))
