@@ -209,6 +209,12 @@ Tests run on developers' real machines, next to their real accounts.
   `OrbitRing-Setup-X.Y.Z.exe` and publishes the GitHub Release. A tag with a hyphen
   (`v1.1.0-beta.1`) is published as a pre-release.
 - The installer is not code-signed.
+- Installed apps update themselves with `electron-updater` from this repository's GitHub Releases
+  (`build.publish` in `packages/ring/package.json`): a check at start-up and every 6 hours,
+  background download, install on quit or from the tray. Every release must carry
+  `latest.yml` and the `.blockmap` next to the installer; CI uploads them and
+  `release-config.test.js` checks it. The updater only runs in the packaged app, and a failed
+  check (offline, private repository) is a status, never an error dialog.
 - Commit messages follow Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `ci:`,
   `refactor:`, `chore:`).
 

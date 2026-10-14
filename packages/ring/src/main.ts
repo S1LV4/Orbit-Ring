@@ -3,6 +3,8 @@ import { createTranslator, resolveLocale, type MessageKey, type Params, type Tra
 import { WebSocket } from "ws";
 import { spawn, ChildProcess } from "child_process";
 import * as path from "path";
+import { autoUpdater } from "electron-updater";
+import { startUpdater, updateMenuItem, type UpdaterControl, type UpdateStatus } from "./updater";
 
 app.disableHardwareAcceleration();
 
@@ -335,16 +337,28 @@ function createConfigWindow() {
   });
 }
 
-function createTray() {
-  const icon = nativeImage.createFromPath(path.join(ASSETS, "tray-icon.png"));
-  tray = new Tray(icon);
-  tray.setToolTip("OrbitRing");
+let updates: UpdaterControl | null = null;
+let updateStatus: UpdateStatus = { state: "disabled" };
 
-  const contextMenu = Menu.buildFromTemplate([
+function buildTrayMenu() {
+  if (!tray) return;
+  const item = updateMenuItem(updateStatus);
+  const updateEntries: Electron.MenuItemConstructorOptions[] = item
+    ? [{
+        label: t(item.key, item.params),
+        enabled: item.enabled,
+        click: () => {
+          if (item.action === "install") updates?.install();
+          else if (item.action === "check") void updates?.check();
+        },
+      }]
+    : [];
+  tray.setContextMenu(Menu.buildFromTemplate([
     {
       label: t("tray.openConfig"),
       click: () => createConfigWindow(),
     },
+    ...updateEntries,
     { type: "separator" },
     {
       label: t("tray.quit"),
@@ -352,10 +366,27 @@ function createTray() {
         app.quit();
       },
     },
-  ]);
+  ]));
+}
 
-  tray.setContextMenu(contextMenu);
+function createTray() {
+  const icon = nativeImage.createFromPath(path.join(ASSETS, "tray-icon.png"));
+  tray = new Tray(icon);
+  tray.setToolTip("OrbitRing");
+  buildTrayMenu();
   tray.on("double-click", () => createConfigWindow());
+}
+
+function startUpdates() {
+  updates = startUpdater({
+    updater: autoUpdater,
+    enabled: IS_PACKAGED,
+    onStatus: (status) => {
+      updateStatus = status;
+      if (status.state === "error") console.warn("[orbitring] Update check failed:", status.message);
+      buildTrayMenu();
+    },
+  });
 }
 
 const RING_CONTENT_RADIUS = 190;
@@ -505,6 +536,7 @@ app.whenReady().then(() => {
   }
   createRingWindow();
   createTray();
+  startUpdates();
   createConfigWindow();
   setTimeout(connectService, IS_PACKAGED ? 1500 : 500);
 });
@@ -512,6 +544,7 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {});
 
 app.on("before-quit", () => {
+  updates?.stop();
   stopCueFollow();
   if (cue && !cue.isDestroyed()) cue.destroy();
   releaseWin32State();

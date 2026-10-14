@@ -6,7 +6,7 @@ function buildMain(outdir = __dirname) {
     esbuild.buildSync({
       entryPoints: [path.join(__dirname, "src", `${name}.ts`)],
       bundle: true, platform: "node", format: "cjs",
-      external: ["electron", "ws", "koffi"],
+      external: ["electron", "electron-updater", "ws", "koffi"],
       outfile: path.join(outdir, `${name}.js`),
     });
   }

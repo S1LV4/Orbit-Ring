@@ -108,6 +108,11 @@ tool, account or connection as a state instead of an error. Writing your own is 
 Download `OrbitRing-Setup-X.Y.Z.exe` from [Releases](https://github.com/S1LV4/Orbit-Ring/releases)
 and run it. OrbitRing starts in the system tray; right-click the tray icon to open the settings.
 
+Updates install themselves: OrbitRing checks the Releases page when it starts and every 6 hours,
+downloads a new version in the background and installs it when you quit — or right away from
+**Restart to update** in the tray menu. Versions before 1.2.0 have no updater; install the next
+version by hand once.
+
 > [!WARNING]
 > The installer is **not code-signed** yet, so Windows SmartScreen may warn about an unknown
 > publisher. Only run an installer downloaded from the official Releases page.

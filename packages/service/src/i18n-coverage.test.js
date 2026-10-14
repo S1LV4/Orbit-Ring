@@ -49,7 +49,7 @@ const isTCall = (n) => ts.isCallExpression(n) && (
 function scan(file) {
   const text = fs.readFileSync(file, "utf8");
   const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
-  const literals = [], keys = [], prefixes = [];
+  const literals = [], keys = [], prefixes = [], strings = [];
   const rel = path.relative(ROOT, file).replace(/\\/g, "/");
   const where = (n) => `${rel}:${sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1}`;
 
@@ -106,8 +106,13 @@ function scan(file) {
     }
     ts.forEachChild(n, (c) => visit(c, quiet));
   };
+  const collectStrings = (n) => {
+    if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) strings.push(n.text);
+    ts.forEachChild(n, collectStrings);
+  };
   visit(sf);
-  return { literals, keys, prefixes };
+  collectStrings(sf);
+  return { literals, keys, prefixes, strings };
 }
 
 const files = SOURCES.flatMap((d) => walk(path.join(ROOT, d)));
@@ -128,6 +133,7 @@ test("every key the code asks for exists in the default dictionary", () => {
 test("every key in the default dictionary is used by the code", () => {
   const used = new Set(results.flatMap((r) => r.keys.map(([k]) => k)));
   const prefixes = results.flatMap((r) => r.prefixes).filter(Boolean);
+  for (const r of results) for (const s of r.strings) used.add(s);
   const unused = [...dictionary].filter((k) => !used.has(k) && !prefixes.some((p) => k.startsWith(p)));
   expect(unused).toEqual([]);
 });

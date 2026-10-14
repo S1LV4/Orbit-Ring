@@ -1,4 +1,8 @@
 {
   "openConfig": "Abrir configurações",
-  "quit": "Sair"
+  "quit": "Sair",
+  "checkUpdates": "Procurar atualizações",
+  "checkingUpdates": "Procurando atualizações…",
+  "downloadingUpdate": "Baixando a versão {version}… {percent}%",
+  "restartToUpdate": "Reiniciar para atualizar para {version}"
 }
