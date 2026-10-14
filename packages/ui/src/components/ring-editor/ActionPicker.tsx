@@ -5,6 +5,7 @@ import type { RingGroup } from "@orbitring/shared";
 import { ActionIcon } from "./ActionIcon";
 import { filterCategories, resolveAction, type ActionCatalog, type ActionDef } from "./catalog";
 import { useDismiss, useFloatingStyle, type Anchor } from "./floating";
+import { t } from "../../i18n";
 
 interface ActionPickerProps {
   anchor: Anchor;
@@ -67,8 +68,8 @@ export function ActionPicker({ anchor, catalog, group, replaceId, onPick, onClos
   };
 
   const title = replaceId
-    ? `Trocar “${resolveAction(catalog, replaceId).label}” por…`
-    : `Adicionar a “${group.name || "Sem nome"}”`;
+    ? t("editor.picker.replaceTitle", { action: resolveAction(catalog, replaceId).label })
+    : t("editor.picker.addTitle", { group: group.name || t("editor.main.unnamed") });
 
   return createPortal(
     <div
@@ -93,10 +94,10 @@ export function ActionPicker({ anchor, catalog, group, replaceId, onPick, onClos
             aria-expanded="true"
             aria-controls="re-picker-list"
             aria-activedescendant={activeId ? `re-pick-${activeId}` : undefined}
-            aria-label="Buscar ação"
+            aria-label={t("editor.picker.search")}
             data-testid="picker-search"
             value={query}
-            placeholder="Buscar ação…"
+            placeholder={t("editor.picker.placeholder")}
             autoComplete="off"
             spellCheck={false}
             onChange={(e) => setQuery(e.target.value)}
@@ -105,10 +106,10 @@ export function ActionPicker({ anchor, catalog, group, replaceId, onPick, onClos
         </div>
       </div>
 
-      <div ref={listRef} id="re-picker-list" role="listbox" aria-label="Ações" className="min-h-0 flex-1 overflow-y-auto p-1">
+      <div ref={listRef} id="re-picker-list" role="listbox" aria-label={t("editor.picker.list")} className="min-h-0 flex-1 overflow-y-auto p-1">
         {categories.length === 0 && (
           <p className="px-3 py-6 text-center text-[12px] text-[#8B8B95]" data-testid="picker-empty">
-            Nenhum resultado para “{query.trim()}”.
+            {t("editor.picker.noResults", { query: query.trim() })}
           </p>
         )}
         {categories.map((c) => (
@@ -147,7 +148,7 @@ export function ActionPicker({ anchor, catalog, group, replaceId, onPick, onClos
                   <span className="min-w-0 flex-1 truncate">{a.label}</span>
                   {isTaken && (
                     <span className="shrink-0 text-[11px] text-orbit-text-muted">
-                      {a.id === replaceId ? "atual" : "já no grupo"}
+                      {a.id === replaceId ? t("editor.picker.current") : t("editor.picker.inGroup")}
                     </span>
                   )}
                 </div>
@@ -159,13 +160,13 @@ export function ActionPicker({ anchor, catalog, group, replaceId, onPick, onClos
 
       <div className="flex items-center gap-3 border-t border-orbit-border px-3 py-1.5 text-[11px] text-[#8B8B95]">
         <span>
-          <kbd className="font-mono text-[#A1A1AA]">↑↓</kbd> navegar
+          <kbd className="font-mono text-[#A1A1AA]">↑↓</kbd> {t("editor.picker.navigate")}
         </span>
         <span>
-          <kbd className="font-mono text-[#A1A1AA]">Enter</kbd> escolher
+          <kbd className="font-mono text-[#A1A1AA]">Enter</kbd> {t("editor.picker.choose")}
         </span>
         <span>
-          <kbd className="font-mono text-[#A1A1AA]">Esc</kbd> fechar
+          <kbd className="font-mono text-[#A1A1AA]">Esc</kbd> {t("editor.picker.close")}
         </span>
       </div>
     </div>,

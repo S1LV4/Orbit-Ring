@@ -21,20 +21,1285 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
+
+// src/main.ts
 var import_electron = require("electron");
+
+// ../shared/locales/pt-BR/app.json
+var app_default = {
+  nav: {
+    ring: "Ring",
+    bindings: "Bot\xF5es",
+    devices: "Dispositivos",
+    profiles: "Perfis",
+    plugins: "Plugins",
+    settings: "Configura\xE7\xF5es"
+  },
+  status: {
+    connected: "conectado",
+    connecting: "conectando...",
+    offline: "offline"
+  },
+  deviceCount: {
+    one: "{count} dispositivo",
+    other: "{count} dispositivos"
+  },
+  credit: {
+    developedBy: "desenvolvido por",
+    openSource: "c\xF3digo aberto \xB7 github"
+  },
+  settings: {
+    title: "Configura\xE7\xF5es",
+    autostart: "Iniciar com o sistema",
+    tray: "Minimizar para a bandeja",
+    notify: "Notifica\xE7\xF5es"
+  },
+  splash: {
+    loading: "carregando...",
+    ready: "pronto"
+  }
+};
+
+// ../shared/locales/pt-BR/bindings.json
+var bindings_default = {
+  title: "Atribui\xE7\xE3o de bot\xF5es",
+  identify: "Identificar",
+  identifying: "pressione um bot\xE3o...",
+  noAction: "Nenhuma a\xE7\xE3o",
+  actionFor: "A\xE7\xE3o para: {button}",
+  customShortcut: "Atalho personalizado",
+  customPlaceholder: "ex.: ctrl+shift+p",
+  customHint: "pressione a combina\xE7\xE3o de teclas desejada",
+  removeAction: "remover a\xE7\xE3o",
+  selectButton: "Selecione um bot\xE3o para configurar",
+  selectHint: 'ou clique em "Identificar" e pressione um bot\xE3o do mouse',
+  buttons: {
+    side1: { label: "Bot\xE3o lateral 1", description: "Polegar / Voltar" },
+    side2: { label: "Bot\xE3o lateral 2", description: "Avan\xE7ar" },
+    side3: { label: "Bot\xE3o lateral 3", description: "Extra" },
+    side4: { label: "Bot\xE3o lateral 4", description: "Extra" },
+    dpi: { label: "Bot\xE3o de DPI", description: "Geralmente em cima" },
+    scroll_left: { label: "Rolagem \xE0 esquerda", description: "Inclina\xE7\xE3o da roda" },
+    scroll_right: { label: "Rolagem \xE0 direita", description: "Inclina\xE7\xE3o da roda" }
+  },
+  categories: {
+    navigate: "Navega\xE7\xE3o",
+    system: "Sistema",
+    window: "Janela",
+    media: "M\xEDdia",
+    shortcuts: "Atalhos"
+  },
+  presets: {
+    back: "Voltar",
+    forward: "Avan\xE7ar",
+    newTab: "Nova aba",
+    closeTab: "Fechar aba",
+    reopenTab: "Reabrir aba",
+    showDesktop: "Mostrar \xE1rea de trabalho",
+    taskView: "Vis\xE3o de tarefas",
+    screenshot: "Captura de tela",
+    lockScreen: "Bloquear tela",
+    openTerminal: "Abrir terminal",
+    minimize: "Minimizar",
+    maximize: "Maximizar",
+    close: "Fechar",
+    desktopLeft: "\xC1rea de trabalho \xE0 esquerda",
+    desktopRight: "\xC1rea de trabalho \xE0 direita",
+    playPause: "Reproduzir / Pausar",
+    next: "Pr\xF3xima",
+    previous: "Anterior",
+    volumeUp: "Volume +",
+    volumeDown: "Volume -",
+    mute: "Mudo",
+    copy: "Copiar",
+    paste: "Colar",
+    undo: "Desfazer",
+    redo: "Refazer",
+    save: "Salvar",
+    find: "Pesquisar"
+  }
+};
+
+// ../shared/locales/pt-BR/catalog.json
+var catalog_default = {
+  actions: {
+    copy: "Copiar",
+    paste: "Colar",
+    undo: "Desfazer",
+    redo: "Refazer",
+    cut: "Recortar",
+    save: "Salvar",
+    find: "Pesquisar",
+    saveas: "Salvar como",
+    print: "Imprimir",
+    screenshot: "Screenshot",
+    terminal: "Terminal",
+    playpause: "Play/Pause",
+    desktop: "Desktop",
+    back: "Voltar",
+    forward: "Avan\xE7ar",
+    refresh: "Atualizar",
+    lock: "Bloquear",
+    explorer: "Explorador",
+    next: "Pr\xF3xima",
+    prev: "Anterior",
+    volup: "Volume +",
+    volmute: "Mudo",
+    maximize: "Maximizar",
+    minimize: "Minimizar",
+    close: "Fechar",
+    agent_claude: "Claude Code",
+    agent_codex: "Codex CLI",
+    agent_cursor: "Cursor",
+    agent_gemini: "Gemini CLI",
+    agent_copilot: "GitHub Copilot",
+    agent_approve: "Aprovar",
+    agent_decline: "Recusar",
+    agent_status: "Status"
+  },
+  categories: {
+    edit: "Edi\xE7\xE3o",
+    nav: "Navega\xE7\xE3o",
+    windows: "Janelas",
+    media: "M\xEDdia",
+    system: "Sistema",
+    agents: "Agentes IA",
+    plugins: "Plugins",
+    misc: "Outros"
+  },
+  groupIcons: {
+    edit: "Edi\xE7\xE3o",
+    compass: "Navega\xE7\xE3o",
+    layers: "Janelas",
+    music: "M\xEDdia",
+    aperture: "Captura",
+    settings: "Sistema",
+    discord: "Discord",
+    brain: "IA"
+  },
+  defaultGroups: {
+    edit: "Edi\xE7\xE3o",
+    nav: "Navega\xE7\xE3o",
+    win: "Janelas",
+    media: "M\xEDdia",
+    cap: "Captura",
+    sys: "Sistema"
+  },
+  pluginCategory: "Plugin \xB7 {name}",
+  unavailable: "Indispon\xEDvel"
+};
+
+// ../shared/locales/pt-BR/devices.json
+var devices_default = {
+  title: "Dispositivos detectados",
+  empty: "Nenhum mouse detectado",
+  emptyHint: "conecte um mouse (USB, Bluetooth ou wireless) \u2014 o servi\xE7o ir\xE1 detect\xE1-lo automaticamente",
+  generic: "Gen\xE9rico",
+  connected: "conectado",
+  lastEvent: "\xDAltimo evento"
+};
+
+// ../shared/locales/pt-BR/editor.json
+var editor_default = {
+  themes: {
+    green: "Verde",
+    orange: "Laranja",
+    blue: "Azul",
+    negative: "Negativo",
+    white: "Branco"
+  },
+  toolbar: {
+    label: "Apar\xEAncia e hist\xF3rico do ring",
+    theme: "Tema",
+    liquidTip: "Faz os bot\xF5es do ring se fundirem como gotas ao abrir e fechar",
+    liquid: "Efeito l\xEDquido",
+    asciiTip: "Mostra a cena de caracteres (buraco negro e estrelas) atr\xE1s do ring",
+    ascii: "Efeito ASCII",
+    undo: "Desfazer",
+    undoTip: "Desfazer (Ctrl+Z)",
+    redo: "Refazer",
+    redoTip: "Refazer (Ctrl+Shift+Z)",
+    newGroup: "Novo grupo",
+    newGroupTip: "Criar um novo grupo",
+    newGroupHiddenTip: "O ring mostra at\xE9 {max} grupos: um novo grupo fica salvo, mas oculto.",
+    themeOption: "Tema {name}"
+  },
+  toast: {
+    close: "Fechar aviso"
+  },
+  preview: {
+    title: "Preview do ring"
+  },
+  menu: {
+    icons: "\xCDcones"
+  },
+  copySuffix: "{name} (c\xF3pia)",
+  library: {
+    search: "Buscar a\xE7\xE3o\u2026",
+    searchLabel: "Buscar a\xE7\xE3o na biblioteca",
+    clear: "Limpar busca",
+    noResults: "Nenhum resultado",
+    noResultsFor: "Nada encontrado para \u201C{query}\u201D.",
+    selectGroup: "Selecione um grupo para adicionar a\xE7\xF5es",
+    removeFrom: "Remover de \u201C{group}\u201D",
+    full: "\u201C{group}\u201D est\xE1 cheio ({max}/{max}). Remova uma a\xE7\xE3o para adicionar outra.",
+    addTo: "Adicionar a \u201C{group}\u201D",
+    alsoIn: "Tamb\xE9m em ",
+    in: "Em ",
+    inCategory: {
+      one: "{count} a\xE7\xE3o desta categoria no grupo selecionado",
+      other: "{count} a\xE7\xF5es desta categoria no grupo selecionado"
+    }
+  },
+  picker: {
+    search: "Buscar a\xE7\xE3o",
+    placeholder: "Buscar a\xE7\xE3o\u2026",
+    list: "A\xE7\xF5es",
+    noResults: "Nenhum resultado para \u201C{query}\u201D.",
+    current: "atual",
+    inGroup: "j\xE1 no grupo",
+    navigate: "navegar",
+    choose: "escolher",
+    close: "fechar",
+    replaceTitle: "Trocar \u201C{action}\u201D por\u2026",
+    addTitle: "Adicionar a \u201C{group}\u201D"
+  },
+  inspector: {
+    selectGroup: "Selecione um grupo na lista acima ou clique nele no preview para editar.",
+    createFirst: "Crie um grupo para come\xE7ar a montar o ring.",
+    name: "Nome",
+    namePlaceholder: "Nome do grupo",
+    deleteGroup: "Excluir grupo",
+    deleteGroupNamed: "Excluir grupo {name}",
+    icon: "\xCDcone",
+    actions: "A\xE7\xF5es do grupo",
+    limitReached: "Limite atingido: remova uma a\xE7\xE3o para adicionar outra.",
+    limit: "At\xE9 {max} a\xE7\xF5es por grupo",
+    emptyStart: "Nenhuma a\xE7\xE3o ainda. Escolha na",
+    library: "Biblioteca de a\xE7\xF5es",
+    emptyMiddle: "ou clique no",
+    emptyEnd: "do preview.",
+    emptyHint: "Um grupo vazio n\xE3o aparece no ring real.",
+    actionsOf: "A\xE7\xF5es de {name}",
+    actionPosition: "{label}, posi\xE7\xE3o {position} de {total}",
+    actionPositionUnavailable: "{label} (indispon\xEDvel), posi\xE7\xE3o {position} de {total}",
+    unavailableTip: "Esta a\xE7\xE3o n\xE3o existe mais no cat\xE1logo (plugin removido ou desativado). Ela n\xE3o funciona no ring; voc\xEA pode remov\xEA-la.",
+    unavailable: "indispon\xEDvel",
+    remove: "Remover {label}",
+    removeTip: "Remover do grupo"
+  },
+  groups: {
+    nameLabel: "Nome do grupo",
+    none: "Nenhum grupo ainda.",
+    createFirst: "Criar o primeiro grupo",
+    list: "Grupos do ring",
+    row: "{name}, {count} de {max} a\xE7\xF5es",
+    rowHidden: "{name}, {count} de {max} a\xE7\xF5es, oculto",
+    unnamed: "Sem nome",
+    hiddenTip: "O ring mostra no m\xE1ximo {max} grupos. Este fica salvo, mas s\xF3 aparece se voc\xEA mov\xEA-lo para as {max} primeiras posi\xE7\xF5es.",
+    hidden: "oculto",
+    emptyTip: "Grupo vazio: n\xE3o aparece no ring real at\xE9 receber uma a\xE7\xE3o.",
+    empty: "vazio",
+    countTip: "{count} de {max} a\xE7\xF5es",
+    options: "Op\xE7\xF5es do grupo {name}",
+    moreOptions: "Mais op\xE7\xF5es"
+  },
+  main: {
+    unnamed: "Sem nome",
+    quoted: "\u201C{name}\u201D",
+    undo: "Desfazer",
+    newGroupName: "Novo grupo",
+    fallbackGroupName: "Grupo",
+    newGroupHidden: "O ring mostra at\xE9 {max} grupos \u2014 {name} fica salvo, mas oculto.",
+    groupDeleted: "Grupo {name} exclu\xEDdo",
+    duplicateHidden: "O ring mostra at\xE9 {max} grupos \u2014 os que passam disso ficam ocultos.",
+    groupFull: "{name} j\xE1 tem {max} a\xE7\xF5es \u2014 remova uma para adicionar outra.",
+    alreadyIn: "{action} j\xE1 est\xE1 em {group}.",
+    selectFirst: "Selecione um grupo primeiro.",
+    actionRemoved: "{action} removida de {group}",
+    rename: "Renomear",
+    changeIcon: "Trocar \xEDcone",
+    duplicate: "Duplicar",
+    moveUp: "Mover para cima",
+    moveLeft: "Mover para a esquerda",
+    moveDown: "Mover para baixo",
+    moveRight: "Mover para a direita",
+    delete: "Excluir",
+    replace: "Trocar por\u2026",
+    moveTo: "Mover para",
+    noteFull: "cheio",
+    noteDuplicate: "j\xE1 cont\xE9m",
+    remove: "Remover",
+    actionMenuTitle: "{action} \xB7 {group}",
+    hint: "Clique num grupo para editar \xB7 arraste para reordenar \xB7 solte no centro para remover \xB7 bot\xE3o direito para mais op\xE7\xF5es",
+    panel: "Grupos e a\xE7\xF5es",
+    groups: "Grupos",
+    overLimit: "O ring mostra s\xF3 os {max} primeiros grupos; os demais ficam ocultos.",
+    limit: "O ring mostra at\xE9 {max} grupos",
+    newGroup: "Novo grupo",
+    selectedGroup: "Grupo selecionado",
+    noneSelected: "nenhum",
+    library: "Biblioteca de a\xE7\xF5es",
+    available: "A\xE7\xF5es dispon\xEDveis",
+    clickToAdd: "Clique para adicionar a",
+    groupFullBadge: " \xB7 grupo cheio",
+    selectToAdd: "Selecione um grupo para adicionar a\xE7\xF5es."
+  }
+};
+
+// ../shared/locales/pt-BR/plugins.json
+var plugins_default = {
+  title: "Plugins",
+  tabs: {
+    catalog: "Cat\xE1logo",
+    installed: "Instalados"
+  },
+  by: "por",
+  installedBadge: "instalado",
+  installedVersion: "Instalada: v{version}",
+  working: "Aguarde\u2026",
+  update: "Atualizar",
+  install: "Instalar",
+  loaded: "carregado",
+  error: "erro",
+  actionCount: {
+    one: "{count} a\xE7\xE3o",
+    other: "{count} a\xE7\xF5es"
+  },
+  enabled: "Ativado",
+  disabled: "Desativado",
+  confirmDelete: "Apagar a pasta deste plugin?",
+  uninstall: "Desinstalar",
+  cancel: "Cancelar",
+  closeDetails: "Fechar detalhes",
+  folderTip: "~/.orbit/plugins/ \u2014 copie a pasta de um plugin para c\xE1 para instal\xE1-lo manualmente",
+  folder: "Pasta de plugins",
+  emptyCatalog: "O cat\xE1logo est\xE1 vazio",
+  emptyCatalogHint: "copie a pasta de um plugin para ~/.orbit/plugins/ para instal\xE1-lo manualmente",
+  emptyInstalled: "Nenhum plugin instalado",
+  emptyInstalledHint: "escolha um no cat\xE1logo ou copie a pasta de um plugin para ~/.orbit/plugins/",
+  authorHintStart: "criando um plugin? uma pasta com um",
+  authorHintFields: "(id, name, version, author, actions) \xB7",
+  authorHintEnd: "mostra o link e a foto do seu perfil"
+};
+
+// ../shared/locales/pt-BR/profiles.json
+var profiles_default = {
+  title: "Perfis por aplicativo",
+  new: "Novo perfil",
+  create: "Criar perfil",
+  namePlaceholder: "Nome (ex.: VS Code)",
+  processPlaceholder: "Processo (ex.: code.exe)",
+  createButton: "Criar",
+  cancel: "Cancelar",
+  default: "Perfil padr\xE3o",
+  defaultHint: "usado quando nenhum perfil de aplicativo corresponde",
+  actionCount: {
+    one: "{count} a\xE7\xE3o",
+    other: "{count} a\xE7\xF5es"
+  },
+  empty: "Nenhum perfil de aplicativo criado",
+  emptyHint: "crie perfis para ter a\xE7\xF5es diferentes em cada aplicativo"
+};
+
+// ../shared/locales/pt-BR/ring.json
+var ring_default = {
+  addAction: "Adicionar a\xE7\xE3o",
+  attentionGroup: "Claude \xB7 confirma\xE7\xE3o",
+  attention: "Aten\xE7\xE3o"
+};
+
+// ../shared/locales/pt-BR/tray.json
+var tray_default = {
+  openConfig: "Abrir configura\xE7\xF5es",
+  quit: "Sair"
+};
+
+// ../shared/locales/en-US/app.json
+var app_default2 = {
+  nav: {
+    ring: "Ring",
+    bindings: "Buttons",
+    devices: "Devices",
+    profiles: "Profiles",
+    plugins: "Plugins",
+    settings: "Settings"
+  },
+  status: {
+    connected: "connected",
+    connecting: "connecting...",
+    offline: "offline"
+  },
+  deviceCount: {
+    one: "{count} device",
+    other: "{count} devices"
+  },
+  credit: {
+    developedBy: "developed by",
+    openSource: "open source \xB7 github"
+  },
+  settings: {
+    title: "Settings",
+    autostart: "Start with system",
+    tray: "Minimize to tray",
+    notify: "Notifications"
+  },
+  splash: {
+    loading: "loading...",
+    ready: "ready"
+  }
+};
+
+// ../shared/locales/en-US/bindings.json
+var bindings_default2 = {
+  title: "Button bindings",
+  identify: "Identify",
+  identifying: "press a button...",
+  noAction: "No action",
+  actionFor: "Action for: {button}",
+  customShortcut: "Custom shortcut",
+  customPlaceholder: "e.g. ctrl+shift+p",
+  customHint: "press the key combination you want",
+  removeAction: "remove action",
+  selectButton: "Select a button to configure",
+  selectHint: 'or click "Identify" and press a button on your mouse',
+  buttons: {
+    side1: {
+      label: "Side button 1",
+      description: "Thumb / Back"
+    },
+    side2: {
+      label: "Side button 2",
+      description: "Forward"
+    },
+    side3: {
+      label: "Side button 3",
+      description: "Extra"
+    },
+    side4: {
+      label: "Side button 4",
+      description: "Extra"
+    },
+    dpi: {
+      label: "DPI button",
+      description: "Usually on top"
+    },
+    scroll_left: {
+      label: "Scroll left",
+      description: "Scroll tilt"
+    },
+    scroll_right: {
+      label: "Scroll right",
+      description: "Scroll tilt"
+    }
+  },
+  categories: {
+    navigate: "Navigate",
+    system: "System",
+    window: "Window",
+    media: "Media",
+    shortcuts: "Shortcuts"
+  },
+  presets: {
+    back: "Back",
+    forward: "Forward",
+    newTab: "New tab",
+    closeTab: "Close tab",
+    reopenTab: "Reopen tab",
+    showDesktop: "Show desktop",
+    taskView: "Task view",
+    screenshot: "Screenshot",
+    lockScreen: "Lock screen",
+    openTerminal: "Open terminal",
+    minimize: "Minimize",
+    maximize: "Maximize",
+    close: "Close",
+    desktopLeft: "Desktop left",
+    desktopRight: "Desktop right",
+    playPause: "Play / Pause",
+    next: "Next",
+    previous: "Previous",
+    volumeUp: "Volume +",
+    volumeDown: "Volume -",
+    mute: "Mute",
+    copy: "Copy",
+    paste: "Paste",
+    undo: "Undo",
+    redo: "Redo",
+    save: "Save",
+    find: "Find"
+  }
+};
+
+// ../shared/locales/en-US/catalog.json
+var catalog_default2 = {
+  actions: {
+    copy: "Copy",
+    paste: "Paste",
+    undo: "Undo",
+    redo: "Redo",
+    cut: "Cut",
+    save: "Save",
+    find: "Find",
+    saveas: "Save as",
+    print: "Print",
+    screenshot: "Screenshot",
+    terminal: "Terminal",
+    playpause: "Play/Pause",
+    desktop: "Desktop",
+    back: "Back",
+    forward: "Forward",
+    refresh: "Refresh",
+    lock: "Lock",
+    explorer: "Explorer",
+    next: "Next",
+    prev: "Previous",
+    volup: "Volume +",
+    volmute: "Mute",
+    maximize: "Maximize",
+    minimize: "Minimize",
+    close: "Close",
+    agent_claude: "Claude Code",
+    agent_codex: "Codex CLI",
+    agent_cursor: "Cursor",
+    agent_gemini: "Gemini CLI",
+    agent_copilot: "GitHub Copilot",
+    agent_approve: "Approve",
+    agent_decline: "Decline",
+    agent_status: "Status"
+  },
+  categories: {
+    edit: "Editing",
+    nav: "Navigation",
+    windows: "Windows",
+    media: "Media",
+    system: "System",
+    agents: "AI agents",
+    plugins: "Plugins",
+    misc: "Other"
+  },
+  groupIcons: {
+    edit: "Editing",
+    compass: "Navigation",
+    layers: "Windows",
+    music: "Media",
+    aperture: "Capture",
+    settings: "System",
+    discord: "Discord",
+    brain: "AI"
+  },
+  defaultGroups: {
+    edit: "Editing",
+    nav: "Navigation",
+    win: "Windows",
+    media: "Media",
+    cap: "Capture",
+    sys: "System"
+  },
+  pluginCategory: "Plugin \xB7 {name}",
+  unavailable: "Unavailable"
+};
+
+// ../shared/locales/en-US/devices.json
+var devices_default2 = {
+  title: "Detected devices",
+  empty: "No mouse detected",
+  emptyHint: "connect a mouse (USB, Bluetooth or wireless) \u2014 the service will detect it automatically",
+  generic: "Generic",
+  connected: "connected",
+  lastEvent: "Last event"
+};
+
+// ../shared/locales/en-US/editor.json
+var editor_default2 = {
+  themes: {
+    green: "Green",
+    orange: "Orange",
+    blue: "Blue",
+    negative: "Negative",
+    white: "White"
+  },
+  toolbar: {
+    label: "Ring appearance and history",
+    theme: "Theme",
+    liquidTip: "Makes the ring buttons merge like droplets when opening and closing",
+    liquid: "Liquid effect",
+    asciiTip: "Shows the character scene (black hole and stars) behind the ring",
+    ascii: "ASCII effect",
+    undo: "Undo",
+    undoTip: "Undo (Ctrl+Z)",
+    redo: "Redo",
+    redoTip: "Redo (Ctrl+Shift+Z)",
+    newGroup: "New group",
+    newGroupTip: "Create a new group",
+    newGroupHiddenTip: "The ring shows up to {max} groups: a new group is saved, but hidden.",
+    themeOption: "Theme {name}"
+  },
+  toast: {
+    close: "Close notice"
+  },
+  preview: {
+    title: "Ring preview"
+  },
+  menu: {
+    icons: "Icons"
+  },
+  copySuffix: "{name} (copy)",
+  library: {
+    search: "Search actions\u2026",
+    searchLabel: "Search the action library",
+    clear: "Clear search",
+    noResults: "No results",
+    noResultsFor: "Nothing found for \u201C{query}\u201D.",
+    selectGroup: "Select a group to add actions",
+    removeFrom: "Remove from \u201C{group}\u201D",
+    full: "\u201C{group}\u201D is full ({max}/{max}). Remove an action to add another.",
+    addTo: "Add to \u201C{group}\u201D",
+    alsoIn: "Also in ",
+    in: "In ",
+    inCategory: {
+      one: "{count} action from this category in the selected group",
+      other: "{count} actions from this category in the selected group"
+    }
+  },
+  picker: {
+    search: "Search actions",
+    placeholder: "Search actions\u2026",
+    list: "Actions",
+    noResults: "No results for \u201C{query}\u201D.",
+    current: "current",
+    inGroup: "already in group",
+    navigate: "navigate",
+    choose: "choose",
+    close: "close",
+    replaceTitle: "Replace \u201C{action}\u201D with\u2026",
+    addTitle: "Add to \u201C{group}\u201D"
+  },
+  inspector: {
+    selectGroup: "Select a group in the list above, or click it in the preview, to edit it.",
+    createFirst: "Create a group to start building the ring.",
+    name: "Name",
+    namePlaceholder: "Group name",
+    deleteGroup: "Delete group",
+    deleteGroupNamed: "Delete group {name}",
+    icon: "Icon",
+    actions: "Group actions",
+    limitReached: "Limit reached: remove an action to add another.",
+    limit: "Up to {max} actions per group",
+    emptyStart: "No actions yet. Pick one from the",
+    library: "Action library",
+    emptyMiddle: "or click the",
+    emptyEnd: "in the preview.",
+    emptyHint: "An empty group does not appear in the real ring.",
+    actionsOf: "Actions of {name}",
+    actionPosition: "{label}, position {position} of {total}",
+    actionPositionUnavailable: "{label} (unavailable), position {position} of {total}",
+    unavailableTip: "This action is no longer in the catalog (plugin removed or disabled). It does not work in the ring; you can remove it.",
+    unavailable: "unavailable",
+    remove: "Remove {label}",
+    removeTip: "Remove from group"
+  },
+  groups: {
+    nameLabel: "Group name",
+    none: "No groups yet.",
+    createFirst: "Create the first group",
+    list: "Ring groups",
+    row: "{name}, {count} of {max} actions",
+    rowHidden: "{name}, {count} of {max} actions, hidden",
+    unnamed: "Untitled",
+    hiddenTip: "The ring shows at most {max} groups. This one is saved, but only appears if you move it into the first {max} positions.",
+    hidden: "hidden",
+    emptyTip: "Empty group: it does not appear in the real ring until it gets an action.",
+    empty: "empty",
+    countTip: "{count} of {max} actions",
+    options: "Options for group {name}",
+    moreOptions: "More options"
+  },
+  main: {
+    unnamed: "Untitled",
+    quoted: "\u201C{name}\u201D",
+    undo: "Undo",
+    newGroupName: "New group",
+    fallbackGroupName: "Group",
+    newGroupHidden: "The ring shows up to {max} groups \u2014 {name} is saved, but hidden.",
+    groupDeleted: "Group {name} deleted",
+    duplicateHidden: "The ring shows up to {max} groups \u2014 the extra ones are hidden.",
+    groupFull: "{name} already has {max} actions \u2014 remove one to add another.",
+    alreadyIn: "{action} is already in {group}.",
+    selectFirst: "Select a group first.",
+    actionRemoved: "{action} removed from {group}",
+    rename: "Rename",
+    changeIcon: "Change icon",
+    duplicate: "Duplicate",
+    moveUp: "Move up",
+    moveLeft: "Move left",
+    moveDown: "Move down",
+    moveRight: "Move right",
+    delete: "Delete",
+    replace: "Replace with\u2026",
+    moveTo: "Move to",
+    noteFull: "full",
+    noteDuplicate: "already has it",
+    remove: "Remove",
+    actionMenuTitle: "{action} \xB7 {group}",
+    hint: "Click a group to edit \xB7 drag to reorder \xB7 drop on the center to remove \xB7 right-click for more options",
+    panel: "Groups and actions",
+    groups: "Groups",
+    overLimit: "The ring only shows the first {max} groups; the rest are hidden.",
+    limit: "The ring shows up to {max} groups",
+    newGroup: "New group",
+    selectedGroup: "Selected group",
+    noneSelected: "none",
+    library: "Action library",
+    available: "Available actions",
+    clickToAdd: "Click to add to",
+    groupFullBadge: " \xB7 group full",
+    selectToAdd: "Select a group to add actions."
+  }
+};
+
+// ../shared/locales/en-US/plugins.json
+var plugins_default2 = {
+  title: "Plugins",
+  tabs: {
+    catalog: "Catalog",
+    installed: "Installed"
+  },
+  by: "by",
+  installedBadge: "installed",
+  installedVersion: "Installed: v{version}",
+  working: "Working\u2026",
+  update: "Update",
+  install: "Install",
+  loaded: "loaded",
+  error: "error",
+  actionCount: {
+    one: "{count} action",
+    other: "{count} actions"
+  },
+  enabled: "Enabled",
+  disabled: "Disabled",
+  confirmDelete: "Delete this plugin's folder?",
+  uninstall: "Uninstall",
+  cancel: "Cancel",
+  closeDetails: "Close details",
+  folderTip: "~/.orbit/plugins/ \u2014 copy a plugin folder here to install it by hand",
+  folder: "Plugins folder",
+  emptyCatalog: "The catalog is empty",
+  emptyCatalogHint: "copy a plugin folder to ~/.orbit/plugins/ to install it by hand",
+  emptyInstalled: "No plugins installed",
+  emptyInstalledHint: "pick one from the catalog, or copy a plugin folder to ~/.orbit/plugins/",
+  authorHintStart: "writing a plugin? a folder with a",
+  authorHintFields: "(id, name, version, author, actions) \xB7",
+  authorHintEnd: "shows your profile link and picture"
+};
+
+// ../shared/locales/en-US/profiles.json
+var profiles_default2 = {
+  title: "App profiles",
+  new: "New profile",
+  create: "Create profile",
+  namePlaceholder: "Name (e.g. VS Code)",
+  processPlaceholder: "Process (e.g. code.exe)",
+  createButton: "Create",
+  cancel: "Cancel",
+  default: "Default profile",
+  defaultHint: "used when no app profile matches",
+  actionCount: {
+    one: "{count} action",
+    other: "{count} actions"
+  },
+  empty: "No app profiles yet",
+  emptyHint: "create profiles to have different actions per app"
+};
+
+// ../shared/locales/en-US/ring.json
+var ring_default2 = {
+  addAction: "Add action",
+  attentionGroup: "Claude \xB7 approval",
+  attention: "Attention"
+};
+
+// ../shared/locales/en-US/tray.json
+var tray_default2 = {
+  openConfig: "Open settings",
+  quit: "Quit"
+};
+
+// ../shared/locales/es-ES/app.json
+var app_default3 = {
+  nav: {
+    ring: "Ring",
+    bindings: "Botones",
+    devices: "Dispositivos",
+    profiles: "Perfiles",
+    plugins: "Plugins",
+    settings: "Ajustes"
+  },
+  status: {
+    connected: "conectado",
+    connecting: "conectando...",
+    offline: "sin conexi\xF3n"
+  },
+  deviceCount: {
+    one: "{count} dispositivo",
+    other: "{count} dispositivos"
+  },
+  credit: {
+    developedBy: "desarrollado por",
+    openSource: "c\xF3digo abierto \xB7 github"
+  },
+  settings: {
+    title: "Ajustes",
+    autostart: "Iniciar con el sistema",
+    tray: "Minimizar a la bandeja",
+    notify: "Notificaciones"
+  },
+  splash: {
+    loading: "cargando...",
+    ready: "listo"
+  }
+};
+
+// ../shared/locales/es-ES/bindings.json
+var bindings_default3 = {
+  title: "Asignaci\xF3n de botones",
+  identify: "Identificar",
+  identifying: "pulsa un bot\xF3n...",
+  noAction: "Sin acci\xF3n",
+  actionFor: "Acci\xF3n para: {button}",
+  customShortcut: "Atajo personalizado",
+  customPlaceholder: "p. ej. ctrl+shift+p",
+  customHint: "pulsa la combinaci\xF3n de teclas que quieras",
+  removeAction: "quitar acci\xF3n",
+  selectButton: "Selecciona un bot\xF3n para configurarlo",
+  selectHint: 'o haz clic en "Identificar" y pulsa un bot\xF3n del rat\xF3n',
+  buttons: {
+    side1: {
+      label: "Bot\xF3n lateral 1",
+      description: "Pulgar / Atr\xE1s"
+    },
+    side2: {
+      label: "Bot\xF3n lateral 2",
+      description: "Adelante"
+    },
+    side3: {
+      label: "Bot\xF3n lateral 3",
+      description: "Extra"
+    },
+    side4: {
+      label: "Bot\xF3n lateral 4",
+      description: "Extra"
+    },
+    dpi: {
+      label: "Bot\xF3n de DPI",
+      description: "Normalmente arriba"
+    },
+    scroll_left: {
+      label: "Desplazar a la izquierda",
+      description: "Inclinaci\xF3n de la rueda"
+    },
+    scroll_right: {
+      label: "Desplazar a la derecha",
+      description: "Inclinaci\xF3n de la rueda"
+    }
+  },
+  categories: {
+    navigate: "Navegaci\xF3n",
+    system: "Sistema",
+    window: "Ventana",
+    media: "Multimedia",
+    shortcuts: "Atajos"
+  },
+  presets: {
+    back: "Atr\xE1s",
+    forward: "Adelante",
+    newTab: "Nueva pesta\xF1a",
+    closeTab: "Cerrar pesta\xF1a",
+    reopenTab: "Reabrir pesta\xF1a",
+    showDesktop: "Mostrar escritorio",
+    taskView: "Vista de tareas",
+    screenshot: "Captura de pantalla",
+    lockScreen: "Bloquear pantalla",
+    openTerminal: "Abrir terminal",
+    minimize: "Minimizar",
+    maximize: "Maximizar",
+    close: "Cerrar",
+    desktopLeft: "Escritorio a la izquierda",
+    desktopRight: "Escritorio a la derecha",
+    playPause: "Reproducir / Pausar",
+    next: "Siguiente",
+    previous: "Anterior",
+    volumeUp: "Volumen +",
+    volumeDown: "Volumen -",
+    mute: "Silencio",
+    copy: "Copiar",
+    paste: "Pegar",
+    undo: "Deshacer",
+    redo: "Rehacer",
+    save: "Guardar",
+    find: "Buscar"
+  }
+};
+
+// ../shared/locales/es-ES/catalog.json
+var catalog_default3 = {
+  actions: {
+    copy: "Copiar",
+    paste: "Pegar",
+    undo: "Deshacer",
+    redo: "Rehacer",
+    cut: "Cortar",
+    save: "Guardar",
+    find: "Buscar",
+    saveas: "Guardar como",
+    print: "Imprimir",
+    screenshot: "Captura",
+    terminal: "Terminal",
+    playpause: "Play/Pausa",
+    desktop: "Escritorio",
+    back: "Atr\xE1s",
+    forward: "Adelante",
+    refresh: "Actualizar",
+    lock: "Bloquear",
+    explorer: "Explorador",
+    next: "Siguiente",
+    prev: "Anterior",
+    volup: "Volumen +",
+    volmute: "Silencio",
+    maximize: "Maximizar",
+    minimize: "Minimizar",
+    close: "Cerrar",
+    agent_claude: "Claude Code",
+    agent_codex: "Codex CLI",
+    agent_cursor: "Cursor",
+    agent_gemini: "Gemini CLI",
+    agent_copilot: "GitHub Copilot",
+    agent_approve: "Aprobar",
+    agent_decline: "Rechazar",
+    agent_status: "Estado"
+  },
+  categories: {
+    edit: "Edici\xF3n",
+    nav: "Navegaci\xF3n",
+    windows: "Ventanas",
+    media: "Multimedia",
+    system: "Sistema",
+    agents: "Agentes de IA",
+    plugins: "Plugins",
+    misc: "Otros"
+  },
+  groupIcons: {
+    edit: "Edici\xF3n",
+    compass: "Navegaci\xF3n",
+    layers: "Ventanas",
+    music: "Multimedia",
+    aperture: "Captura",
+    settings: "Sistema",
+    discord: "Discord",
+    brain: "IA"
+  },
+  defaultGroups: {
+    edit: "Edici\xF3n",
+    nav: "Navegaci\xF3n",
+    win: "Ventanas",
+    media: "Multimedia",
+    cap: "Captura",
+    sys: "Sistema"
+  },
+  pluginCategory: "Plugin \xB7 {name}",
+  unavailable: "No disponible"
+};
+
+// ../shared/locales/es-ES/devices.json
+var devices_default3 = {
+  title: "Dispositivos detectados",
+  empty: "No se detect\xF3 ning\xFAn rat\xF3n",
+  emptyHint: "conecta un rat\xF3n (USB, Bluetooth o inal\xE1mbrico) \u2014 el servicio lo detectar\xE1 autom\xE1ticamente",
+  generic: "Gen\xE9rico",
+  connected: "conectado",
+  lastEvent: "\xDAltimo evento"
+};
+
+// ../shared/locales/es-ES/editor.json
+var editor_default3 = {
+  themes: {
+    green: "Verde",
+    orange: "Naranja",
+    blue: "Azul",
+    negative: "Negativo",
+    white: "Blanco"
+  },
+  toolbar: {
+    label: "Apariencia e historial del ring",
+    theme: "Tema",
+    liquidTip: "Hace que los botones del ring se fundan como gotas al abrir y cerrar",
+    liquid: "Efecto l\xEDquido",
+    asciiTip: "Muestra la escena de caracteres (agujero negro y estrellas) detr\xE1s del ring",
+    ascii: "Efecto ASCII",
+    undo: "Deshacer",
+    undoTip: "Deshacer (Ctrl+Z)",
+    redo: "Rehacer",
+    redoTip: "Rehacer (Ctrl+Shift+Z)",
+    newGroup: "Nuevo grupo",
+    newGroupTip: "Crear un grupo nuevo",
+    newGroupHiddenTip: "El ring muestra hasta {max} grupos: un grupo nuevo se guarda, pero queda oculto.",
+    themeOption: "Tema {name}"
+  },
+  toast: {
+    close: "Cerrar aviso"
+  },
+  preview: {
+    title: "Vista previa del ring"
+  },
+  menu: {
+    icons: "Iconos"
+  },
+  copySuffix: "{name} (copia)",
+  library: {
+    search: "Buscar acci\xF3n\u2026",
+    searchLabel: "Buscar en la biblioteca de acciones",
+    clear: "Borrar b\xFAsqueda",
+    noResults: "Sin resultados",
+    noResultsFor: "No se encontr\xF3 nada para \u201C{query}\u201D.",
+    selectGroup: "Selecciona un grupo para a\xF1adir acciones",
+    removeFrom: "Quitar de \u201C{group}\u201D",
+    full: "\u201C{group}\u201D est\xE1 lleno ({max}/{max}). Quita una acci\xF3n para a\xF1adir otra.",
+    addTo: "A\xF1adir a \u201C{group}\u201D",
+    alsoIn: "Tambi\xE9n en ",
+    in: "En ",
+    inCategory: {
+      one: "{count} acci\xF3n de esta categor\xEDa en el grupo seleccionado",
+      other: "{count} acciones de esta categor\xEDa en el grupo seleccionado"
+    }
+  },
+  picker: {
+    search: "Buscar acci\xF3n",
+    placeholder: "Buscar acci\xF3n\u2026",
+    list: "Acciones",
+    noResults: "Sin resultados para \u201C{query}\u201D.",
+    current: "actual",
+    inGroup: "ya en el grupo",
+    navigate: "navegar",
+    choose: "elegir",
+    close: "cerrar",
+    replaceTitle: "Cambiar \u201C{action}\u201D por\u2026",
+    addTitle: "A\xF1adir a \u201C{group}\u201D"
+  },
+  inspector: {
+    selectGroup: "Selecciona un grupo en la lista de arriba o haz clic en \xE9l en la vista previa para editarlo.",
+    createFirst: "Crea un grupo para empezar a armar el ring.",
+    name: "Nombre",
+    namePlaceholder: "Nombre del grupo",
+    deleteGroup: "Eliminar grupo",
+    deleteGroupNamed: "Eliminar grupo {name}",
+    icon: "Icono",
+    actions: "Acciones del grupo",
+    limitReached: "L\xEDmite alcanzado: quita una acci\xF3n para a\xF1adir otra.",
+    limit: "Hasta {max} acciones por grupo",
+    emptyStart: "Todav\xEDa no hay acciones. Elige en la",
+    library: "Biblioteca de acciones",
+    emptyMiddle: "o haz clic en el",
+    emptyEnd: "de la vista previa.",
+    emptyHint: "Un grupo vac\xEDo no aparece en el ring real.",
+    actionsOf: "Acciones de {name}",
+    actionPosition: "{label}, posici\xF3n {position} de {total}",
+    actionPositionUnavailable: "{label} (no disponible), posici\xF3n {position} de {total}",
+    unavailableTip: "Esta acci\xF3n ya no est\xE1 en el cat\xE1logo (plugin eliminado o desactivado). No funciona en el ring; puedes quitarla.",
+    unavailable: "no disponible",
+    remove: "Quitar {label}",
+    removeTip: "Quitar del grupo"
+  },
+  groups: {
+    nameLabel: "Nombre del grupo",
+    none: "Todav\xEDa no hay grupos.",
+    createFirst: "Crear el primer grupo",
+    list: "Grupos del ring",
+    row: "{name}, {count} de {max} acciones",
+    rowHidden: "{name}, {count} de {max} acciones, oculto",
+    unnamed: "Sin nombre",
+    hiddenTip: "El ring muestra como m\xE1ximo {max} grupos. Este se guarda, pero solo aparece si lo mueves a las primeras {max} posiciones.",
+    hidden: "oculto",
+    emptyTip: "Grupo vac\xEDo: no aparece en el ring real hasta que tenga una acci\xF3n.",
+    empty: "vac\xEDo",
+    countTip: "{count} de {max} acciones",
+    options: "Opciones del grupo {name}",
+    moreOptions: "M\xE1s opciones"
+  },
+  main: {
+    unnamed: "Sin nombre",
+    quoted: "\u201C{name}\u201D",
+    undo: "Deshacer",
+    newGroupName: "Nuevo grupo",
+    fallbackGroupName: "Grupo",
+    newGroupHidden: "El ring muestra hasta {max} grupos \u2014 {name} se guarda, pero queda oculto.",
+    groupDeleted: "Grupo {name} eliminado",
+    duplicateHidden: "El ring muestra hasta {max} grupos \u2014 los que sobran quedan ocultos.",
+    groupFull: "{name} ya tiene {max} acciones \u2014 quita una para a\xF1adir otra.",
+    alreadyIn: "{action} ya est\xE1 en {group}.",
+    selectFirst: "Selecciona un grupo primero.",
+    actionRemoved: "{action} quitada de {group}",
+    rename: "Renombrar",
+    changeIcon: "Cambiar icono",
+    duplicate: "Duplicar",
+    moveUp: "Mover arriba",
+    moveLeft: "Mover a la izquierda",
+    moveDown: "Mover abajo",
+    moveRight: "Mover a la derecha",
+    delete: "Eliminar",
+    replace: "Cambiar por\u2026",
+    moveTo: "Mover a",
+    noteFull: "lleno",
+    noteDuplicate: "ya la tiene",
+    remove: "Quitar",
+    actionMenuTitle: "{action} \xB7 {group}",
+    hint: "Haz clic en un grupo para editarlo \xB7 arrastra para reordenar \xB7 suelta en el centro para quitar \xB7 clic derecho para m\xE1s opciones",
+    panel: "Grupos y acciones",
+    groups: "Grupos",
+    overLimit: "El ring solo muestra los primeros {max} grupos; los dem\xE1s quedan ocultos.",
+    limit: "El ring muestra hasta {max} grupos",
+    newGroup: "Nuevo grupo",
+    selectedGroup: "Grupo seleccionado",
+    noneSelected: "ninguno",
+    library: "Biblioteca de acciones",
+    available: "Acciones disponibles",
+    clickToAdd: "Haz clic para a\xF1adir a",
+    groupFullBadge: " \xB7 grupo lleno",
+    selectToAdd: "Selecciona un grupo para a\xF1adir acciones."
+  }
+};
+
+// ../shared/locales/es-ES/plugins.json
+var plugins_default3 = {
+  title: "Plugins",
+  tabs: {
+    catalog: "Cat\xE1logo",
+    installed: "Instalados"
+  },
+  by: "por",
+  installedBadge: "instalado",
+  installedVersion: "Instalada: v{version}",
+  working: "Espera\u2026",
+  update: "Actualizar",
+  install: "Instalar",
+  loaded: "cargado",
+  error: "error",
+  actionCount: {
+    one: "{count} acci\xF3n",
+    other: "{count} acciones"
+  },
+  enabled: "Activado",
+  disabled: "Desactivado",
+  confirmDelete: "\xBFBorrar la carpeta de este plugin?",
+  uninstall: "Desinstalar",
+  cancel: "Cancelar",
+  closeDetails: "Cerrar detalles",
+  folderTip: "~/.orbit/plugins/ \u2014 copia aqu\xED la carpeta de un plugin para instalarlo manualmente",
+  folder: "Carpeta de plugins",
+  emptyCatalog: "El cat\xE1logo est\xE1 vac\xEDo",
+  emptyCatalogHint: "copia la carpeta de un plugin en ~/.orbit/plugins/ para instalarlo manualmente",
+  emptyInstalled: "No hay plugins instalados",
+  emptyInstalledHint: "elige uno del cat\xE1logo o copia la carpeta de un plugin en ~/.orbit/plugins/",
+  authorHintStart: "\xBFcreando un plugin? una carpeta con un",
+  authorHintFields: "(id, name, version, author, actions) \xB7",
+  authorHintEnd: "muestra el enlace y la foto de tu perfil"
+};
+
+// ../shared/locales/es-ES/profiles.json
+var profiles_default3 = {
+  title: "Perfiles por aplicaci\xF3n",
+  new: "Nuevo perfil",
+  create: "Crear perfil",
+  namePlaceholder: "Nombre (p. ej. VS Code)",
+  processPlaceholder: "Proceso (p. ej. code.exe)",
+  createButton: "Crear",
+  cancel: "Cancelar",
+  default: "Perfil predeterminado",
+  defaultHint: "se usa cuando ning\xFAn perfil de aplicaci\xF3n coincide",
+  actionCount: {
+    one: "{count} acci\xF3n",
+    other: "{count} acciones"
+  },
+  empty: "No hay perfiles de aplicaci\xF3n",
+  emptyHint: "crea perfiles para tener acciones distintas en cada aplicaci\xF3n"
+};
+
+// ../shared/locales/es-ES/ring.json
+var ring_default3 = {
+  addAction: "A\xF1adir acci\xF3n",
+  attentionGroup: "Claude \xB7 confirmaci\xF3n",
+  attention: "Atenci\xF3n"
+};
+
+// ../shared/locales/es-ES/tray.json
+var tray_default3 = {
+  openConfig: "Abrir ajustes",
+  quit: "Salir"
+};
+
+// ../shared/src/i18n.ts
+var ptBR = { app: app_default, bindings: bindings_default, catalog: catalog_default, devices: devices_default, editor: editor_default, plugins: plugins_default, profiles: profiles_default, ring: ring_default, tray: tray_default };
+var enUS = { app: app_default2, bindings: bindings_default2, catalog: catalog_default2, devices: devices_default2, editor: editor_default2, plugins: plugins_default2, profiles: profiles_default2, ring: ring_default2, tray: tray_default2 };
+var esES = { app: app_default3, bindings: bindings_default3, catalog: catalog_default3, devices: devices_default3, editor: editor_default3, plugins: plugins_default3, profiles: profiles_default3, ring: ring_default3, tray: tray_default3 };
+var DEFAULT_LOCALE = "en-US";
+var MESSAGES = { "en-US": enUS, "pt-BR": ptBR, "es-ES": esES };
+var LOCALES = Object.keys(MESSAGES);
+function resolveLocale(preferred) {
+  const list = (Array.isArray(preferred) ? preferred : [preferred]).filter((p) => !!p);
+  for (const p of list) {
+    const exact = LOCALES.find((l) => l.toLowerCase() === p.toLowerCase());
+    if (exact) return exact;
+    const lang = p.toLowerCase().split(/[-_]/)[0];
+    const byLang = LOCALES.find((l) => l.toLowerCase().split("-")[0] === lang);
+    if (byLang) return byLang;
+  }
+  return DEFAULT_LOCALE;
+}
+function lookup(messages, key) {
+  let v = messages;
+  for (const part of key.split(".")) {
+    if (!v || typeof v !== "object") return void 0;
+    v = v[part];
+  }
+  if (typeof v === "string") return v;
+  if (v && typeof v === "object" && typeof v.other === "string") return v;
+  return void 0;
+}
+function createTranslator(locale, messages = MESSAGES) {
+  const plural = new Intl.PluralRules(locale);
+  const find = (key) => lookup(messages[locale], key) ?? lookup(messages[DEFAULT_LOCALE], key);
+  const format = (key, params) => {
+    const v = find(key);
+    if (v === void 0) return key;
+    const text = typeof v === "string" ? v : typeof params?.count === "number" ? v[plural.select(params.count)] ?? v.other : v.other;
+    return params ? text.replace(/\{(\w+)\}/g, (m, name) => name in params ? String(params[name]) : m) : text;
+  };
+  const t2 = ((key, params) => format(key, params));
+  t2.dyn = format;
+  t2.has = (key) => find(key) !== void 0;
+  t2.locale = locale;
+  return t2;
+}
+
+// src/main.ts
 var import_ws = require("ws");
 var import_child_process = require("child_process");
 var path = __toESM(require("path"));
 import_electron.app.disableHardwareAcceleration();
-let ring = null;
-let configWindow = null;
-let tray = null;
-let ws = null;
-let svcProcess = null;
-let ringSize = 640;
-let lastRingConfig = null;
-let lastPluginActions = null;
-let lastPluginStates = null;
+var translator = null;
+function t(key, params) {
+  translator ??= createTranslator(resolveLocale(import_electron.app.getPreferredSystemLanguages()));
+  return translator(key, params);
+}
+var ring = null;
+var configWindow = null;
+var tray = null;
+var ws = null;
+var svcProcess = null;
+var ringSize = 640;
+var lastRingConfig = null;
+var lastPluginActions = null;
+var lastPluginStates = null;
 function sendRingState() {
   if (!ring || ring.isDestroyed()) return;
   const wc = ring.webContents;
@@ -42,8 +1307,8 @@ function sendRingState() {
   if (lastRingConfig) wc.send("ring-config", ringConfigForRenderer());
   if (lastPluginStates) wc.send("ring-config", { pluginStates: lastPluginStates });
 }
-const ATTENTION_GROUP_ID = "__attention";
-let attentionItems = [];
+var ATTENTION_GROUP_ID = "__attention";
+var attentionItems = [];
 function ringConfigForRenderer() {
   const cfg = lastRingConfig;
   if (!cfg || !Array.isArray(cfg.groups)) return cfg;
@@ -56,20 +1321,20 @@ function ringConfigForRenderer() {
     actions = actions.filter((a) => known.has(a));
   }
   if (actions.length === 0) return cfg;
-  const group = { id: ATTENTION_GROUP_ID, name: "Claude \xB7 confirma\xE7\xE3o", icon: "brain", actions };
+  const group = { id: ATTENTION_GROUP_ID, name: t("ring.attentionGroup"), icon: "brain", actions };
   return { ...cfg, groups: [group, ...groups] };
 }
-const CUE_W = 300;
-const CUE_H = 84;
-const CUE_FOLLOW_MS = 2e3;
-const CUE_FADE_MS = 180;
-let cue = null;
-let cueLoaded = false;
-let cueShown = false;
-let cueFollowTimer = null;
-let cueHideTimer = null;
-let cueLastPos = { x: NaN, y: NaN };
-let cueAnnounce = false;
+var CUE_W = 300;
+var CUE_H = 84;
+var CUE_FOLLOW_MS = 2e3;
+var CUE_FADE_MS = 180;
+var cue = null;
+var cueLoaded = false;
+var cueShown = false;
+var cueFollowTimer = null;
+var cueHideTimer = null;
+var cueLastPos = { x: NaN, y: NaN };
+var cueAnnounce = false;
 function createCueWindow() {
   cue = new import_electron.BrowserWindow({
     width: CUE_W,
@@ -149,7 +1414,7 @@ function updateCue() {
     cueHideTimer = null;
   }
   const data = {
-    title: item.title,
+    title: item.title || t("ring.attention"),
     text: item.text || "",
     count: attentionItems.length,
     accent: lastRingConfig?.accent,
@@ -178,12 +1443,12 @@ ${i.id}`));
   if (hasNew) cueAnnounce = true;
   updateCue();
 }
-const IS_PACKAGED = import_electron.app.isPackaged;
-const RESOURCES = IS_PACKAGED ? process.resourcesPath : path.join(__dirname, "..");
-const ASSETS = IS_PACKAGED ? path.join(RESOURCES, "app.asar", "assets") : path.join(__dirname, "..", "assets");
-const CONFIG_FILE = IS_PACKAGED ? path.join(RESOURCES, "ui", "index.html") : null;
-const CONFIG_URL = `http://localhost:${Number(process.env.ORBIT_UI_PORT) || 9120}`;
-const SERVICE_PATH = IS_PACKAGED ? path.join(RESOURCES, "service", "index.js") : path.join(__dirname, "..", "service", "dist", "index.js");
+var IS_PACKAGED = import_electron.app.isPackaged;
+var RESOURCES = IS_PACKAGED ? process.resourcesPath : path.join(__dirname, "..");
+var ASSETS = IS_PACKAGED ? path.join(RESOURCES, "app.asar", "assets") : path.join(__dirname, "..", "assets");
+var CONFIG_FILE = IS_PACKAGED ? path.join(RESOURCES, "ui", "index.html") : null;
+var CONFIG_URL = `http://localhost:${Number(process.env.ORBIT_UI_PORT) || 9120}`;
+var SERVICE_PATH = IS_PACKAGED ? path.join(RESOURCES, "service", "index.js") : path.join(__dirname, "..", "service", "dist", "index.js");
 function releaseWin32State() {
   try {
     const cleanupCode = `
@@ -322,12 +1587,12 @@ function createTray() {
   tray.setToolTip("OrbitRing");
   const contextMenu = import_electron.Menu.buildFromTemplate([
     {
-      label: "Open Config",
+      label: t("tray.openConfig"),
       click: () => createConfigWindow()
     },
     { type: "separator" },
     {
-      label: "Quit",
+      label: t("tray.quit"),
       click: () => {
         import_electron.app.quit();
       }
@@ -336,7 +1601,7 @@ function createTray() {
   tray.setContextMenu(contextMenu);
   tray.on("double-click", () => createConfigWindow());
 }
-const RING_CONTENT_RADIUS = 190;
+var RING_CONTENT_RADIUS = 190;
 function showRing(cursorX, cursorY) {
   if (!ring) return;
   if (ring.isVisible()) return;
@@ -454,7 +1719,7 @@ import_electron.ipcMain.on("close-ring", () => {
 import_electron.ipcMain.on("hide-ring", () => {
   if (ring) ring.hide();
 });
-const IS_FIRST_INSTANCE = !IS_PACKAGED || import_electron.app.requestSingleInstanceLock();
+var IS_FIRST_INSTANCE = !IS_PACKAGED || import_electron.app.requestSingleInstanceLock();
 if (!IS_FIRST_INSTANCE) import_electron.app.quit();
 import_electron.app.on("second-instance", () => createConfigWindow());
 import_electron.app.whenReady().then(() => {

@@ -1,13 +1,14 @@
 import { Check, Plus, Redo2, Undo2 } from "lucide-react";
 import type { RingTheme } from "@orbitring/shared";
 import { RING_MAX_GROUPS } from "./catalog";
+import { t } from "../../i18n";
 
 export const THEME_OPTIONS: { accent: string; theme: RingTheme; color: string; label: string; ink: string }[] = [
-  { accent: "#C6F432", theme: "dark", color: "#C6F432", label: "Verde", ink: "#0A0A0B" },
-  { accent: "#FF6B2B", theme: "orange", color: "#FF6B2B", label: "Laranja", ink: "#0A0A0B" },
-  { accent: "#2B8AFF", theme: "neg-orange", color: "#2B8AFF", label: "Azul", ink: "#0A0A0B" },
-  { accent: "#FFFFFF", theme: "neg", color: "#FFFFFF", label: "Negativo", ink: "#0A0A0B" },
-  { accent: "#000000", theme: "light", color: "#000000", label: "Branco", ink: "#FAFAFA" },
+  { accent: "#C6F432", theme: "dark", color: "#C6F432", label: t("editor.themes.green"), ink: "#0A0A0B" },
+  { accent: "#FF6B2B", theme: "orange", color: "#FF6B2B", label: t("editor.themes.orange"), ink: "#0A0A0B" },
+  { accent: "#2B8AFF", theme: "neg-orange", color: "#2B8AFF", label: t("editor.themes.blue"), ink: "#0A0A0B" },
+  { accent: "#FFFFFF", theme: "neg", color: "#FFFFFF", label: t("editor.themes.negative"), ink: "#0A0A0B" },
+  { accent: "#000000", theme: "light", color: "#000000", label: t("editor.themes.white"), ink: "#FAFAFA" },
 ];
 
 interface ToolbarProps {
@@ -48,13 +49,13 @@ export function Toolbar({
   return (
     <div
       role="toolbar"
-      aria-label="Aparência e histórico do ring"
+      aria-label={t("editor.toolbar.label")}
       data-testid="ring-toolbar"
       className="flex h-[52px] shrink-0 items-center gap-3 border-b border-[#1F1F24] px-4"
     >
       <div className="flex items-center gap-2.5">
         <span id="re-theme-label" className="text-[12px] font-medium text-[#A1A1AA]">
-          Tema
+          {t("editor.toolbar.theme")}
         </span>
         <div role="radiogroup" aria-labelledby="re-theme-label" className="flex items-center gap-2">
           {THEME_OPTIONS.map((opt) => {
@@ -65,7 +66,7 @@ export function Toolbar({
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                aria-label={`Tema ${opt.label}`}
+                aria-label={t("editor.toolbar.themeOption", { name: opt.label })}
                 data-tip={opt.label}
                 data-testid="theme-swatch"
                 data-theme={opt.theme}
@@ -92,7 +93,7 @@ export function Toolbar({
         role="switch"
         aria-checked={liquid}
         data-testid="liquid-toggle"
-        data-tip="Faz os botões do ring se fundirem como gotas ao abrir e fechar"
+        data-tip={t("editor.toolbar.liquidTip")}
         onClick={() => onLiquid(!liquid)}
         className="group/sw flex h-8 items-center gap-2 rounded-lg px-1.5 text-[12px] font-medium text-[#D4D4D8] hover:text-orbit-text"
       >
@@ -107,7 +108,7 @@ export function Toolbar({
             }`}
           />
         </span>
-        <span className="whitespace-nowrap">Efeito líquido</span>
+        <span className="whitespace-nowrap">{t("editor.toolbar.liquid")}</span>
       </button>
 
       <button
@@ -115,7 +116,7 @@ export function Toolbar({
         role="switch"
         aria-checked={ascii}
         data-testid="ascii-toggle"
-        data-tip="Mostra a cena de caracteres (buraco negro e estrelas) atrás do ring"
+        data-tip={t("editor.toolbar.asciiTip")}
         onClick={() => onAscii(!ascii)}
         className="group/sw flex h-8 items-center gap-2 rounded-lg px-1.5 text-[12px] font-medium text-[#D4D4D8] hover:text-orbit-text"
       >
@@ -130,7 +131,7 @@ export function Toolbar({
             }`}
           />
         </span>
-        <span className="whitespace-nowrap">Efeito ASCII</span>
+        <span className="whitespace-nowrap">{t("editor.toolbar.ascii")}</span>
       </button>
 
       <div className="flex-1" />
@@ -138,9 +139,9 @@ export function Toolbar({
       <div className="flex items-center gap-0.5">
         <button
           type="button"
-          aria-label="Desfazer"
+          aria-label={t("editor.toolbar.undo")}
           aria-disabled={!canUndo}
-          data-tip="Desfazer (Ctrl+Z)"
+          data-tip={t("editor.toolbar.undoTip")}
           data-testid="undo"
           onClick={() => canUndo && onUndo()}
           className={ICON_BTN}
@@ -149,9 +150,9 @@ export function Toolbar({
         </button>
         <button
           type="button"
-          aria-label="Refazer"
+          aria-label={t("editor.toolbar.redo")}
           aria-disabled={!canRedo}
-          data-tip="Refazer (Ctrl+Shift+Z)"
+          data-tip={t("editor.toolbar.redoTip")}
           data-testid="redo"
           onClick={() => canRedo && onRedo()}
           className={ICON_BTN}
@@ -165,14 +166,14 @@ export function Toolbar({
         data-testid="add-group"
         data-tip={
           overLimit
-            ? `O ring mostra até ${RING_MAX_GROUPS} grupos: um novo grupo fica salvo, mas oculto.`
-            : "Criar um novo grupo"
+            ? t("editor.toolbar.newGroupHiddenTip", { max: RING_MAX_GROUPS })
+            : t("editor.toolbar.newGroupTip")
         }
         onClick={onAddGroup}
         className="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-orbit-border bg-orbit-card px-3 text-[12px] font-medium text-orbit-text-dim transition-colors hover:border-(--accent) hover:text-(--accent)"
       >
         <Plus className="h-3.5 w-3.5" />
-        Novo grupo
+        {t("editor.toolbar.newGroup")}
       </button>
     </div>
   );

@@ -1,9 +1,16 @@
 import { app, BrowserWindow, screen, ipcMain, Tray, Menu, nativeImage, shell } from "electron";
-
-app.disableHardwareAcceleration();
+import { createTranslator, resolveLocale, type MessageKey, type Params, type Translator } from "@orbitring/shared/src/i18n";
 import { WebSocket } from "ws";
 import { spawn, ChildProcess } from "child_process";
 import * as path from "path";
+
+app.disableHardwareAcceleration();
+
+let translator: Translator | null = null;
+function t(key: MessageKey, params?: Params): string {
+  translator ??= createTranslator(resolveLocale(app.getPreferredSystemLanguages()));
+  return translator(key, params);
+}
 
 let ring: BrowserWindow | null = null;
 let configWindow: BrowserWindow | null = null;
@@ -46,7 +53,7 @@ function ringConfigForRenderer(): any {
     actions = actions.filter((a) => known.has(a));
   }
   if (actions.length === 0) return cfg;
-  const group = { id: ATTENTION_GROUP_ID, name: "Claude · confirmação", icon: "brain", actions };
+  const group = { id: ATTENTION_GROUP_ID, name: t("ring.attentionGroup"), icon: "brain", actions };
   return { ...cfg, groups: [group, ...groups] };
 }
 
@@ -139,7 +146,7 @@ function updateCue() {
   if (cueHideTimer) { clearTimeout(cueHideTimer); cueHideTimer = null; }
 
   const data = {
-    title: item.title,
+    title: item.title || t("ring.attention"),
     text: item.text || "",
     count: attentionItems.length,
     accent: lastRingConfig?.accent,
@@ -335,12 +342,12 @@ function createTray() {
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: "Open Config",
+      label: t("tray.openConfig"),
       click: () => createConfigWindow(),
     },
     { type: "separator" },
     {
-      label: "Quit",
+      label: t("tray.quit"),
       click: () => {
         app.quit();
       },

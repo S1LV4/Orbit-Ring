@@ -41,16 +41,7 @@ esbuild.context({
 }).then((ctx) => { ringWatchCtx = ctx; return ctx.watch(); })
   .catch((err) => console.error("[start] Ring UI watch failed:", err));
 
-esbuild.buildSync({
-  entryPoints: ["packages/ring/src/main.ts"],
-  bundle: false, platform: "node",
-  outfile: "packages/ring/main.js", format: "cjs",
-});
-esbuild.buildSync({
-  entryPoints: ["packages/ring/src/preload.ts"],
-  bundle: false, platform: "node",
-  outfile: "packages/ring/preload.js", format: "cjs",
-});
+require("./packages/ring/build-main.cjs").buildMain();
 console.log("[start] Ring built");
 
 const svc = spawn("node", ["packages/service/dist/index.js"], {

@@ -1,7 +1,7 @@
 export interface RingCatalogEntry {
   c: string;
   a: unknown;
-  l: string;
+  l?: string;
   s: string;
   sActive?: string | null;
   k?: boolean;
@@ -14,14 +14,9 @@ export function pluginImage(v: unknown): string | undefined {
   return typeof v === "string" && v.length <= PLUGIN_IMAGE_URI_MAX && PLUGIN_IMAGE_URI.test(v) ? v : undefined;
 }
 export type RingCatalog = Record<string, RingCatalogEntry>;
-export interface RingCatalogGroup { id: string; name: string; icon: string; actions: string[] }
+export interface RingCatalogGroup { id: string; icon: string; actions: string[] }
 
-export const RING_CATEGORIES = ["Edição", "Navegação", "Janelas", "Mídia", "Sistema", "Agentes IA"];
-
-export const GROUP_ICON_LABELS: Record<string, string> = {
-  edit: "Edição", compass: "Navegação", layers: "Janelas", music: "Mídia",
-  aperture: "Captura", settings: "Sistema", discord: "Discord", brain: "IA",
-};
+export const RING_CATEGORIES = ["edit", "nav", "windows", "media", "system", "agents"];
 
 export const RING_MAX_ACTIONS = 8;
 export const RING_MAX_GROUPS = 8;
@@ -36,39 +31,39 @@ copilot:'<path fill="currentColor" stroke="none" d="M23.922 16.997C23.061 18.492
 } as const;
 
 export const CAT: RingCatalog = {
-copy:{c:"Edição",a:{type:"keystroke",key:"c",modifiers:["ctrl"]},l:"Copiar",s:'<rect width="14" height="14" x="8" y="8" rx="4"/><path d="M4 16a2 2 0 01-2-2V6a4 4 0 014-4h8a2 2 0 012 2"/>'},
-paste:{c:"Edição",a:{type:"keystroke",key:"v",modifiers:["ctrl"]},l:"Colar",s:'<rect x="8" y="2" width="8" height="4" rx="2"/><path d="M16 4h1a3 3 0 013 3v12a3 3 0 01-3 3H7a3 3 0 01-3-3V7a3 3 0 013-3h1"/>'},
-undo:{c:"Edição",a:{type:"keystroke",key:"z",modifiers:["ctrl"]},l:"Desfazer",s:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11"/>'},
-redo:{c:"Edição",a:{type:"keystroke",key:"y",modifiers:["ctrl"]},l:"Refazer",s:'<path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 000 11H13"/>'},
-cut:{c:"Edição",a:{type:"keystroke",key:"x",modifiers:["ctrl"]},l:"Recortar",s:'<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/>'},
-save:{c:"Edição",a:{type:"keystroke",key:"s",modifiers:["ctrl"]},l:"Salvar",s:'<circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="m8 12 4 4 4-4"/>'},
-find:{c:"Edição",a:{type:"keystroke",key:"f",modifiers:["ctrl"]},l:"Pesquisar",s:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>'},
-saveas:{c:"Edição",a:{type:"keystroke",key:"s",modifiers:["ctrl","shift"]},l:"Salvar como",s:'<path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M5 17v2a2 2 0 002 2h10a2 2 0 002-2v-2"/>'},
-print:{c:"Edição",a:{type:"keystroke",key:"p",modifiers:["ctrl"]},l:"Imprimir",s:'<path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/>'},
-screenshot:{c:"Sistema",a:{type:"system",action:"screenshot"},l:"Screenshot",s:'<path d="M14.5 4h-5L7 7H5a3 3 0 00-3 3v7a3 3 0 003 3h14a3 3 0 003-3v-7a3 3 0 00-3-3h-2l-2.5-3z"/><circle cx="12" cy="13" r="3"/>'},
-terminal:{c:"Sistema",a:{type:"system",action:"open_terminal"},l:"Terminal",s:'<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>'},
-playpause:{c:"Mídia",a:{type:"system",action:"media_play_pause"},l:"Play/Pause",s:'<circle cx="12" cy="12" r="10"/><path d="M10 8.5v7a.5.5 0 00.77.42l5.4-3.5a.5.5 0 000-.84l-5.4-3.5A.5.5 0 0010 8.5z"/>'},
-desktop:{c:"Sistema",a:{type:"system",action:"show_desktop"},l:"Desktop",s:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'},
-back:{c:"Navegação",a:{type:"keystroke",key:"BrowserBack",modifiers:[]},l:"Voltar",s:'<circle cx="12" cy="12" r="10"/><path d="M16 12H8"/><path d="m12 8-4 4 4 4"/>'},
-forward:{c:"Navegação",a:{type:"keystroke",key:"BrowserForward",modifiers:[]},l:"Avançar",s:'<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="m12 16 4-4-4-4"/>'},
-refresh:{c:"Navegação",a:{type:"keystroke",key:"F5",modifiers:[]},l:"Atualizar",s:'<path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>'},
-lock:{c:"Sistema",a:{type:"system",action:"lock_screen"},l:"Bloquear",s:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>'},
-explorer:{c:"Sistema",a:{type:"system",action:"open_file_manager"},l:"Explorador",s:'<path d="m6 14 1.5-2.9A2 2 0 019.24 10H20a2 2 0 011.94 2.5l-1.54 6a2 2 0 01-1.95 1.5H4a2 2 0 01-2-2V5a2 2 0 012-2h3.9a2 2 0 011.69.9l.81 1.2a2 2 0 001.67.9H18a2 2 0 012 2v2"/>'},
-next:{c:"Mídia",a:{type:"system",action:"media_next"},l:"Próxima",s:'<polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/>'},
-prev:{c:"Mídia",a:{type:"system",action:"media_prev"},l:"Anterior",s:'<polygon points="19 20 9 12 19 4"/><line x1="5" y1="19" x2="5" y2="5"/>'},
-volup:{c:"Mídia",a:{type:"system",action:"volume_up"},l:"Volume +",s:'<polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/>'},
-volmute:{c:"Mídia",a:{type:"system",action:"volume_mute"},l:"Mudo",s:'<polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>'},
-maximize:{c:"Janelas",a:{type:"system",action:"maximize_window"},l:"Maximizar",s:'<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>'},
-minimize:{c:"Janelas",a:{type:"system",action:"minimize_window"},l:"Minimizar",s:'<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/>'},
-close:{c:"Janelas",a:{type:"system",action:"close_window"},l:"Fechar",s:'<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>'},
-agent_claude:{c:"Agentes IA",a:{type:"system",action:"open_agent:claude-code"},l:"Claude Code",s:BRAND.claude},
-agent_codex:{c:"Agentes IA",a:{type:"system",action:"open_agent:codex"},l:"Codex CLI",s:BRAND.openai},
-agent_cursor:{c:"Agentes IA",a:{type:"system",action:"open_agent:cursor"},l:"Cursor",s:BRAND.cursor},
-agent_gemini:{c:"Agentes IA",a:{type:"system",action:"open_agent:gemini-cli"},l:"Gemini CLI",s:BRAND.gemini},
-agent_copilot:{c:"Agentes IA",a:{type:"system",action:"open_agent:copilot"},l:"GitHub Copilot",s:BRAND.copilot},
-agent_approve:{c:"Agentes IA",a:{type:"system",action:"agent_approve"},l:"Aprovar",s:'<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>'},
-agent_decline:{c:"Agentes IA",a:{type:"system",action:"agent_decline"},l:"Recusar",s:'<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>'},
-agent_status:{c:"Agentes IA",a:{type:"system",action:"agent_status"},l:"Status",s:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>'}
+copy:{c:"edit",a:{type:"keystroke",key:"c",modifiers:["ctrl"]},s:'<rect width="14" height="14" x="8" y="8" rx="4"/><path d="M4 16a2 2 0 01-2-2V6a4 4 0 014-4h8a2 2 0 012 2"/>'},
+paste:{c:"edit",a:{type:"keystroke",key:"v",modifiers:["ctrl"]},s:'<rect x="8" y="2" width="8" height="4" rx="2"/><path d="M16 4h1a3 3 0 013 3v12a3 3 0 01-3 3H7a3 3 0 01-3-3V7a3 3 0 013-3h1"/>'},
+undo:{c:"edit",a:{type:"keystroke",key:"z",modifiers:["ctrl"]},s:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11"/>'},
+redo:{c:"edit",a:{type:"keystroke",key:"y",modifiers:["ctrl"]},s:'<path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 000 11H13"/>'},
+cut:{c:"edit",a:{type:"keystroke",key:"x",modifiers:["ctrl"]},s:'<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/>'},
+save:{c:"edit",a:{type:"keystroke",key:"s",modifiers:["ctrl"]},s:'<circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="m8 12 4 4 4-4"/>'},
+find:{c:"edit",a:{type:"keystroke",key:"f",modifiers:["ctrl"]},s:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>'},
+saveas:{c:"edit",a:{type:"keystroke",key:"s",modifiers:["ctrl","shift"]},s:'<path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M5 17v2a2 2 0 002 2h10a2 2 0 002-2v-2"/>'},
+print:{c:"edit",a:{type:"keystroke",key:"p",modifiers:["ctrl"]},s:'<path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/>'},
+screenshot:{c:"system",a:{type:"system",action:"screenshot"},s:'<path d="M14.5 4h-5L7 7H5a3 3 0 00-3 3v7a3 3 0 003 3h14a3 3 0 003-3v-7a3 3 0 00-3-3h-2l-2.5-3z"/><circle cx="12" cy="13" r="3"/>'},
+terminal:{c:"system",a:{type:"system",action:"open_terminal"},s:'<polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>'},
+playpause:{c:"media",a:{type:"system",action:"media_play_pause"},s:'<circle cx="12" cy="12" r="10"/><path d="M10 8.5v7a.5.5 0 00.77.42l5.4-3.5a.5.5 0 000-.84l-5.4-3.5A.5.5 0 0010 8.5z"/>'},
+desktop:{c:"system",a:{type:"system",action:"show_desktop"},s:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'},
+back:{c:"nav",a:{type:"keystroke",key:"BrowserBack",modifiers:[]},s:'<circle cx="12" cy="12" r="10"/><path d="M16 12H8"/><path d="m12 8-4 4 4 4"/>'},
+forward:{c:"nav",a:{type:"keystroke",key:"BrowserForward",modifiers:[]},s:'<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="m12 16 4-4-4-4"/>'},
+refresh:{c:"nav",a:{type:"keystroke",key:"F5",modifiers:[]},s:'<path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>'},
+lock:{c:"system",a:{type:"system",action:"lock_screen"},s:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>'},
+explorer:{c:"system",a:{type:"system",action:"open_file_manager"},s:'<path d="m6 14 1.5-2.9A2 2 0 019.24 10H20a2 2 0 011.94 2.5l-1.54 6a2 2 0 01-1.95 1.5H4a2 2 0 01-2-2V5a2 2 0 012-2h3.9a2 2 0 011.69.9l.81 1.2a2 2 0 001.67.9H18a2 2 0 012 2v2"/>'},
+next:{c:"media",a:{type:"system",action:"media_next"},s:'<polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/>'},
+prev:{c:"media",a:{type:"system",action:"media_prev"},s:'<polygon points="19 20 9 12 19 4"/><line x1="5" y1="19" x2="5" y2="5"/>'},
+volup:{c:"media",a:{type:"system",action:"volume_up"},s:'<polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/>'},
+volmute:{c:"media",a:{type:"system",action:"volume_mute"},s:'<polygon points="11 5 6 9 2 9 2 15 6 15 11 19"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>'},
+maximize:{c:"windows",a:{type:"system",action:"maximize_window"},s:'<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>'},
+minimize:{c:"windows",a:{type:"system",action:"minimize_window"},s:'<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/>'},
+close:{c:"windows",a:{type:"system",action:"close_window"},s:'<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>'},
+agent_claude:{c:"agents",a:{type:"system",action:"open_agent:claude-code"},s:BRAND.claude},
+agent_codex:{c:"agents",a:{type:"system",action:"open_agent:codex"},s:BRAND.openai},
+agent_cursor:{c:"agents",a:{type:"system",action:"open_agent:cursor"},s:BRAND.cursor},
+agent_gemini:{c:"agents",a:{type:"system",action:"open_agent:gemini-cli"},s:BRAND.gemini},
+agent_copilot:{c:"agents",a:{type:"system",action:"open_agent:copilot"},s:BRAND.copilot},
+agent_approve:{c:"agents",a:{type:"system",action:"agent_approve"},s:'<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>'},
+agent_decline:{c:"agents",a:{type:"system",action:"agent_decline"},s:'<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>'},
+agent_status:{c:"agents",a:{type:"system",action:"agent_status"},s:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>'}
 };
 export const GI: Record<string, string> = {
 edit:'<path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 013.002 3.002L7.368 18.635a2 2 0 01-.855.506l-2.872.838a.5.5 0 01-.62-.62l.838-2.872a2 2 0 01.506-.854z"/>',
@@ -81,11 +76,11 @@ brain:'<path d="M12 2a4 4 0 00-4 4v2H6a4 4 0 00-4 4v4a4 4 0 004 4h12a4 4 0 004-4
 settings:'<path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="3"/>'
 };
 export const DEFAULT_GROUPS: RingCatalogGroup[] = [
-  {id:"edit",name:"Edição",icon:"edit",actions:["copy","paste","undo"]},
-  {id:"nav",name:"Navegação",icon:"compass",actions:["back","forward","refresh"]},
-  {id:"win",name:"Janelas",icon:"layers",actions:["minimize","maximize","close"]},
-  {id:"media",name:"Mídia",icon:"music",actions:["playpause","volmute"]},
-  {id:"cap",name:"Captura",icon:"aperture",actions:["screenshot"]},
-  {id:"sys",name:"Sistema",icon:"settings",actions:["save","explorer","find"]}
+  {id:"edit",icon:"edit",actions:["copy","paste","undo"]},
+  {id:"nav",icon:"compass",actions:["back","forward","refresh"]},
+  {id:"win",icon:"layers",actions:["minimize","maximize","close"]},
+  {id:"media",icon:"music",actions:["playpause","volmute"]},
+  {id:"cap",icon:"aperture",actions:["screenshot"]},
+  {id:"sys",icon:"settings",actions:["save","explorer","find"]}
 ];
 export const FALLBACK_ICON = '<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>';

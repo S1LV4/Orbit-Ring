@@ -1,0 +1,8 @@
+{
+  "title": "Detected devices",
+  "empty": "No mouse detected",
+  "emptyHint": "connect a mouse (USB, Bluetooth or wireless) — the service will detect it automatically",
+  "generic": "Generic",
+  "connected": "connected",
+  "lastEvent": "Last event"
+}

@@ -88,7 +88,7 @@ export function applyConfig(cfg: RingConfig): void {
         const k = pa.keepIcon === true;
         const img = pluginImage(pa.image);
         if (!prev || prev.s !== s || prev.sActive !== sActive || prev.l !== l || !!prev.k !== k || prev.img !== img) changed = true;
-        const entry: typeof CAT[string] = { c: "Plugins", a: { type: "system", action: pa.id }, l, s, sActive, k };
+        const entry: typeof CAT[string] = { c: "plugins", a: { type: "system", action: pa.id }, l, s, sActive, k };
         if (img) entry.img = img;
         CAT[pa.id] = entry;
       }

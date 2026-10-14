@@ -4,6 +4,7 @@ import {
   CircleDot,
   Zap,
 } from "lucide-react";
+import { t } from "../i18n";
 
 interface DevicePanelProps {
   devices: any[];
@@ -15,15 +16,15 @@ export function DevicePanel({ devices, lastEvent }: DevicePanelProps) {
     <div className="p-6">
       <h2 className="text-base font-semibold mb-5 flex items-center gap-2 text-orbit-text">
         <CircleDot className="w-4 h-4 text-orbit-text-muted" />
-        Detected Devices
+        {t("devices.title")}
       </h2>
 
       {devices.length === 0 ? (
         <div className="text-center py-16 text-orbit-text-muted">
           <Mouse className="w-12 h-12 mx-auto mb-3 opacity-20" />
-          <p className="text-sm font-medium">Nenhum mouse detectado</p>
+          <p className="text-sm font-medium">{t("devices.empty")}</p>
           <p className="text-[10px] font-mono mt-2 text-orbit-border-light">
-            conecte um mouse (USB, Bluetooth ou wireless) — o serviço irá detectá-lo automaticamente
+            {t("devices.emptyHint")}
           </p>
         </div>
       ) : (
@@ -42,7 +43,7 @@ export function DevicePanel({ devices, lastEvent }: DevicePanelProps) {
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-medium text-orbit-text truncate">{device.name}</h3>
                 <p className="text-[10px] font-mono text-orbit-text-muted mt-0.5">
-                  {device.manufacturer || "Generic"} &middot;{" "}
+                  {device.manufacturer || t("devices.generic")} &middot;{" "}
                   VID:{device.vendorId.toString(16).padStart(4, "0")}{" "}
                   PID:{device.productId.toString(16).padStart(4, "0")}
                 </p>
@@ -50,7 +51,7 @@ export function DevicePanel({ devices, lastEvent }: DevicePanelProps) {
               <div className="flex items-center gap-2">
                 <Usb className="w-3.5 h-3.5 text-orbit-border-light" />
                 <span className="orbit-pill text-[10px]" style={{ color: "var(--accent)", borderColor: "color-mix(in srgb, var(--accent) 30%, #2A2A30)" }}>
-                  connected
+                  {t("devices.connected")}
                 </span>
               </div>
             </div>
@@ -62,7 +63,7 @@ export function DevicePanel({ devices, lastEvent }: DevicePanelProps) {
         <div className="mt-6">
           <h3 className="text-[10px] font-mono uppercase tracking-widest text-orbit-text-muted mb-2 flex items-center gap-2">
             <Zap className="w-3 h-3" />
-            Last Event
+            {t("devices.lastEvent")}
           </h3>
           <div className="p-3 orbit-card font-mono text-xs">
             <span style={{ color: "var(--accent)" }}>{lastEvent.button}</span>

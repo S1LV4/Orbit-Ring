@@ -27,6 +27,7 @@ import { RING_MAX_ACTIONS, RING_MAX_GROUPS, buildCatalog, resolveAction, type Pl
 import { isTextInput } from "./floating";
 import * as ops from "./ops";
 import { useRingDraft } from "./useRingDraft";
+import { t } from "../../i18n";
 
 export interface RingEditorProps {
   settings: RingSettings;
@@ -50,7 +51,7 @@ interface PickerState {
 }
 
 const HEADER_H = 40;
-const quote = (s: string) => `“${s || "Sem nome"}”`;
+const quote = (s: string) => t("editor.main.quoted", { name: s || t("editor.main.unnamed") });
 
 export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
   const { draft, update, undo, redo, canUndo, canRedo, breakCoalescing, externalVersion } = useRingDraft(
@@ -131,7 +132,7 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
   const handleRedo = useCallback(() => stepHistory("redo"), [stepHistory]);
 
   const notifyUndoable = useCallback(
-    (message: string) => notify(message, { actionLabel: "Desfazer", onAction: handleUndo }),
+    (message: string) => notify(message, { actionLabel: t("editor.main.undo"), onAction: handleUndo }),
     [notify, handleUndo],
   );
 
@@ -143,14 +144,14 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
   const addGroup = useCallback(() => {
     const d = draftRef.current;
     const id = ops.newGroupId(d);
-    const name = ops.uniqueName(d, "Novo grupo");
+    const name = ops.uniqueName(d, t("editor.main.newGroupName"));
     setToast(null);
     update((cur) => ops.addGroup(cur, { id, name, icon: "settings", actions: [] }));
     setSelectedId(id);
     setRenamingId(id);
     scrollToSection(0);
     if (d.groups.length >= RING_MAX_GROUPS) {
-      notify(`O ring mostra até ${RING_MAX_GROUPS} grupos — ${quote(name)} fica salvo, mas oculto.`, { tone: "warn" });
+      notify(t("editor.main.newGroupHidden", { max: RING_MAX_GROUPS, name: quote(name) }), { tone: "warn" });
     }
   }, [update, notify, scrollToSection]);
 
@@ -163,7 +164,7 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
       if (!update((cur) => ops.removeGroup(cur, id))) return;
       setRenamingId(null);
       setSelectedId((sel) => (sel === id ? (d.groups[index + 1] ?? d.groups[index - 1])?.id ?? null : sel));
-      notifyUndoable(`Grupo ${quote(g.name)} excluído`);
+      notifyUndoable(t("editor.main.groupDeleted", { name: quote(g.name) }));
     },
     [update, notifyUndoable],
   );
@@ -176,7 +177,7 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
       if (!update((cur) => ops.duplicateGroup(cur, id, newId))) return;
       setSelectedId(newId);
       if (d.groups.length >= RING_MAX_GROUPS) {
-        notify(`O ring mostra até ${RING_MAX_GROUPS} grupos — os que passam disso ficam ocultos.`, { tone: "warn" });
+        notify(t("editor.main.duplicateHidden", { max: RING_MAX_GROUPS }), { tone: "warn" });
       }
     },
     [update, notify],
@@ -210,9 +211,9 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
     (reason: "full" | "duplicate" | "no-group" | "invalid", groupId: string, actionId: string) => {
       const g = ops.findGroup(draftRef.current, groupId);
       const label = resolveAction(catalog, actionId).label;
-      if (reason === "full") return `${quote(g?.name ?? "")} já tem ${RING_MAX_ACTIONS} ações — remova uma para adicionar outra.`;
-      if (reason === "duplicate") return `${quote(label)} já está em ${quote(g?.name ?? "")}.`;
-      return "Selecione um grupo primeiro.";
+      if (reason === "full") return t("editor.main.groupFull", { name: quote(g?.name ?? ""), max: RING_MAX_ACTIONS });
+      if (reason === "duplicate") return t("editor.main.alreadyIn", { action: quote(label), group: quote(g?.name ?? "") });
+      return t("editor.main.selectFirst");
     },
     [catalog],
   );
@@ -235,7 +236,7 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
       const g = ops.findGroup(draftRef.current, groupId);
       if (!g || !g.actions.includes(actionId)) return;
       if (!update((cur) => ops.removeAction(cur, groupId, actionId))) return;
-      notifyUndoable(`${quote(resolveAction(catalog, actionId).label)} removida de ${quote(g.name)}`);
+      notifyUndoable(t("editor.main.actionRemoved", { action: quote(resolveAction(catalog, actionId).label), group: quote(g.name) }));
     },
     [update, notifyUndoable, catalog],
   );
@@ -282,7 +283,7 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
           setMenu(null);
           if (g.actions.length >= RING_MAX_ACTIONS) {
             setPicker(null);
-            notify(`${quote(g.name)} já tem ${RING_MAX_ACTIONS} ações — remova uma para adicionar outra.`, { tone: "warn" });
+            notify(t("editor.main.groupFull", { name: quote(g.name), max: RING_MAX_ACTIONS }), { tone: "warn" });
             return;
           }
           setPicker({ x: msg.x + 14, y: msg.y + 14, groupId: g.id, replaceId: null });
@@ -378,11 +379,11 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
     const index = groups.indexOf(g);
     if (menu.actionId == null) {
       const vertical = menu.origin === "list";
-      menuTitle = g.name || "Sem nome";
+      menuTitle = g.name || t("editor.main.unnamed");
       menuEntries = [
         {
           kind: "item",
-          label: "Renomear",
+          label: t("editor.main.rename"),
           icon: <Pencil className="h-3.5 w-3.5" />,
           note: "F2",
           onSelect: () => {
@@ -393,22 +394,22 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
         },
         {
           kind: "icons",
-          label: "Trocar ícone",
+          label: t("editor.main.changeIcon"),
           icon: <Shapes className="h-3.5 w-3.5" />,
           value: g.icon,
           onPick: (icon) => setIcon(g.id, icon),
         },
-        { kind: "item", label: "Duplicar", icon: <Copy className="h-3.5 w-3.5" />, onSelect: () => duplicateGroup(g.id) },
+        { kind: "item", label: t("editor.main.duplicate"), icon: <Copy className="h-3.5 w-3.5" />, onSelect: () => duplicateGroup(g.id) },
         {
           kind: "item",
-          label: vertical ? "Mover para cima" : "Mover para a esquerda",
+          label: vertical ? t("editor.main.moveUp") : t("editor.main.moveLeft"),
           icon: vertical ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowLeft className="h-3.5 w-3.5" />,
           disabled: index === 0,
           onSelect: () => moveGroup(g.id, index - 1),
         },
         {
           kind: "item",
-          label: vertical ? "Mover para baixo" : "Mover para a direita",
+          label: vertical ? t("editor.main.moveDown") : t("editor.main.moveRight"),
           icon: vertical ? <ArrowDown className="h-3.5 w-3.5" /> : <ArrowRight className="h-3.5 w-3.5" />,
           disabled: index === groups.length - 1,
           onSelect: () => moveGroup(g.id, index + 1),
@@ -416,7 +417,7 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
         { kind: "separator" },
         {
           kind: "item",
-          label: "Excluir",
+          label: t("editor.main.delete"),
           icon: <Trash2 className="h-3.5 w-3.5" />,
           danger: true,
           note: "Del",
@@ -426,25 +427,25 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
     } else {
       const actionId = menu.actionId;
       const others = groups.filter((o) => o.id !== g.id);
-      menuTitle = `${resolveAction(catalog, actionId).label} · ${g.name || "Sem nome"}`;
+      menuTitle = t("editor.main.actionMenuTitle", { action: resolveAction(catalog, actionId).label, group: g.name || t("editor.main.unnamed") });
       menuEntries = [
         {
           kind: "item",
-          label: "Trocar por…",
+          label: t("editor.main.replace"),
           icon: <ArrowLeftRight className="h-3.5 w-3.5" />,
           onSelect: () => setPicker({ x: menu.x, y: menu.y, groupId: g.id, replaceId: actionId }),
         },
       ];
       if (others.length) {
-        menuEntries.push({ kind: "separator" }, { kind: "label", label: "Mover para" });
+        menuEntries.push({ kind: "separator" }, { kind: "label", label: t("editor.main.moveTo") });
         for (const o of others) {
           const refusal = ops.canMoveAction(draft, g.id, o.id, actionId);
           menuEntries.push({
             kind: "item",
-            label: o.name || "Sem nome",
+            label: o.name || t("editor.main.unnamed"),
             icon: <CornerDownRight className="h-3.5 w-3.5" />,
             disabled: !!refusal,
-            note: refusal === "full" ? "cheio" : refusal === "duplicate" ? "já contém" : undefined,
+            note: refusal === "full" ? t("editor.main.noteFull") : refusal === "duplicate" ? t("editor.main.noteDuplicate") : undefined,
             onSelect: () => moveActionToGroup(g.id, o.id, actionId),
           });
         }
@@ -453,7 +454,7 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
         { kind: "separator" },
         {
           kind: "item",
-          label: "Remover",
+          label: t("editor.main.remove"),
           icon: <Trash2 className="h-3.5 w-3.5" />,
           danger: true,
           onSelect: () => removeAction(g.id, actionId),
@@ -506,27 +507,26 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
           className="shrink-0 px-4 pb-3.5 pt-2 text-center text-[12px] leading-relaxed text-[#8B8B95]"
           style={{ textWrap: "balance" }}
         >
-          Clique num grupo para editar · arraste para reordenar · solte no centro para remover · botão direito para
-          mais opções
+          {t("editor.main.hint")}
         </p>
         <Toast toast={toast} onDismiss={dismissToast} />
       </div>
 
       <aside
-        aria-label="Grupos e ações"
+        aria-label={t("editor.main.panel")}
         className="flex w-80 shrink-0 flex-col border-l border-orbit-border bg-[#111114]"
       >
         <div ref={scrollerRef} className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain" data-testid="panel-scroll">
           <div className="re-section-header flex items-center gap-2 pl-4 pr-2" style={{ top: 0, bottom: HEADER_H * 2 }}>
             <button type="button" onClick={() => scrollToSection(0)} className="re-section-title">
-              Grupos
+              {t("editor.main.groups")}
             </button>
             <span
               data-testid="group-counter"
               data-tip={
                 overLimit
-                  ? `O ring mostra só os ${RING_MAX_GROUPS} primeiros grupos; os demais ficam ocultos.`
-                  : `O ring mostra até ${RING_MAX_GROUPS} grupos`
+                  ? t("editor.main.overLimit", { max: RING_MAX_GROUPS })
+                  : t("editor.main.limit", { max: RING_MAX_GROUPS })
               }
               className={`font-mono text-[11px] tabular-nums ${overLimit ? "text-[#FBBF24]" : "text-[#8B8B95]"}`}
             >
@@ -535,8 +535,8 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
             <span className="flex-1" />
             <button
               type="button"
-              aria-label="Novo grupo"
-              data-tip="Novo grupo"
+              aria-label={t("editor.main.newGroup")}
+              data-tip={t("editor.main.newGroup")}
               data-testid="add-group-panel"
               onClick={addGroup}
               className="flex h-7 w-7 items-center justify-center rounded-md text-[#A1A1AA] hover:bg-[#1E1E24] hover:text-(--accent)"
@@ -570,10 +570,10 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
             style={{ top: HEADER_H, bottom: HEADER_H }}
           >
             <button type="button" onClick={() => scrollToSection(1)} className="re-section-title shrink-0">
-              Grupo selecionado
+              {t("editor.main.selectedGroup")}
             </button>
             <span className="min-w-0 flex-1 truncate text-right text-[12px] text-[#8B8B95]" data-testid="selected-name">
-              {selected ? selected.name || "Sem nome" : "nenhum"}
+              {selected ? selected.name || t("editor.main.unnamed") : t("editor.main.noneSelected")}
             </span>
           </div>
           <div ref={(el) => (sectionRefs.current[1] = el)}>
@@ -587,7 +587,7 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
                 breakCoalescing();
                 if (!selected) return;
                 const trimmed = selected.name.trim();
-                if (!trimmed) renameGroup(selected.id, nameAtFocus.trim() || "Grupo", true);
+                if (!trimmed) renameGroup(selected.id, nameAtFocus.trim() || t("editor.main.fallbackGroupName"), true);
                 else if (trimmed !== selected.name) renameGroup(selected.id, trimmed, true);
                 breakCoalescing();
               }}
@@ -616,10 +616,10 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
             style={{ top: HEADER_H * 2, bottom: 0 }}
           >
             <button type="button" onClick={() => scrollToSection(2)} className="re-section-title">
-              Biblioteca de ações
+              {t("editor.main.library")}
             </button>
             <span className="flex-1" />
-            <span className="font-mono text-[11px] tabular-nums text-[#8B8B95]" data-tip="Ações disponíveis">
+            <span className="font-mono text-[11px] tabular-nums text-[#8B8B95]" data-tip={t("editor.main.available")}>
               {catalog.byId.size}
             </span>
           </div>
@@ -628,11 +628,11 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
               <LibrarySearch query={query} onQueryChange={setQuery} searchRef={searchRef} />
               {selected ? (
                 <p className="mt-1.5 truncate text-[11px] text-[#8B8B95]">
-                  Clique para adicionar a <span className="text-[#D4D4D8]">{selected.name || "Sem nome"}</span>
-                  {selected.actions.length >= RING_MAX_ACTIONS && <span className="text-[#FBBF24]"> · grupo cheio</span>}
+                  {t("editor.main.clickToAdd")} <span className="text-[#D4D4D8]">{selected.name || t("editor.main.unnamed")}</span>
+                  {selected.actions.length >= RING_MAX_ACTIONS && <span className="text-[#FBBF24]">{t("editor.main.groupFullBadge")}</span>}
                 </p>
               ) : (
-                <p className="mt-1.5 text-[11px] text-[#8B8B95]">Selecione um grupo para adicionar ações.</p>
+                <p className="mt-1.5 text-[11px] text-[#8B8B95]">{t("editor.main.selectToAdd")}</p>
               )}
             </div>
             <ActionLibrary

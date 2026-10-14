@@ -16,6 +16,7 @@ export default defineConfig({
   },
   reporter: [["list"]],
   use: {
+    locale: "pt-BR",
     headless: true,
     baseURL: UI_URL,
     viewport: { width: 1440, height: 900 },

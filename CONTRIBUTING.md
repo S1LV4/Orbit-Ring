@@ -104,6 +104,18 @@ To try it, drop the folder in `~/.orbit/plugins/` (the **Plugins folder** button
 restart OrbitRing. To propose it for the catalog, add it under `plugins/` in a pull request. The
 existing plugins there are the best reference.
 
+## Translating
+
+OrbitRing speaks English, Portuguese (Brazil) and Spanish, picked from the Windows language (English when Windows uses another language). The
+texts are in `packages/shared/locales/<language>/`, one JSON file per area of the app.
+
+- To fix a translation, edit the value in that language's file.
+- To add a language, copy the `en-US` folder to a folder named with the language tag (for example
+  `fr-FR`), translate the values — keep every key and every `{placeholder}` — and register it in
+  `packages/shared/src/i18n.ts`. `npm test` tells you if a key or placeholder is missing.
+- Texts that depend on a number use plural forms: `{ "one": "{count} ação", "other": "{count} ações" }`.
+  Use the [plural categories](https://cldr.unicode.org/index/cldr-spec/plural-rules) of your language.
+
 ## Reporting bugs and ideas
 
 Open an issue at https://github.com/S1LV4/Orbit-Ring/issues with your Windows version, the

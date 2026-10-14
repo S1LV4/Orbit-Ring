@@ -4,6 +4,7 @@ import type { RingGroup } from "@orbitring/shared";
 import { SvgIcon } from "./SvgIcon";
 import { RING_MAX_ACTIONS, RING_MAX_GROUPS, groupIconMarkup } from "./catalog";
 import { useDragReorder } from "./useDragReorder";
+import { t } from "../../i18n";
 
 interface GroupListProps {
   groups: RingGroup[];
@@ -43,7 +44,7 @@ function RenameInput({
     <input
       ref={ref}
       value={value}
-      aria-label="Nome do grupo"
+      aria-label={t("editor.groups.nameLabel")}
       data-testid="group-rename-input"
       maxLength={40}
       onChange={(e) => setValue(e.target.value)}
@@ -139,13 +140,13 @@ export function GroupList({
     return (
       <div className="px-4 pb-4 pt-1">
         <div className="rounded-lg border border-dashed border-orbit-border px-4 py-5 text-center">
-          <p className="text-[12px] leading-relaxed text-[#A1A1AA]">Nenhum grupo ainda.</p>
+          <p className="text-[12px] leading-relaxed text-[#A1A1AA]">{t("editor.groups.none")}</p>
           <button
             type="button"
             onClick={onAdd}
             className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-orbit-border bg-orbit-card px-3 py-1.5 text-[12px] font-medium text-orbit-text-dim hover:border-(--accent) hover:text-(--accent)"
           >
-            <Plus className="h-3.5 w-3.5" /> Criar o primeiro grupo
+            <Plus className="h-3.5 w-3.5" /> {t("editor.groups.createFirst")}
           </button>
         </div>
       </div>
@@ -155,7 +156,7 @@ export function GroupList({
   const tabStopId = groups.some((g) => g.id === selectedId) ? selectedId : groups[0].id;
 
   return (
-    <div role="listbox" aria-label="Grupos do ring" data-testid="group-list" className="px-2 pb-2">
+    <div role="listbox" aria-label={t("editor.groups.list")} data-testid="group-list" className="px-2 pb-2">
       {groups.map((g, index) => {
         const selected = g.id === selectedId;
         const hidden = index >= RING_MAX_GROUPS;
@@ -171,7 +172,7 @@ export function GroupList({
             }}
             role="option"
             aria-selected={selected}
-            aria-label={`${g.name || "Sem nome"}, ${g.actions.length} de ${RING_MAX_ACTIONS} ações${hidden ? ", oculto" : ""}`}
+            aria-label={t(hidden ? "editor.groups.rowHidden" : "editor.groups.row", { name: g.name || t("editor.groups.unnamed"), count: g.actions.length, max: RING_MAX_ACTIONS })}
             tabIndex={g.id === tabStopId ? 0 : -1}
             data-testid="group-row"
             data-group-id={g.id}
@@ -228,31 +229,31 @@ export function GroupList({
                   selected ? "font-medium text-orbit-text" : hidden ? "text-[#8B8B95]" : "text-[#D4D4D8]"
                 }`}
               >
-                {g.name || <span className="italic text-orbit-text-muted">Sem nome</span>}
+                {g.name || <span className="italic text-orbit-text-muted">{t("editor.groups.unnamed")}</span>}
               </span>
             )}
             {!renaming && hidden && (
               <span
                 data-testid="badge-hidden"
-                data-tip={`O ring mostra no máximo ${RING_MAX_GROUPS} grupos. Este fica salvo, mas só aparece se você movê-lo para as ${RING_MAX_GROUPS} primeiras posições.`}
+                data-tip={t("editor.groups.hiddenTip", { max: RING_MAX_GROUPS })}
                 className="shrink-0 rounded-sm border border-[#3A3A42] px-1.5 py-px text-[11px] leading-4 text-[#A1A1AA]"
               >
-                oculto
+                {t("editor.groups.hidden")}
               </span>
             )}
             {!renaming &&
               (empty ? (
                 <span
                   data-testid="badge-empty"
-                  data-tip="Grupo vazio: não aparece no ring real até receber uma ação."
+                  data-tip={t("editor.groups.emptyTip")}
                   className="shrink-0 rounded-sm border border-[#4A3F1D] px-1.5 py-px text-[11px] leading-4 text-[#D9B95B]"
                 >
-                  vazio
+                  {t("editor.groups.empty")}
                 </span>
               ) : (
                 <span
                   data-testid="group-count"
-                  data-tip={`${g.actions.length} de ${RING_MAX_ACTIONS} ações`}
+                  data-tip={t("editor.groups.countTip", { count: g.actions.length, max: RING_MAX_ACTIONS })}
                   className="w-5 shrink-0 text-right font-mono text-[11px] tabular-nums text-[#8B8B95]"
                 >
                   {g.actions.length}
@@ -262,8 +263,8 @@ export function GroupList({
               <button
                 type="button"
                 tabIndex={-1}
-                aria-label={`Opções do grupo ${g.name}`}
-                data-tip="Mais opções"
+                aria-label={t("editor.groups.options", { name: g.name })}
+                data-tip={t("editor.groups.moreOptions")}
                 data-testid="group-menu-button"
                 onClick={(e) => {
                   e.stopPropagation();

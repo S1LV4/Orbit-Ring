@@ -1,0 +1,79 @@
+{
+  "title": "Asignación de botones",
+  "identify": "Identificar",
+  "identifying": "pulsa un botón...",
+  "noAction": "Sin acción",
+  "actionFor": "Acción para: {button}",
+  "customShortcut": "Atajo personalizado",
+  "customPlaceholder": "p. ej. ctrl+shift+p",
+  "customHint": "pulsa la combinación de teclas que quieras",
+  "removeAction": "quitar acción",
+  "selectButton": "Selecciona un botón para configurarlo",
+  "selectHint": "o haz clic en \"Identificar\" y pulsa un botón del ratón",
+  "buttons": {
+    "side1": {
+      "label": "Botón lateral 1",
+      "description": "Pulgar / Atrás"
+    },
+    "side2": {
+      "label": "Botón lateral 2",
+      "description": "Adelante"
+    },
+    "side3": {
+      "label": "Botón lateral 3",
+      "description": "Extra"
+    },
+    "side4": {
+      "label": "Botón lateral 4",
+      "description": "Extra"
+    },
+    "dpi": {
+      "label": "Botón de DPI",
+      "description": "Normalmente arriba"
+    },
+    "scroll_left": {
+      "label": "Desplazar a la izquierda",
+      "description": "Inclinación de la rueda"
+    },
+    "scroll_right": {
+      "label": "Desplazar a la derecha",
+      "description": "Inclinación de la rueda"
+    }
+  },
+  "categories": {
+    "navigate": "Navegación",
+    "system": "Sistema",
+    "window": "Ventana",
+    "media": "Multimedia",
+    "shortcuts": "Atajos"
+  },
+  "presets": {
+    "back": "Atrás",
+    "forward": "Adelante",
+    "newTab": "Nueva pestaña",
+    "closeTab": "Cerrar pestaña",
+    "reopenTab": "Reabrir pestaña",
+    "showDesktop": "Mostrar escritorio",
+    "taskView": "Vista de tareas",
+    "screenshot": "Captura de pantalla",
+    "lockScreen": "Bloquear pantalla",
+    "openTerminal": "Abrir terminal",
+    "minimize": "Minimizar",
+    "maximize": "Maximizar",
+    "close": "Cerrar",
+    "desktopLeft": "Escritorio a la izquierda",
+    "desktopRight": "Escritorio a la derecha",
+    "playPause": "Reproducir / Pausar",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "volumeUp": "Volumen +",
+    "volumeDown": "Volumen -",
+    "mute": "Silencio",
+    "copy": "Copiar",
+    "paste": "Pegar",
+    "undo": "Deshacer",
+    "redo": "Rehacer",
+    "save": "Guardar",
+    "find": "Buscar"
+  }
+}

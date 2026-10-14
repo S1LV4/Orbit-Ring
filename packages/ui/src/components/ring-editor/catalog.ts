@@ -2,14 +2,14 @@ import {
   CAT,
   GI,
   RING_CATEGORIES,
-  GROUP_ICON_LABELS,
   RING_MAX_ACTIONS,
   RING_MAX_GROUPS,
   FALLBACK_ICON,
   pluginImage,
 } from "@orbitring/shared/src/ring-catalog";
+import { t } from "../../i18n";
 
-export { GI, GROUP_ICON_LABELS, RING_MAX_ACTIONS, RING_MAX_GROUPS, FALLBACK_ICON, pluginImage };
+export { GI, RING_MAX_ACTIONS, RING_MAX_GROUPS, FALLBACK_ICON, pluginImage };
 
 export interface PluginActionLike {
   id: string;
@@ -84,6 +84,10 @@ export function pluginActionId(pluginId: string, actionId: string): string {
   return `plugin:${pluginId}:${actionId}`;
 }
 
+const categoryName = (c: string) => (t.has(`catalog.categories.${c}`) ? t.dyn(`catalog.categories.${c}`) : c);
+const builtinLabel = (id: string) => (t.has(`catalog.actions.${id}`) ? t.dyn(`catalog.actions.${id}`) : id);
+export const groupIconLabel = (id: string) => (t.has(`catalog.groupIcons.${id}`) ? t.dyn(`catalog.groupIcons.${id}`) : id);
+
 function def(id: string, label: string, category: string, icon: string, description?: string): ActionDef {
   return {
     id,
@@ -99,7 +103,7 @@ function def(id: string, label: string, category: string, icon: string, descript
 export function buildCatalog(plugins: readonly PluginLike[] = []): ActionCatalog {
   const byId = new Map<string, ActionDef>();
   const buckets = new Map<string, ActionDef[]>();
-  const order: string[] = [...RING_CATEGORIES];
+  const order: string[] = RING_CATEGORIES.map(categoryName);
   const push = (d: ActionDef) => {
     if (byId.has(d.id)) return;
     byId.set(d.id, d);
@@ -115,13 +119,13 @@ export function buildCatalog(plugins: readonly PluginLike[] = []): ActionCatalog
   for (const id of Object.keys(CAT)) {
     const e = CAT[id];
     if (id.startsWith("plugin:")) continue;
-    push(def(id, e.l || id, e.c || "Outros", e.s || FALLBACK_ICON));
+    push(def(id, e.l || builtinLabel(id), categoryName(e.c || "misc"), e.s || FALLBACK_ICON));
   }
 
   const pluginActions: RingPluginAction[] = [];
   for (const p of plugins) {
     if (!p || !p.id) continue;
-    const category = `Plugin · ${p.name || p.id}`;
+    const category = t("catalog.pluginCategory", { name: p.name || p.id });
     for (const a of p.actions ?? []) {
       if (!a || !a.id) continue;
       const id = pluginActionId(p.id, a.id);
@@ -149,7 +153,7 @@ export function resolveAction(catalog: ActionCatalog, id: string): ActionDef {
     catalog.byId.get(id) ?? {
       id,
       label: id,
-      category: "Indisponível",
+      category: t("catalog.unavailable"),
       icon: FALLBACK_ICON,
       known: false,
       search: normalizeText(id),

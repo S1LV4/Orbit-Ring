@@ -2,8 +2,9 @@ import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 
 import { createPortal } from "react-dom";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { SvgIcon } from "./SvgIcon";
-import { GI, GROUP_ICON_IDS, GROUP_ICON_LABELS } from "./catalog";
+import { GI, GROUP_ICON_IDS, groupIconLabel } from "./catalog";
 import { useDismiss, useFloatingStyle, type Anchor } from "./floating";
+import { t } from "../../i18n";
 
 export type MenuEntry =
   | {
@@ -105,7 +106,7 @@ export function ContextMenu({ anchor, title, entries, onClose }: ContextMenuProp
                 )}
               </button>
               {iconsOpen && (
-                <div className="grid grid-cols-8 gap-0.5 px-1.5 pb-1.5 pt-1" role="group" aria-label="Ícones">
+                <div className="grid grid-cols-8 gap-0.5 px-1.5 pb-1.5 pt-1" role="group" aria-label={t("editor.menu.icons")}>
                   {GROUP_ICON_IDS.map((id) => {
                     const active = entry.value === id;
                     return (
@@ -114,8 +115,8 @@ export function ContextMenu({ anchor, title, entries, onClose }: ContextMenuProp
                         type="button"
                         role="menuitemradio"
                         aria-checked={active}
-                        aria-label={GROUP_ICON_LABELS[id] ?? id}
-                        data-tip={GROUP_ICON_LABELS[id] ?? id}
+                        aria-label={groupIconLabel(id)}
+                        data-tip={groupIconLabel(id)}
                         data-menu-item
                         onClick={() => {
                           entry.onPick(id);

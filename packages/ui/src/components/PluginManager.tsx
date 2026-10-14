@@ -11,6 +11,7 @@ import {
   RefreshCw,
   X,
 } from "lucide-react";
+import { t } from "../i18n";
 
 interface PluginAction {
   id: string;
@@ -52,7 +53,7 @@ interface PluginManagerProps {
 type View = "catalog" | "installed";
 
 const GRID = "grid gap-2 grid-cols-1 md:grid-cols-2 xl:grid-cols-3";
-const actionsLabel = (n: number) => `${n} action${n === 1 ? "" : "s"}`;
+const actionsLabel = (n: number) => t("plugins.actionCount", { count: n });
 
 function CardBody({ name, version, description, author }: { name: string; version: string; description?: string; author?: string }) {
   return (
@@ -87,17 +88,17 @@ function CatalogCard({ plugin, onInstall }: { plugin: CatalogPlugin; onInstall?:
         <span className="text-[10px] font-mono text-[#555]">{actionsLabel(plugin.actionCount)}</span>
         {installed && !plugin.updateAvailable ? (
           <span className="flex items-center gap-1 text-[10px] font-mono" style={{ color: "var(--accent)" }}>
-            <CheckCircle className="w-3 h-3" /> installed
+            <CheckCircle className="w-3 h-3" /> {t("plugins.installedBadge")}
           </span>
         ) : (
           <button
             onClick={start}
             disabled={busy}
-            title={plugin.updateAvailable ? `Installed: v${plugin.installedVersion}` : undefined}
+            title={plugin.updateAvailable ? t("plugins.installedVersion", { version: plugin.installedVersion ?? "" }) : undefined}
             className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium border border-orbit-border text-orbit-text-dim hover:border-(--accent) hover:text-(--accent) transition-colors disabled:opacity-50"
           >
             {plugin.updateAvailable ? <RefreshCw className="w-3 h-3" /> : <Download className="w-3 h-3" />}
-            {busy ? "Working…" : plugin.updateAvailable ? "Update" : "Install"}
+            {busy ? t("plugins.working") : plugin.updateAvailable ? t("plugins.update") : t("plugins.install")}
           </button>
         )}
       </div>
@@ -120,7 +121,7 @@ function InstalledCard({ plugin, selected, onSelect }: { plugin: PluginInfo; sel
           style={{ color: plugin.loaded ? "var(--accent)" : "#EF4444" }}
         >
           {plugin.loaded ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-          {plugin.loaded ? "loaded" : "error"}
+          {plugin.loaded ? t("plugins.loaded") : t("plugins.error")}
         </span>
         <button
           onClick={onSelect}
@@ -164,19 +165,19 @@ function PluginDetails({
             <div className="w-8 h-[18px] bg-orbit-border rounded-full peer-checked:bg-(--accent) transition-colors" />
             <div className="absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-orbit-bg rounded-full transition-transform peer-checked:translate-x-3.5" />
           </div>
-          <span className="text-[11px] text-orbit-text-muted">{plugin.loaded ? "Enabled" : "Disabled"}</span>
+          <span className="text-[11px] text-orbit-text-muted">{plugin.loaded ? t("plugins.enabled") : t("plugins.disabled")}</span>
         </label>
         {confirmRemove ? (
           <span className="flex items-center gap-2 text-[11px]">
-            <span className="text-orbit-text-muted">Delete this plugin's folder?</span>
+            <span className="text-orbit-text-muted">{t("plugins.confirmDelete")}</span>
             <button
               onClick={() => { setConfirmRemove(false); onRemove?.(plugin.id); }}
               className="text-red-400 hover:text-red-300 transition-colors"
             >
-              Uninstall
+              {t("plugins.uninstall")}
             </button>
             <button onClick={() => setConfirmRemove(false)} className="text-orbit-text-muted hover:text-orbit-text transition-colors">
-              Cancel
+              {t("plugins.cancel")}
             </button>
           </span>
         ) : (
@@ -185,10 +186,10 @@ function PluginDetails({
             className="flex items-center gap-1 text-[11px] text-orbit-text-muted hover:text-red-400 transition-colors"
           >
             <Trash2 className="w-3 h-3" />
-            Uninstall
+            {t("plugins.uninstall")}
           </button>
         )}
-        <button onClick={onClose} aria-label="Close details" className="text-orbit-text-muted hover:text-orbit-text transition-colors">
+        <button onClick={onClose} aria-label={t("plugins.closeDetails")} className="text-orbit-text-muted hover:text-orbit-text transition-colors">
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -234,8 +235,8 @@ export function PluginManager({
   const selected = plugins.find((p) => p.id === selectedId) ?? null;
 
   const views: { id: View; label: string; count: number }[] = [
-    { id: "catalog", label: "Catalog", count: catalog.length },
-    { id: "installed", label: "Installed", count: plugins.length },
+    { id: "catalog", label: t("plugins.tabs.catalog"), count: catalog.length },
+    { id: "installed", label: t("plugins.tabs.installed"), count: plugins.length },
   ];
 
   return (
@@ -243,7 +244,7 @@ export function PluginManager({
       <div className="flex items-center gap-3 mb-4">
         <h2 className="text-base font-semibold flex items-center gap-2 text-orbit-text">
           <Puzzle className="w-4 h-4 text-orbit-text-muted" />
-          Plugins
+          {t("plugins.title")}
         </h2>
         <div role="tablist" className="flex items-center gap-0.5 p-0.5 rounded-lg bg-[#141417] border border-orbit-border">
           {views.map((v) => (
@@ -270,17 +271,17 @@ export function PluginManager({
         <div className="flex-1" />
         <button
           onClick={onOpenFolder}
-          title="~/.orbit/plugins/ — copy a plugin folder here to install it by hand"
+          title={t("plugins.folderTip")}
           className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border border-orbit-border text-orbit-text-muted hover:border-(--accent) hover:text-(--accent) transition-colors"
         >
           <FolderOpen className="w-3.5 h-3.5" />
-          Plugins folder
+          {t("plugins.folder")}
         </button>
       </div>
 
       {view === "catalog" ? (
         catalog.length === 0 ? (
-          <Empty title="The catalog is empty" hint="copy a plugin folder to ~/.orbit/plugins/ to install it by hand" />
+          <Empty title={t("plugins.emptyCatalog")} hint={t("plugins.emptyCatalogHint")} />
         ) : (
           <div className={GRID}>
             {catalog.map((p) => (
@@ -289,7 +290,7 @@ export function PluginManager({
           </div>
         )
       ) : plugins.length === 0 ? (
-        <Empty title="No plugins installed" hint="pick one from the catalog, or copy a plugin folder to ~/.orbit/plugins/" />
+        <Empty title={t("plugins.emptyInstalled")} hint={t("plugins.emptyInstalledHint")} />
       ) : (
         <>
           <div className={GRID}>
@@ -315,8 +316,8 @@ export function PluginManager({
       )}
 
       <p className="mt-4 text-[10px] font-mono text-[#555]">
-        writing a plugin? a folder with a <span className="text-orbit-text-muted">manifest.json</span> (id, name, version, author, actions) ·{" "}
-        <span className="text-orbit-text-muted">"author": "@your-github"</span> shows your profile link and picture
+        {t("plugins.authorHintStart")} <span className="text-orbit-text-muted">manifest.json</span> {t("plugins.authorHintFields")}{" "}
+        <span className="text-orbit-text-muted">"author": "@your-github"</span> {t("plugins.authorHintEnd")}
       </p>
     </div>
   );

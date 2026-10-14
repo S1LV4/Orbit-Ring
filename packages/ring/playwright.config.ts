@@ -5,6 +5,7 @@ export default defineConfig({
   timeout: 15000,
   retries: process.env.CI ? 2 : 0,
   use: {
+    locale: "pt-BR",
     headless: true,
     launchOptions: {},
   },

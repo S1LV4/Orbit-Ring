@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import { useState } from "react";
 
 export interface Author {
@@ -54,7 +55,7 @@ export function AuthorBadge({ author, size = 16 }: { author: Author; size?: numb
   );
 }
 
-export function AuthorCredit({ author, prefix = "by", size = 16 }: { author?: string | null; prefix?: string; size?: number }) {
+export function AuthorCredit({ author, prefix = t("plugins.by"), size = 16 }: { author?: string | null; prefix?: string; size?: number }) {
   const authors = parseAuthors(author);
   if (authors.length === 0) return null;
   return (
