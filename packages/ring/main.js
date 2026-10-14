@@ -299,7 +299,8 @@ function createConfigWindow() {
   configWindow.webContents.on("did-fail-load", (_e, code, desc) => {
     console.error("[orbitring] Config window failed to load:", code, desc);
   });
-  configWindow.webContents.on("console-message", (_e, _level, msg) => {
+  configWindow.webContents.on("console-message", (e) => {
+    const msg = e.message;
     if (msg.includes("Error") || msg.includes("error") || msg.includes("Failed")) {
       console.error("[orbitring] Console:", msg);
     }
@@ -308,8 +309,8 @@ function createConfigWindow() {
     configWindow?.maximize();
     configWindow?.show();
   });
-  configWindow.webContents.on("console-message", (_e, level, msg, line, source) => {
-    console.log(`[ui:${level}] ${msg} (${source}:${line})`);
+  configWindow.webContents.on("console-message", (e) => {
+    console.log(`[ui:${e.level}] ${e.message} (${e.sourceId}:${e.lineNumber})`);
   });
   configWindow.on("closed", () => {
     configWindow = null;
