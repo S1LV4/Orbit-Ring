@@ -96,14 +96,8 @@ export function App() {
 
       <aside className="w-48 bg-[#141417] border-r border-orbit-border flex flex-col">
         <div className="px-4 py-5 border-b border-orbit-border" style={{ WebkitAppRegion: "drag" } as any}>
-          <div className="flex items-center gap-2.5">
-            <svg viewBox="0 0 128 128" className="w-7 h-7 shrink-0">
-              <circle cx="64" cy="64" r="42" fill="none" stroke="#F7F8F4" strokeWidth="8" strokeLinecap="round" strokeDasharray="183 81" transform="rotate(-53 64 64)"/>
-              <circle cx="64" cy="64" r="26" fill="none" stroke="#F7F8F4" strokeWidth="6" opacity=".34"/>
-              <path d="M64 38 V48 M64 80 V90 M38 64 H48 M80 64 H90" stroke="#F7F8F4" strokeWidth="4" strokeLinecap="round" opacity=".55"/>
-              <circle cx="64" cy="64" r="10" fill={accent}/>
-              <circle cx="99.9" cy="42.4" r="8" fill={accent}/>
-            </svg>
+          <div className="flex items-center gap-2.5" data-testid="brand">
+            <img src="./orbitring-icon.webp" alt="" className="w-8 h-8 shrink-0" draggable={false} />
             <div>
               <h1 className="text-sm text-orbit-text tracking-tight leading-none"><span className="font-bold">orbit</span><span className="font-light">Ring</span></h1>
               <p className="text-[10px] font-mono text-orbit-text-muted tracking-wide mt-0.5">v1.0.0</p>

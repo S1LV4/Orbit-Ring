@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><circle cx="64" cy="64" r="42" fill="none" stroke="#111216" stroke-width="8" stroke-linecap="round" stroke-dasharray="183 81" transform="rotate(-53 64 64)"/>
-<circle cx="64" cy="64" r="26" fill="none" stroke="#111216" stroke-width="6" opacity=".34"/>
-<path d="M64 38 V48 M64 80 V90 M38 64 H48 M80 64 H90" stroke="#111216" stroke-width="4" stroke-linecap="round" opacity=".55"/>
-<circle cx="64" cy="64" r="10" fill="#A3CE14"/>
-<circle cx="99.9" cy="42.4" r="8" fill="#A3CE14"/></svg>
