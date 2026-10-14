@@ -27,7 +27,7 @@ interface ContextMenuProps {
 }
 
 const ITEM =
-  "flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-[12px] leading-5 outline-none transition-colors";
+  "flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-[12px] leading-5 outline-hidden transition-colors";
 
 export function ContextMenu({ anchor, title, entries, onClose }: ContextMenuProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -70,13 +70,13 @@ export function ContextMenu({ anchor, title, entries, onClose }: ContextMenuProp
       data-testid="context-menu"
       onKeyDown={onKeyDown}
       onContextMenu={(e) => e.preventDefault()}
-      className="re-layer z-[120] w-[232px] rounded-xl border border-[#2A2A30] bg-[#17171B] p-1 shadow-2xl shadow-black/60"
+      className="re-layer z-120 w-[232px] rounded-xl border border-orbit-border bg-orbit-card p-1 shadow-2xl shadow-black/60"
       style={style}
     >
       <div className="truncate px-2.5 pb-1 pt-1.5 text-[11px] font-medium text-[#8B8B95]">{title}</div>
       {entries.map((entry, i) => {
         if (entry.kind === "separator") {
-          return <div key={i} role="separator" className="mx-1 my-1 h-px bg-[#2A2A30]" />;
+          return <div key={i} role="separator" className="mx-1 my-1 h-px bg-orbit-border" />;
         }
         if (entry.kind === "label") {
           return (
@@ -94,7 +94,7 @@ export function ContextMenu({ anchor, title, entries, onClose }: ContextMenuProp
                 data-menu-item
                 aria-expanded={iconsOpen}
                 onClick={() => setIconsOpen((o) => !o)}
-                className={`${ITEM} text-[#efeee7] hover:bg-[#24242B] focus-visible:bg-[#24242B]`}
+                className={`${ITEM} text-orbit-text-dim hover:bg-[#24242B] focus-visible:bg-[#24242B]`}
               >
                 <span className="flex w-4 justify-center text-[#8B8B95]">{entry.icon}</span>
                 <span className="flex-1">{entry.label}</span>
@@ -123,8 +123,8 @@ export function ContextMenu({ anchor, title, entries, onClose }: ContextMenuProp
                         }}
                         className={`flex aspect-square w-full items-center justify-center rounded-md transition-colors ${
                           active
-                            ? "bg-[var(--accent)] text-[#0A0A0B]"
-                            : "text-[#A1A1AA] hover:bg-[#24242B] hover:text-[#FAFAFA]"
+                            ? "bg-(--accent) text-orbit-bg"
+                            : "text-[#A1A1AA] hover:bg-[#24242B] hover:text-orbit-text"
                         }`}
                       >
                         <SvgIcon markup={GI[id]} size={16} />
@@ -155,14 +155,14 @@ export function ContextMenu({ anchor, title, entries, onClose }: ContextMenuProp
                 ? "cursor-not-allowed text-[#5F5F68]"
                 : entry.danger
                   ? "text-[#F87171] hover:bg-[#F87171]/10 focus-visible:bg-[#F87171]/10"
-                  : "text-[#efeee7] hover:bg-[#24242B] focus-visible:bg-[#24242B]"
+                  : "text-orbit-text-dim hover:bg-[#24242B] focus-visible:bg-[#24242B]"
             }`}
           >
             <span className={`flex w-4 justify-center ${entry.danger || disabled ? "" : "text-[#8B8B95]"}`}>
               {entry.icon}
             </span>
             <span className="min-w-0 flex-1 truncate">{entry.label}</span>
-            {entry.note && <span className="flex-shrink-0 text-[11px] text-[#71717A]">{entry.note}</span>}
+            {entry.note && <span className="shrink-0 text-[11px] text-orbit-text-muted">{entry.note}</span>}
           </button>
         );
       })}

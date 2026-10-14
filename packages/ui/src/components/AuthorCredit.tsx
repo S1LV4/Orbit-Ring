@@ -31,21 +31,21 @@ function Avatar({ handle, size }: { handle: string; size: number }) {
       loading="lazy"
       referrerPolicy="no-referrer"
       onError={() => setFailed(true)}
-      className="rounded-full flex-shrink-0 bg-[#17171B] border border-[#2A2A30]"
+      className="rounded-full shrink-0 bg-orbit-card border border-orbit-border"
       style={{ width: size, height: size }}
     />
   );
 }
 
 export function AuthorBadge({ author, size = 16 }: { author: Author; size?: number }) {
-  if (!author.handle) return <span className="text-[#efeee7]">{author.label}</span>;
+  if (!author.handle) return <span className="text-orbit-text-dim">{author.label}</span>;
   return (
     <a
       href={`https://github.com/${author.handle}`}
       target="_blank"
       rel="noreferrer noopener"
       title={`github.com/${author.handle}`}
-      className="inline-flex items-center gap-1.5 align-middle text-[#efeee7] hover:text-[var(--accent)] hover:underline underline-offset-2 transition-colors"
+      className="inline-flex items-center gap-1.5 align-middle text-orbit-text-dim hover:text-(--accent) hover:underline underline-offset-2 transition-colors"
       style={{ WebkitAppRegion: "no-drag" } as any}
     >
       <Avatar handle={author.handle} size={size} />
@@ -58,7 +58,7 @@ export function AuthorCredit({ author, prefix = "by", size = 16 }: { author?: st
   const authors = parseAuthors(author);
   if (authors.length === 0) return null;
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-[#71717A]">
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-orbit-text-muted">
       <span>{prefix}</span>
       {authors.map((a, i) => (
         <span key={a.label + i} className="inline-flex items-center">

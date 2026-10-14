@@ -138,12 +138,12 @@ export function GroupList({
   if (groups.length === 0) {
     return (
       <div className="px-4 pb-4 pt-1">
-        <div className="rounded-lg border border-dashed border-[#2A2A30] px-4 py-5 text-center">
+        <div className="rounded-lg border border-dashed border-orbit-border px-4 py-5 text-center">
           <p className="text-[12px] leading-relaxed text-[#A1A1AA]">Nenhum grupo ainda.</p>
           <button
             type="button"
             onClick={onAdd}
-            className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-[#2A2A30] bg-[#17171B] px-3 py-1.5 text-[12px] font-medium text-[#efeee7] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+            className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-orbit-border bg-orbit-card px-3 py-1.5 text-[12px] font-medium text-orbit-text-dim hover:border-(--accent) hover:text-(--accent)"
           >
             <Plus className="h-3.5 w-3.5" /> Criar o primeiro grupo
           </button>
@@ -187,22 +187,22 @@ export function GroupList({
               onMenu(g.id, e.clientX, e.clientY);
             }}
             className={`group/row relative flex h-10 cursor-default items-center gap-2 rounded-lg pl-1 pr-1 transition-colors ${
-              selected ? "bg-[#1E1E24]" : "hover:bg-[#17171B]"
+              selected ? "bg-[#1E1E24]" : "hover:bg-orbit-card"
             } ${dragIndex === index ? "opacity-40" : ""}`}
           >
             {indicator === index && <span className="re-drop-line -top-px" />}
             {indicator === groups.length && index === groups.length - 1 && <span className="re-drop-line -bottom-px" />}
             <span
               aria-hidden="true"
-              className={`flex h-6 w-4 flex-shrink-0 cursor-grab items-center justify-center text-[#52525B] transition-opacity active:cursor-grabbing ${
+              className={`flex h-6 w-4 shrink-0 cursor-grab items-center justify-center text-[#52525B] transition-opacity active:cursor-grabbing ${
                 selected ? "opacity-100" : "opacity-0 group-hover/row:opacity-100"
               }`}
             >
               <GripVertical className="h-3.5 w-3.5" />
             </span>
             <span
-              className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md ${
-                selected ? "bg-[var(--accent)] text-[#0A0A0B]" : "bg-[#1A1A1F] text-[#A1A1AA]"
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${
+                selected ? "bg-(--accent) text-orbit-bg" : "bg-[#1A1A1F] text-[#A1A1AA]"
               } ${hidden ? "opacity-50" : ""}`}
             >
               <SvgIcon markup={groupIconMarkup(g.icon)} size={15} />
@@ -225,17 +225,17 @@ export function GroupList({
               <span
                 data-testid="group-name"
                 className={`min-w-0 flex-1 truncate text-[13px] ${
-                  selected ? "font-medium text-[#FAFAFA]" : hidden ? "text-[#8B8B95]" : "text-[#D4D4D8]"
+                  selected ? "font-medium text-orbit-text" : hidden ? "text-[#8B8B95]" : "text-[#D4D4D8]"
                 }`}
               >
-                {g.name || <span className="italic text-[#71717A]">Sem nome</span>}
+                {g.name || <span className="italic text-orbit-text-muted">Sem nome</span>}
               </span>
             )}
             {!renaming && hidden && (
               <span
                 data-testid="badge-hidden"
                 data-tip={`O ring mostra no máximo ${RING_MAX_GROUPS} grupos. Este fica salvo, mas só aparece se você movê-lo para as ${RING_MAX_GROUPS} primeiras posições.`}
-                className="flex-shrink-0 rounded border border-[#3A3A42] px-1.5 py-px text-[11px] leading-4 text-[#A1A1AA]"
+                className="shrink-0 rounded-sm border border-[#3A3A42] px-1.5 py-px text-[11px] leading-4 text-[#A1A1AA]"
               >
                 oculto
               </span>
@@ -245,7 +245,7 @@ export function GroupList({
                 <span
                   data-testid="badge-empty"
                   data-tip="Grupo vazio: não aparece no ring real até receber uma ação."
-                  className="flex-shrink-0 rounded border border-[#4A3F1D] px-1.5 py-px text-[11px] leading-4 text-[#D9B95B]"
+                  className="shrink-0 rounded-sm border border-[#4A3F1D] px-1.5 py-px text-[11px] leading-4 text-[#D9B95B]"
                 >
                   vazio
                 </span>
@@ -253,7 +253,7 @@ export function GroupList({
                 <span
                   data-testid="group-count"
                   data-tip={`${g.actions.length} de ${RING_MAX_ACTIONS} ações`}
-                  className="w-5 flex-shrink-0 text-right font-mono text-[11px] tabular-nums text-[#8B8B95]"
+                  className="w-5 shrink-0 text-right font-mono text-[11px] tabular-nums text-[#8B8B95]"
                 >
                   {g.actions.length}
                 </span>
@@ -272,7 +272,7 @@ export function GroupList({
                   onMenu(g.id, r.right - 232, r.bottom + 4);
                 }}
                 onDoubleClick={(e) => e.stopPropagation()}
-                className={`flex h-7 w-6 flex-shrink-0 items-center justify-center rounded-md text-[#8B8B95] transition-opacity hover:bg-[#2A2A30] hover:text-[#FAFAFA] ${
+                className={`flex h-7 w-6 shrink-0 items-center justify-center rounded-md text-[#8B8B95] transition-opacity hover:bg-orbit-border hover:text-orbit-text ${
                   selected ? "opacity-100" : "opacity-0 focus-visible:opacity-100 group-hover/row:opacity-100"
                 }`}
               >

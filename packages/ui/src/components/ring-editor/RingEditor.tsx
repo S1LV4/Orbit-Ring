@@ -503,7 +503,7 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
         </div>
         <p
           data-testid="preview-hint"
-          className="flex-shrink-0 px-4 pb-3.5 pt-2 text-center text-[12px] leading-relaxed text-[#8B8B95]"
+          className="shrink-0 px-4 pb-3.5 pt-2 text-center text-[12px] leading-relaxed text-[#8B8B95]"
           style={{ textWrap: "balance" }}
         >
           Clique num grupo para editar · arraste para reordenar · solte no centro para remover · botão direito para
@@ -514,7 +514,7 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
 
       <aside
         aria-label="Grupos e ações"
-        className="flex w-80 flex-shrink-0 flex-col border-l border-[#2A2A30] bg-[#111114]"
+        className="flex w-80 shrink-0 flex-col border-l border-orbit-border bg-[#111114]"
       >
         <div ref={scrollerRef} className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain" data-testid="panel-scroll">
           <div className="re-section-header flex items-center gap-2 pl-4 pr-2" style={{ top: 0, bottom: HEADER_H * 2 }}>
@@ -539,7 +539,7 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
               data-tip="Novo grupo"
               data-testid="add-group-panel"
               onClick={addGroup}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-[#A1A1AA] hover:bg-[#1E1E24] hover:text-[var(--accent)]"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-[#A1A1AA] hover:bg-[#1E1E24] hover:text-(--accent)"
             >
               <Plus className="h-4 w-4" />
             </button>
@@ -569,7 +569,7 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
             className="re-section-header flex items-center gap-2 border-t border-[#232329] px-4"
             style={{ top: HEADER_H, bottom: HEADER_H }}
           >
-            <button type="button" onClick={() => scrollToSection(1)} className="re-section-title flex-shrink-0">
+            <button type="button" onClick={() => scrollToSection(1)} className="re-section-title shrink-0">
               Grupo selecionado
             </button>
             <span className="min-w-0 flex-1 truncate text-right text-[12px] text-[#8B8B95]" data-testid="selected-name">
@@ -624,7 +624,7 @@ export function RingEditor({ settings, onSave, plugins }: RingEditorProps) {
             </span>
           </div>
           <div ref={(el) => (sectionRefs.current[2] = el)} style={{ minHeight: `calc(100vh - 2.25rem - ${HEADER_H * 3}px)` }}>
-            <div className="sticky z-[9] bg-[#111114] px-4 pb-2 pt-1" style={{ top: HEADER_H * 3 }}>
+            <div className="sticky z-9 bg-[#111114] px-4 pb-2 pt-1" style={{ top: HEADER_H * 3 }}>
               <LibrarySearch query={query} onQueryChange={setQuery} searchRef={searchRef} />
               {selected ? (
                 <p className="mt-1.5 truncate text-[11px] text-[#8B8B95]">

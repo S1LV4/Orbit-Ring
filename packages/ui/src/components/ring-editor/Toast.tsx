@@ -28,9 +28,9 @@ export function Toast({ toast, onDismiss }: { toast: ToastData | null; onDismiss
       {toast && (
         <div
           data-testid="toast"
-          className="pointer-events-auto flex max-w-full items-center gap-3 rounded-xl border border-[#33333B] bg-[#1E1E24] py-2 pl-3.5 pr-2 text-[12px] text-[#efeee7] shadow-xl shadow-black/50"
+          className="pointer-events-auto flex max-w-full items-center gap-3 rounded-xl border border-orbit-border-light bg-[#1E1E24] py-2 pl-3.5 pr-2 text-[12px] text-orbit-text-dim shadow-xl shadow-black/50"
         >
-          {toast.tone === "warn" && <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#FBBF24]" />}
+          {toast.tone === "warn" && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#FBBF24]" />}
           <span className="min-w-0 truncate">{toast.message}</span>
           {toast.actionLabel && toast.onAction && (
             <button
@@ -39,7 +39,7 @@ export function Toast({ toast, onDismiss }: { toast: ToastData | null; onDismiss
                 toast.onAction?.();
                 onDismiss();
               }}
-              className="flex-shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-[var(--accent)] hover:bg-[#2A2A30]"
+              className="shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold text-(--accent) hover:bg-orbit-border"
             >
               {toast.actionLabel}
             </button>
@@ -48,7 +48,7 @@ export function Toast({ toast, onDismiss }: { toast: ToastData | null; onDismiss
             type="button"
             aria-label="Fechar aviso"
             onClick={onDismiss}
-            className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md text-[#8B8B95] hover:bg-[#2A2A30] hover:text-[#FAFAFA]"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[#8B8B95] hover:bg-orbit-border hover:text-orbit-text"
           >
             <X className="h-3.5 w-3.5" />
           </button>

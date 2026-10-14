@@ -74,7 +74,7 @@ export function GroupInspector({
   if (!group) {
     return (
       <div className="px-4 pb-4 pt-1">
-        <p className="rounded-lg border border-dashed border-[#2A2A30] px-4 py-5 text-center text-[12px] leading-relaxed text-[#A1A1AA]">
+        <p className="rounded-lg border border-dashed border-orbit-border px-4 py-5 text-center text-[12px] leading-relaxed text-[#A1A1AA]">
           {hasGroups
             ? "Selecione um grupo na lista acima ou clique nele no preview para editar."
             : "Crie um grupo para começar a montar o ring."}
@@ -139,7 +139,7 @@ export function GroupInspector({
             data-tip="Excluir grupo"
             data-testid="group-delete"
             onClick={onDelete}
-            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-[#2A2A30] text-[#8B8B95] transition-colors hover:border-[#F87171]/50 hover:bg-[#F87171]/10 hover:text-[#F87171]"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-orbit-border text-[#8B8B95] transition-colors hover:border-[#F87171]/50 hover:bg-[#F87171]/10 hover:text-[#F87171]"
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -166,8 +166,8 @@ export function GroupInspector({
                 onClick={() => onIcon(id)}
                 className={`flex aspect-square w-full items-center justify-center rounded-lg border transition-colors ${
                   active
-                    ? "border-transparent bg-[var(--accent)] text-[#0A0A0B]"
-                    : "border-[#2A2A30] bg-[#141417] text-[#A1A1AA] hover:border-[#3A3A42] hover:text-[#FAFAFA]"
+                    ? "border-transparent bg-(--accent) text-orbit-bg"
+                    : "border-orbit-border bg-[#141417] text-[#A1A1AA] hover:border-[#3A3A42] hover:text-orbit-text"
                 }`}
               >
                 <SvgIcon markup={GI[id]} size={16} />
@@ -192,18 +192,18 @@ export function GroupInspector({
         {actions.length === 0 ? (
           <div
             data-testid="actions-empty"
-            className="rounded-lg border border-dashed border-[#2A2A30] px-3.5 py-4 text-[12px] leading-relaxed text-[#A1A1AA]"
+            className="rounded-lg border border-dashed border-orbit-border px-3.5 py-4 text-[12px] leading-relaxed text-[#A1A1AA]"
           >
             <p>
               Nenhuma ação ainda. Escolha na{" "}
               <button
                 type="button"
                 onClick={onGoToLibrary}
-                className="rounded font-medium text-[var(--accent)] underline-offset-2 hover:underline"
+                className="rounded-sm font-medium text-(--accent) underline-offset-2 hover:underline"
               >
                 Biblioteca de ações
               </button>{" "}
-              ou clique no <span className="font-semibold text-[#efeee7]">+</span> do preview.
+              ou clique no <span className="font-semibold text-orbit-text-dim">+</span> do preview.
             </p>
             <p className="mt-1.5 text-[11px] text-[#8B8B95]">Um grupo vazio não aparece no ring real.</p>
           </div>
@@ -231,22 +231,22 @@ export function GroupInspector({
                     onActionMenu(actionId, e.clientX, e.clientY);
                   }}
                   className={`group/act relative flex h-9 items-center gap-2 rounded-lg border bg-[#141417] pl-1 pr-1 transition-colors ${
-                    flash ? "border-[var(--accent)] bg-[#1E1E24]" : "border-[#232329] hover:border-[#33333B]"
+                    flash ? "border-(--accent) bg-[#1E1E24]" : "border-[#232329] hover:border-orbit-border-light"
                   } ${dragIndex === index ? "opacity-40" : ""}`}
                 >
-                  {indicator === index && <span className="re-drop-line -top-[3px]" />}
+                  {indicator === index && <span className="re-drop-line top-[-3px]" />}
                   {indicator === actions.length && index === actions.length - 1 && (
-                    <span className="re-drop-line -bottom-[3px]" />
+                    <span className="re-drop-line bottom-[-3px]" />
                   )}
                   <span
                     aria-hidden="true"
-                    className="flex h-6 w-4 flex-shrink-0 cursor-grab items-center justify-center text-[#52525B] active:cursor-grabbing"
+                    className="flex h-6 w-4 shrink-0 cursor-grab items-center justify-center text-[#52525B] active:cursor-grabbing"
                   >
                     <GripVertical className="h-3.5 w-3.5" />
                   </span>
-                  <ActionIcon action={a} size={15} className={a.known ? "text-[#D4D4D8]" : "text-[#71717A]"} />
+                  <ActionIcon action={a} size={15} className={a.known ? "text-[#D4D4D8]" : "text-orbit-text-muted"} />
                   <span
-                    className={`min-w-0 flex-1 truncate text-[13px] ${a.known ? "text-[#efeee7]" : "text-[#8B8B95]"}`}
+                    className={`min-w-0 flex-1 truncate text-[13px] ${a.known ? "text-orbit-text-dim" : "text-[#8B8B95]"}`}
                   >
                     {a.label}
                   </span>
@@ -254,7 +254,7 @@ export function GroupInspector({
                     <span
                       data-testid="action-unavailable"
                       data-tip="Esta ação não existe mais no catálogo (plugin removido ou desativado). Ela não funciona no ring; você pode removê-la."
-                      className="flex-shrink-0 text-[11px] italic text-[#8B8B95]"
+                      className="shrink-0 text-[11px] italic text-[#8B8B95]"
                     >
                       indisponível
                     </span>
@@ -266,7 +266,7 @@ export function GroupInspector({
                     data-tip="Remover do grupo"
                     data-testid="action-remove"
                     onClick={() => onRemoveAction(actionId)}
-                    className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[#8B8B95] hover:bg-[#F87171]/10 hover:text-[#F87171]"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#8B8B95] hover:bg-[#F87171]/10 hover:text-[#F87171]"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
