@@ -97,7 +97,7 @@ export function App() {
             <img src="./orbitring-icon.webp" alt="" className="w-8 h-8 shrink-0" draggable={false} />
             <div>
               <h1 className="text-sm text-orbit-text tracking-tight leading-none"><span className="font-bold">orbit</span><span className="font-light">Ring</span></h1>
-              <p className="text-[10px] font-mono text-orbit-text-muted tracking-wide mt-0.5">v1.1.0</p>
+              <p className="text-[10px] font-mono text-orbit-text-muted tracking-wide mt-0.5">v1.2.0</p>
             </div>
           </div>
         </div>
