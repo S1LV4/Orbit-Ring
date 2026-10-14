@@ -12,7 +12,9 @@ export class DeviceManager extends EventEmitter {
     this.scan();
     this.pollTimer = setInterval(() => this.scan(), 5000);
 
-    if (process.platform === "win32") {
+    if (process.env.ORBIT_NO_INPUT_HOOK) {
+      console.log("[orbit] Mouse hook disabled (ORBIT_NO_INPUT_HOOK)");
+    } else if (process.platform === "win32") {
       startMouseHook((event) => {
         if (this.identifyMode && event.action === "press") {
           this.identifyMode = false;

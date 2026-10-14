@@ -102,6 +102,9 @@ Tests run on developers' real machines, next to their real accounts.
 
 - **Never read or write the real `~/.orbit`.** Use a temp directory; when a whole process is under
   test, redirect `USERPROFILE`, `HOME`, `APPDATA` and `LOCALAPPDATA` to it.
+- **A service started by a test never touches the real mouse.** Start it with
+  `ORBIT_NO_INPUT_HOOK=1` (no global mouse hook — a stuck hook slows the cursor of the whole
+  machine) and `ORBIT_PARENT_PID=<test pid>` (the service exits on its own if the test dies).
 - **UI tests always mock the service socket** with `page.routeWebSocket("ws://localhost:9119")`
   before navigating. A UI test must never reach a running service or save a real config.
 - **No test talks to a third-party service or another app** (Anthropic, OpenAI, Google, Discord,

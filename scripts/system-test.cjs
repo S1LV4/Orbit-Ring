@@ -16,7 +16,7 @@ const manifests = fs.readdirSync(CATALOG, { withFileTypes: true })
   .filter((e) => e.isDirectory())
   .map((e) => JSON.parse(fs.readFileSync(path.join(CATALOG, e.name, "manifest.json"), "utf8")));
 
-let child = null, ws = null, home = null, serviceLog = "", passed = 0;
+let child = null, orphan = null, ws = null, home = null, serviceLog = "", passed = 0;
 
 function ok(label) { passed++; console.log(`  ok  ${label}`); }
 function assert(cond, label) { if (!cond) throw new Error(`FAILED: ${label}`); ok(label); }
@@ -50,6 +50,7 @@ async function main() {
     USERPROFILE: home, HOME: home,
     APPDATA: path.join(home, "AppData", "Roaming"), LOCALAPPDATA: path.join(home, "AppData", "Local"),
     ORBIT_PLUGIN_CATALOG: CATALOG, ORBIT_WS_PORT: String(PORT),
+    ORBIT_NO_INPUT_HOOK: "1", ORBIT_PARENT_PID: String(process.pid),
   };
   delete env.ORBIT_HOME;
 
@@ -62,6 +63,7 @@ async function main() {
   child.stderr.on("data", collect);
   for (let i = 0; i < 100 && exited === null && !serviceLog.includes(`ws://localhost:${PORT}`); i++) await new Promise((r) => setTimeout(r, 200));
   assert(exited === null && serviceLog.includes(`ws://localhost:${PORT}`), "built service starts and listens");
+  assert(/mouse hook disabled/i.test(serviceLog), "the service under test leaves the real mouse alone (no global hook)");
 
   ws = new WebSocket(`ws://localhost:${PORT}`);
   ws.on("message", (raw) => {
@@ -125,11 +127,28 @@ async function main() {
   await until(() => errors.length > before, "error for unknown plugin");
   ok("an unknown plugin id is refused with an error");
   assert(exited === null, "service is still running at the end");
+
+  console.log("orphan protection");
+  const parent = spawn(process.execPath, ["-e", "setTimeout(() => {}, 60000)"], { stdio: "ignore", windowsHide: true });
+  const orphanPort = PORT + 1;
+  orphan = spawn(process.execPath, [SERVICE], {
+    env: { ...env, ORBIT_WS_PORT: String(orphanPort), ORBIT_PARENT_PID: String(parent.pid) },
+    cwd: ROOT, stdio: ["ignore", "pipe", "pipe"], windowsHide: true,
+  });
+  let orphanLog = "", orphanExit = null;
+  orphan.stdout.on("data", (d) => { orphanLog += d; });
+  orphan.on("exit", (code) => { orphanExit = code; });
+  for (let i = 0; i < 100 && orphanExit === null && !orphanLog.includes(`ws://localhost:${orphanPort}`); i++) await new Promise((r) => setTimeout(r, 200));
+  assert(orphanExit === null, "a second service starts with a separate parent process");
+  parent.kill();
+  for (let i = 0; i < 50 && orphanExit === null; i++) await new Promise((r) => setTimeout(r, 200));
+  assert(orphanExit !== null, "the service exits on its own when the process that started it is gone");
 }
 
 function cleanup() {
   try { if (ws) ws.terminate(); } catch {}
   try { if (child && child.exitCode === null) child.kill(); } catch {}
+  try { if (orphan && orphan.exitCode === null) orphan.kill(); } catch {}
   if (home) setTimeout(() => { try { fs.rmSync(home, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch {} }, 300);
 }
 

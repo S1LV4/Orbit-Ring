@@ -324,6 +324,18 @@ function cleanup() {
   try { devices.unlockCursor(); } catch {}
   try { devices.stop(); } catch {}
 }
+const PARENT_PID = Number(process.env.ORBIT_PARENT_PID) || 0;
+if (PARENT_PID) {
+  setInterval(() => {
+    try {
+      process.kill(PARENT_PID, 0);
+    } catch {
+      console.log(`[orbit] Parent process ${PARENT_PID} is gone, exiting`);
+      process.exit(0);
+    }
+  }, 1000).unref();
+}
+
 process.on("exit", cleanup);
 process.on("SIGINT", () => { cleanup(); process.exit(0); });
 process.on("SIGTERM", () => { cleanup(); process.exit(0); });
