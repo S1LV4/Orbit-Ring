@@ -179,7 +179,7 @@ export function RingPreview({ cfg, onMessage }: RingPreviewProps) {
   const box = Math.round(RING_SIZE * scale);
   return (
     <div ref={areaRef} className="flex h-full w-full items-center justify-center overflow-hidden">
-      <div className="relative flex-shrink-0" style={{ width: box, height: box }} data-testid="ring-preview" data-scale={scale}>
+      <div className="relative shrink-0" style={{ width: box, height: box }} data-testid="ring-preview" data-scale={scale}>
         <iframe
           ref={iframeRef}
           src="./ring/ring.html"

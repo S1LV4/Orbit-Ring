@@ -25,7 +25,7 @@ const APP_ICONS: Record<string, React.ReactNode> = {
   photoshop: <Palette className="w-4 h-4 text-cyan-400" />,
   premiere: <Film className="w-4 h-4 text-purple-400" />,
   blender: <Palette className="w-4 h-4 text-orange-400" />,
-  default: <FileText className="w-4 h-4 text-[#71717A]" />,
+  default: <FileText className="w-4 h-4 text-orbit-text-muted" />,
 };
 
 function getAppIcon(processMatch: string): React.ReactNode {
@@ -59,13 +59,13 @@ export function ProfileList({ config, onSave, onDelete }: ProfileListProps) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-base font-semibold flex items-center gap-2 text-[#FAFAFA]">
-          <Layers className="w-4 h-4 text-[#71717A]" />
+        <h2 className="text-base font-semibold flex items-center gap-2 text-orbit-text">
+          <Layers className="w-4 h-4 text-orbit-text-muted" />
           App Profiles
         </h2>
         <button
           onClick={() => setShowCreate(!showCreate)}
-          className="orbit-btn flex items-center gap-1.5 text-[#0A0A0B]"
+          className="orbit-btn flex items-center gap-1.5 text-orbit-bg"
           style={{ background: "var(--accent)" }}
         >
           <Plus className="w-3.5 h-3.5" />
@@ -75,7 +75,7 @@ export function ProfileList({ config, onSave, onDelete }: ProfileListProps) {
 
       {showCreate && (
         <div className="mb-6 p-4 orbit-card" style={{ borderColor: "color-mix(in srgb, var(--accent) 40%, #2A2A30)" }}>
-          <h3 className="text-xs font-medium mb-3 text-[#efeee7]">Create Profile</h3>
+          <h3 className="text-xs font-medium mb-3 text-orbit-text-dim">Create Profile</h3>
           <div className="space-y-2">
             <input
               type="text"
@@ -94,14 +94,14 @@ export function ProfileList({ config, onSave, onDelete }: ProfileListProps) {
             <div className="flex gap-2 pt-1">
               <button
                 onClick={handleCreate}
-                className="orbit-btn text-xs text-[#0A0A0B]"
+                className="orbit-btn text-xs text-orbit-bg"
                 style={{ background: "var(--accent)" }}
               >
                 Create
               </button>
               <button
                 onClick={() => setShowCreate(false)}
-                className="orbit-btn text-xs border border-[#2A2A30] text-[#71717A] hover:text-[#efeee7]"
+                className="orbit-btn text-xs border border-orbit-border text-orbit-text-muted hover:text-orbit-text-dim"
               >
                 Cancel
               </button>
@@ -118,15 +118,15 @@ export function ProfileList({ config, onSave, onDelete }: ProfileListProps) {
           <Layers className="w-4 h-4" style={{ color: "var(--accent)" }} />
         </div>
         <div className="flex-1">
-          <h3 className="text-sm font-medium text-[#FAFAFA]">Default Profile</h3>
-          <p className="text-[10px] font-mono text-[#71717A]">
+          <h3 className="text-sm font-medium text-orbit-text">Default Profile</h3>
+          <p className="text-[10px] font-mono text-orbit-text-muted">
             used when no app profile matches
           </p>
         </div>
-        <span className="orbit-pill text-[10px] font-mono text-[#71717A]">
+        <span className="orbit-pill text-[10px] font-mono text-orbit-text-muted">
           {config?.defaultProfile?.bindings?.length ?? 0} actions
         </span>
-        <ChevronRight className="w-4 h-4 text-[#33333B]" />
+        <ChevronRight className="w-4 h-4 text-orbit-border-light" />
       </div>
 
       <div className="space-y-1.5">
@@ -135,32 +135,32 @@ export function ProfileList({ config, onSave, onDelete }: ProfileListProps) {
             key={profile.id}
             className="p-4 orbit-card flex items-center gap-3"
           >
-            <div className="w-9 h-9 bg-[#141417] rounded-lg flex items-center justify-center border border-[#2A2A30]">
+            <div className="w-9 h-9 bg-[#141417] rounded-lg flex items-center justify-center border border-orbit-border">
               {getAppIcon(profile.processMatch)}
             </div>
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-[#FAFAFA]">{profile.name}</h3>
-              <p className="text-[10px] font-mono text-[#71717A]">{profile.processMatch}</p>
+              <h3 className="text-sm font-medium text-orbit-text">{profile.name}</h3>
+              <p className="text-[10px] font-mono text-orbit-text-muted">{profile.processMatch}</p>
             </div>
-            <span className="orbit-pill text-[10px] font-mono text-[#71717A]">
+            <span className="orbit-pill text-[10px] font-mono text-orbit-text-muted">
               {profile.bindings.length} actions
             </span>
             <button
               onClick={() => onDelete(profile.id)}
-              className="p-1.5 text-[#33333B] hover:text-red-400 transition-colors"
+              className="p-1.5 text-orbit-border-light hover:text-red-400 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
             </button>
-            <ChevronRight className="w-4 h-4 text-[#33333B]" />
+            <ChevronRight className="w-4 h-4 text-orbit-border-light" />
           </div>
         ))}
       </div>
 
       {profiles.length === 0 && (
-        <div className="text-center py-12 text-[#71717A]">
+        <div className="text-center py-12 text-orbit-text-muted">
           <Gamepad2 className="w-10 h-10 mx-auto mb-3 opacity-15" />
-          <p className="text-sm text-[#efeee7]">No app profiles created</p>
-          <p className="text-[10px] font-mono mt-2 text-[#33333B]">
+          <p className="text-sm text-orbit-text-dim">No app profiles created</p>
+          <p className="text-[10px] font-mono mt-2 text-orbit-border-light">
             create profiles to have different actions per app
           </p>
         </div>

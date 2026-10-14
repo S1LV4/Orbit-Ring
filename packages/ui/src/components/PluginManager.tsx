@@ -58,10 +58,10 @@ function CardBody({ name, version, description, author }: { name: string; versio
   return (
     <>
       <div className="flex items-baseline gap-1.5 min-w-0">
-        <h3 className="text-[13px] font-medium text-[#FAFAFA] truncate">{name}</h3>
-        <span className="text-[10px] font-mono text-[#71717A] flex-shrink-0">v{version}</span>
+        <h3 className="text-[13px] font-medium text-orbit-text truncate">{name}</h3>
+        <span className="text-[10px] font-mono text-orbit-text-muted shrink-0">v{version}</span>
       </div>
-      <p className="text-[11px] leading-snug text-[#71717A] mt-1 line-clamp-2 min-h-[30px]" title={description || undefined}>
+      <p className="text-[11px] leading-snug text-orbit-text-muted mt-1 line-clamp-2 min-h-[30px]" title={description || undefined}>
         {description || "—"}
       </p>
       <div className="mt-2 min-h-[18px]">
@@ -83,7 +83,7 @@ function CatalogCard({ plugin, onInstall }: { plugin: CatalogPlugin; onInstall?:
   return (
     <div className="orbit-card p-3 flex flex-col min-w-0" data-testid="catalog-plugin" data-plugin-id={plugin.id}>
       <CardBody name={plugin.name} version={plugin.version} description={plugin.description} author={plugin.author} />
-      <div className="flex items-center justify-between gap-2 mt-2.5 pt-2.5 border-t border-[#2A2A30]">
+      <div className="flex items-center justify-between gap-2 mt-2.5 pt-2.5 border-t border-orbit-border">
         <span className="text-[10px] font-mono text-[#555]">{actionsLabel(plugin.actionCount)}</span>
         {installed && !plugin.updateAvailable ? (
           <span className="flex items-center gap-1 text-[10px] font-mono" style={{ color: "var(--accent)" }}>
@@ -94,7 +94,7 @@ function CatalogCard({ plugin, onInstall }: { plugin: CatalogPlugin; onInstall?:
             onClick={start}
             disabled={busy}
             title={plugin.updateAvailable ? `Installed: v${plugin.installedVersion}` : undefined}
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium border border-[#2A2A30] text-[#efeee7] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors disabled:opacity-50"
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium border border-orbit-border text-orbit-text-dim hover:border-(--accent) hover:text-(--accent) transition-colors disabled:opacity-50"
           >
             {plugin.updateAvailable ? <RefreshCw className="w-3 h-3" /> : <Download className="w-3 h-3" />}
             {busy ? "Working…" : plugin.updateAvailable ? "Update" : "Install"}
@@ -114,7 +114,7 @@ function InstalledCard({ plugin, selected, onSelect }: { plugin: PluginInfo; sel
       data-plugin-id={plugin.id}
     >
       <CardBody name={plugin.name} version={plugin.version} description={plugin.description} author={plugin.author} />
-      <div className="flex items-center justify-between gap-2 mt-2.5 pt-2.5 border-t border-[#2A2A30]">
+      <div className="flex items-center justify-between gap-2 mt-2.5 pt-2.5 border-t border-orbit-border">
         <span
           className="flex items-center gap-1 text-[10px] font-mono"
           style={{ color: plugin.loaded ? "var(--accent)" : "#EF4444" }}
@@ -125,7 +125,7 @@ function InstalledCard({ plugin, selected, onSelect }: { plugin: PluginInfo; sel
         <button
           onClick={onSelect}
           aria-expanded={selected}
-          className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium border border-[#2A2A30] text-[#efeee7] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"
+          className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium border border-orbit-border text-orbit-text-dim hover:border-(--accent) hover:text-(--accent) transition-colors"
         >
           <Zap className="w-3 h-3" />
           {actionsLabel(plugin.actions.length)}
@@ -150,7 +150,7 @@ function PluginDetails({
   return (
     <div className="orbit-card mt-2 p-3" data-testid="plugin-details">
       <div className="flex items-center gap-2">
-        <h4 className="text-[12px] font-medium text-[#FAFAFA] truncate">{plugin.name}</h4>
+        <h4 className="text-[12px] font-medium text-orbit-text truncate">{plugin.name}</h4>
         <span className="text-[10px] font-mono text-[#555]">{plugin.id}</span>
         <div className="flex-1" />
         <label className="flex items-center gap-2 cursor-pointer">
@@ -161,34 +161,34 @@ function PluginDetails({
               onChange={() => onToggle?.(plugin.id, !plugin.loaded)}
               className="sr-only peer"
             />
-            <div className="w-8 h-[18px] bg-[#2A2A30] rounded-full peer-checked:bg-[var(--accent)] transition-colors" />
-            <div className="absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-[#0A0A0B] rounded-full transition-transform peer-checked:translate-x-3.5" />
+            <div className="w-8 h-[18px] bg-orbit-border rounded-full peer-checked:bg-(--accent) transition-colors" />
+            <div className="absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-orbit-bg rounded-full transition-transform peer-checked:translate-x-3.5" />
           </div>
-          <span className="text-[11px] text-[#71717A]">{plugin.loaded ? "Enabled" : "Disabled"}</span>
+          <span className="text-[11px] text-orbit-text-muted">{plugin.loaded ? "Enabled" : "Disabled"}</span>
         </label>
         {confirmRemove ? (
           <span className="flex items-center gap-2 text-[11px]">
-            <span className="text-[#71717A]">Delete this plugin's folder?</span>
+            <span className="text-orbit-text-muted">Delete this plugin's folder?</span>
             <button
               onClick={() => { setConfirmRemove(false); onRemove?.(plugin.id); }}
               className="text-red-400 hover:text-red-300 transition-colors"
             >
               Uninstall
             </button>
-            <button onClick={() => setConfirmRemove(false)} className="text-[#71717A] hover:text-[#FAFAFA] transition-colors">
+            <button onClick={() => setConfirmRemove(false)} className="text-orbit-text-muted hover:text-orbit-text transition-colors">
               Cancel
             </button>
           </span>
         ) : (
           <button
             onClick={() => setConfirmRemove(true)}
-            className="flex items-center gap-1 text-[11px] text-[#71717A] hover:text-red-400 transition-colors"
+            className="flex items-center gap-1 text-[11px] text-orbit-text-muted hover:text-red-400 transition-colors"
           >
             <Trash2 className="w-3 h-3" />
             Uninstall
           </button>
         )}
-        <button onClick={onClose} aria-label="Close details" className="text-[#71717A] hover:text-[#FAFAFA] transition-colors">
+        <button onClick={onClose} aria-label="Close details" className="text-orbit-text-muted hover:text-orbit-text transition-colors">
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -198,11 +198,11 @@ function PluginDetails({
           {plugin.actions.map((action) => (
             <div
               key={action.id}
-              className="flex items-center gap-2 px-2 py-1 rounded-md bg-[#1A1A1E] border border-[#2A2A30] min-w-0"
+              className="flex items-center gap-2 px-2 py-1 rounded-md bg-[#1A1A1E] border border-orbit-border min-w-0"
               title={action.description || action.id}
             >
-              <Zap className="w-3 h-3 text-[#555] flex-shrink-0" />
-              <span className="text-[11px] text-[#efeee7] truncate flex-1">{action.name}</span>
+              <Zap className="w-3 h-3 text-[#555] shrink-0" />
+              <span className="text-[11px] text-orbit-text-dim truncate flex-1">{action.name}</span>
             </div>
           ))}
         </div>
@@ -213,7 +213,7 @@ function PluginDetails({
 
 function Empty({ title, hint }: { title: string; hint: string }) {
   return (
-    <div className="text-center py-10 text-[#71717A]">
+    <div className="text-center py-10 text-orbit-text-muted">
       <Puzzle className="w-10 h-10 mx-auto mb-3 opacity-20" />
       <p className="text-sm font-medium">{title}</p>
       <p className="text-[10px] font-mono mt-2 text-[#555]">{hint}</p>
@@ -241,11 +241,11 @@ export function PluginManager({
   return (
     <div className="p-6">
       <div className="flex items-center gap-3 mb-4">
-        <h2 className="text-base font-semibold flex items-center gap-2 text-[#FAFAFA]">
-          <Puzzle className="w-4 h-4 text-[#71717A]" />
+        <h2 className="text-base font-semibold flex items-center gap-2 text-orbit-text">
+          <Puzzle className="w-4 h-4 text-orbit-text-muted" />
           Plugins
         </h2>
-        <div role="tablist" className="flex items-center gap-0.5 p-0.5 rounded-lg bg-[#141417] border border-[#2A2A30]">
+        <div role="tablist" className="flex items-center gap-0.5 p-0.5 rounded-lg bg-[#141417] border border-orbit-border">
           {views.map((v) => (
             <button
               key={v.id}
@@ -253,7 +253,7 @@ export function PluginManager({
               aria-selected={view === v.id}
               onClick={() => setView(v.id)}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
-                view === v.id ? "bg-[#2A2A30] text-[#FAFAFA]" : "text-[#71717A] hover:text-[#FAFAFA]"
+                view === v.id ? "bg-orbit-border text-orbit-text" : "text-orbit-text-muted hover:text-orbit-text"
               }`}
             >
               {v.label}
@@ -271,7 +271,7 @@ export function PluginManager({
         <button
           onClick={onOpenFolder}
           title="~/.orbit/plugins/ — copy a plugin folder here to install it by hand"
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border border-[#2A2A30] text-[#71717A] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border border-orbit-border text-orbit-text-muted hover:border-(--accent) hover:text-(--accent) transition-colors"
         >
           <FolderOpen className="w-3.5 h-3.5" />
           Plugins folder
@@ -315,8 +315,8 @@ export function PluginManager({
       )}
 
       <p className="mt-4 text-[10px] font-mono text-[#555]">
-        writing a plugin? a folder with a <span className="text-[#71717A]">manifest.json</span> (id, name, version, author, actions) ·{" "}
-        <span className="text-[#71717A]">"author": "@your-github"</span> shows your profile link and picture
+        writing a plugin? a folder with a <span className="text-orbit-text-muted">manifest.json</span> (id, name, version, author, actions) ·{" "}
+        <span className="text-orbit-text-muted">"author": "@your-github"</span> shows your profile link and picture
       </p>
     </div>
   );

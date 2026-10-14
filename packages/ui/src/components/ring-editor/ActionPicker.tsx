@@ -77,15 +77,15 @@ export function ActionPicker({ anchor, catalog, group, replaceId, onPick, onClos
       aria-label={title}
       data-testid="action-picker"
       onKeyDown={onKeyDown}
-      className="re-layer z-[110] flex max-h-[min(400px,calc(100vh-60px))] w-[280px] flex-col overflow-hidden rounded-xl border border-[#2A2A30] bg-[#17171B] shadow-2xl shadow-black/60"
+      className="re-layer z-110 flex max-h-[min(400px,calc(100vh-60px))] w-[280px] flex-col overflow-hidden rounded-xl border border-orbit-border bg-orbit-card shadow-2xl shadow-black/60"
       style={style}
     >
-      <div className="border-b border-[#2A2A30] p-2">
+      <div className="border-b border-orbit-border p-2">
         <div className="truncate px-1 pb-1.5 text-[11px] font-medium text-[#A1A1AA]" data-testid="picker-title">
           {title}
         </div>
         <div className="relative">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#71717A]" />
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-orbit-text-muted" />
           <input
             ref={inputRef}
             type="text"
@@ -139,14 +139,14 @@ export function ActionPicker({ anchor, catalog, group, replaceId, onPick, onClos
                     isTaken
                       ? "cursor-not-allowed text-[#5F5F68]"
                       : isActive
-                        ? "cursor-pointer bg-[#26262E] text-[#FAFAFA]"
+                        ? "cursor-pointer bg-[#26262E] text-orbit-text"
                         : "cursor-pointer text-[#D4D4D8]"
                   }`}
                 >
-                  <ActionIcon action={a} size={15} className={isActive ? "text-[var(--accent)]" : ""} />
+                  <ActionIcon action={a} size={15} className={isActive ? "text-(--accent)" : ""} />
                   <span className="min-w-0 flex-1 truncate">{a.label}</span>
                   {isTaken && (
-                    <span className="flex-shrink-0 text-[11px] text-[#71717A]">
+                    <span className="shrink-0 text-[11px] text-orbit-text-muted">
                       {a.id === replaceId ? "atual" : "já no grupo"}
                     </span>
                   )}
@@ -157,7 +157,7 @@ export function ActionPicker({ anchor, catalog, group, replaceId, onPick, onClos
         ))}
       </div>
 
-      <div className="flex items-center gap-3 border-t border-[#2A2A30] px-3 py-1.5 text-[11px] text-[#8B8B95]">
+      <div className="flex items-center gap-3 border-t border-orbit-border px-3 py-1.5 text-[11px] text-[#8B8B95]">
         <span>
           <kbd className="font-mono text-[#A1A1AA]">↑↓</kbd> navegar
         </span>

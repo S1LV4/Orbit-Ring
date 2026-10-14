@@ -25,7 +25,7 @@ export function LibrarySearch({
 }: LibrarySearchProps) {
   return (
     <div className="relative">
-      <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#71717A]" />
+      <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-orbit-text-muted" />
       <input
         ref={searchRef}
         type="text"
@@ -53,14 +53,14 @@ export function LibrarySearch({
             onQueryChange("");
             searchRef.current?.focus();
           }}
-          className="absolute right-1.5 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-[#8B8B95] hover:bg-[#2A2A30] hover:text-[#FAFAFA]"
+          className="absolute right-1.5 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-[#8B8B95] hover:bg-orbit-border hover:text-orbit-text"
         >
           <X className="h-3.5 w-3.5" />
         </button>
       ) : (
         <kbd
           aria-hidden="true"
-          className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-[#2A2A30] px-1.5 font-mono text-[11px] leading-4 text-[#71717A]"
+          className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-sm border border-orbit-border px-1.5 font-mono text-[11px] leading-4 text-orbit-text-muted"
         >
           /
         </kbd>
@@ -96,9 +96,9 @@ export function ActionLibrary({ catalog, groups, selected, onToggle, query }: Ac
   if (categories.length === 0) {
     return (
       <div className="px-4 pb-6 pt-2" data-testid="library-empty">
-        <div className="rounded-lg border border-dashed border-[#2A2A30] px-4 py-6 text-center">
-          <p className="text-[13px] text-[#efeee7]">Nenhum resultado</p>
-          <p className="mt-1 break-words text-[12px] text-[#8B8B95]">Nada encontrado para “{query.trim()}”.</p>
+        <div className="rounded-lg border border-dashed border-orbit-border px-4 py-6 text-center">
+          <p className="text-[13px] text-orbit-text-dim">Nenhum resultado</p>
+          <p className="mt-1 wrap-break-word text-[12px] text-[#8B8B95]">Nada encontrado para “{query.trim()}”.</p>
         </div>
       </div>
     );
@@ -129,18 +129,18 @@ export function ActionLibrary({ catalog, groups, selected, onToggle, query }: Ac
             if (!disabled) onToggle(a.id);
           }}
           className={`group/item flex min-h-9 w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors ${
-            disabled ? "cursor-not-allowed opacity-45" : added ? "bg-[#1A1A1F] hover:bg-[#1E1E24]" : "hover:bg-[#17171B]"
+            disabled ? "cursor-not-allowed opacity-45" : added ? "bg-[#1A1A1F] hover:bg-[#1E1E24]" : "hover:bg-orbit-card"
           }`}
         >
           <span
-            className={`flex h-6 w-6 flex-shrink-0 items-center justify-center ${
-              added ? "text-[var(--accent)]" : "text-[#A1A1AA]"
+            className={`flex h-6 w-6 shrink-0 items-center justify-center ${
+              added ? "text-(--accent)" : "text-[#A1A1AA]"
             }`}
           >
             <ActionIcon action={a} size={16} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className={`block truncate text-[13px] leading-4 ${added ? "text-[#FAFAFA]" : "text-[#D4D4D8]"}`}>
+            <span className={`block truncate text-[13px] leading-4 ${added ? "text-orbit-text" : "text-[#D4D4D8]"}`}>
               {a.label}
             </span>
             {others.length > 0 && (
@@ -150,9 +150,9 @@ export function ActionLibrary({ catalog, groups, selected, onToggle, query }: Ac
               </span>
             )}
           </span>
-          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center">
             {added ? (
-              <Check className="h-4 w-4 text-[var(--accent)]" aria-hidden="true" />
+              <Check className="h-4 w-4 text-(--accent)" aria-hidden="true" />
             ) : (
               !disabled && (
                 <Plus
@@ -179,23 +179,23 @@ export function ActionLibrary({ catalog, groups, selected, onToggle, query }: Ac
               aria-expanded={isOpen}
               disabled={searching}
               onClick={() => setOpen((o) => ({ ...o, [c.name]: !o[c.name] }))}
-              className="flex h-8 w-full items-center gap-1.5 rounded-lg px-2 text-left transition-colors enabled:hover:bg-[#17171B]"
+              className="flex h-8 w-full items-center gap-1.5 rounded-lg px-2 text-left transition-colors enabled:hover:bg-orbit-card"
             >
               {isOpen ? (
-                <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-[#71717A]" />
+                <ChevronDown className="h-3.5 w-3.5 shrink-0 text-orbit-text-muted" />
               ) : (
-                <ChevronRight className="h-3.5 w-3.5 flex-shrink-0 text-[#71717A]" />
+                <ChevronRight className="h-3.5 w-3.5 shrink-0 text-orbit-text-muted" />
               )}
               <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-[#D4D4D8]">{c.name}</span>
               {addedCount > 0 && (
                 <span
                   data-tip={`${addedCount} ${addedCount === 1 ? "ação" : "ações"} desta categoria no grupo selecionado`}
-                  className="flex-shrink-0 rounded-full bg-[rgba(var(--accent-rgb),0.14)] px-1.5 font-mono text-[11px] leading-4 text-[var(--accent)]"
+                  className="shrink-0 rounded-full bg-[rgba(var(--accent-rgb),0.14)] px-1.5 font-mono text-[11px] leading-4 text-(--accent)"
                 >
                   {addedCount}
                 </span>
               )}
-              <span className="w-5 flex-shrink-0 text-right font-mono text-[11px] tabular-nums text-[#8B8B95]">
+              <span className="w-5 shrink-0 text-right font-mono text-[11px] tabular-nums text-[#8B8B95]">
                 {c.actions.length}
               </span>
             </button>

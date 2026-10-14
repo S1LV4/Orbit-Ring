@@ -1,58 +1,89 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-:root {
-  --accent: #C6F432;
-  --accent-rgb: 198, 244, 50;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@theme {
+  --color-orbit-bg: #0a0a0b;
+  --color-orbit-surface: #141417;
+  --color-orbit-card: #17171b;
+  --color-orbit-border: #2a2a30;
+  --color-orbit-border-light: #33333b;
+  --color-orbit-text: #fafafa;
+  --color-orbit-text-dim: #efeee7;
+  --color-orbit-text-muted: #71717a;
+  --color-orbit-accent: var(--accent, #c6f432);
+
+  --font-sans: Geist, Segoe UI, system-ui, sans-serif;
+  --font-mono: Geist Mono, JetBrains Mono, Consolas, monospace;
 }
 
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #2A2A30 transparent;
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
 }
 
-*::-webkit-scrollbar {
-  width: 6px;
+@utility orbit-card {
+  @apply bg-[#17171B] border border-[#2A2A30] rounded-xl;
 }
-*::-webkit-scrollbar-track {
-  background: transparent;
+
+@utility orbit-surface {
+  @apply bg-[#141417];
 }
-*::-webkit-scrollbar-thumb {
-  background: #2A2A30;
-  border-radius: 3px;
+
+@utility orbit-pill {
+  @apply px-2.5 py-1 rounded-full text-xs font-mono border border-[#2A2A30] bg-[#17171B];
 }
-*::-webkit-scrollbar-thumb:hover {
-  background: #33333B;
+
+@utility orbit-btn {
+  @apply px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200;
+}
+
+@utility orbit-input {
+  @apply bg-[#141417] border border-[#2A2A30] rounded-lg px-3 py-2 text-sm text-[#FAFAFA]
+           focus:outline-hidden
+           placeholder:text-[#71717A];
+}
+
+@layer utilities {
+  :root {
+    --accent: #c6f432;
+    --accent-rgb: 198, 244, 50;
+    font-family:
+      'Segoe UI',
+      system-ui,
+      -apple-system,
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #2a2a30 transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #2a2a30;
+    border-radius: 3px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: #33333b;
+  }
 }
 
 @layer base {
   body {
     background: #0A0A0B;
     color: #FAFAFA;
-  }
-}
-
-@layer components {
-  .orbit-card {
-    @apply bg-[#17171B] border border-[#2A2A30] rounded-xl;
-  }
-  .orbit-surface {
-    @apply bg-[#141417];
-  }
-  .orbit-pill {
-    @apply px-2.5 py-1 rounded-full text-xs font-mono border border-[#2A2A30] bg-[#17171B];
-  }
-  .orbit-btn {
-    @apply px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200;
-  }
-  .orbit-input {
-    @apply bg-[#141417] border border-[#2A2A30] rounded-lg px-3 py-2 text-sm text-[#FAFAFA]
-           focus:outline-none
-           placeholder:text-[#71717A];
   }
 }
 @keyframes terrain-drift {

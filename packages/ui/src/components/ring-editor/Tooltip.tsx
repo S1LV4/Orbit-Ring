@@ -88,7 +88,7 @@ export function TooltipLayer() {
     <div
       ref={boxRef}
       role="tooltip"
-      className="re-layer pointer-events-none fixed z-[200] max-w-[260px] rounded-md border border-[#33333B] bg-[#1E1E24] px-2 py-1 text-[11px] leading-snug text-[#efeee7] shadow-lg shadow-black/40"
+      className="re-layer pointer-events-none fixed z-200 max-w-[260px] rounded-md border border-orbit-border-light bg-[#1E1E24] px-2 py-1 text-[11px] leading-snug text-orbit-text-dim shadow-lg shadow-black/40"
       style={{ left: pos?.left ?? 0, top: pos?.top ?? 0, visibility: pos ? "visible" : "hidden" }}
     >
       {tip.text}

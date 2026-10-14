@@ -27,7 +27,7 @@ interface ToolbarProps {
 }
 
 const ICON_BTN =
-  "flex h-8 w-8 items-center justify-center rounded-lg text-[#A1A1AA] transition-colors hover:bg-[#1E1E24] hover:text-[#FAFAFA] aria-disabled:cursor-not-allowed aria-disabled:text-[#3F3F46] aria-disabled:hover:bg-transparent";
+  "flex h-8 w-8 items-center justify-center rounded-lg text-[#A1A1AA] transition-colors hover:bg-[#1E1E24] hover:text-orbit-text aria-disabled:cursor-not-allowed aria-disabled:text-[#3F3F46] aria-disabled:hover:bg-transparent";
 
 export function Toolbar({
   theme,
@@ -50,7 +50,7 @@ export function Toolbar({
       role="toolbar"
       aria-label="Aparência e histórico do ring"
       data-testid="ring-toolbar"
-      className="flex h-[52px] flex-shrink-0 items-center gap-3 border-b border-[#1F1F24] px-4"
+      className="flex h-[52px] shrink-0 items-center gap-3 border-b border-[#1F1F24] px-4"
     >
       <div className="flex items-center gap-2.5">
         <span id="re-theme-label" className="text-[12px] font-medium text-[#A1A1AA]">
@@ -85,7 +85,7 @@ export function Toolbar({
         </div>
       </div>
 
-      <span className="h-5 w-px flex-shrink-0 bg-[#2A2A30]" aria-hidden="true" />
+      <span className="h-5 w-px shrink-0 bg-orbit-border" aria-hidden="true" />
 
       <button
         type="button"
@@ -94,16 +94,16 @@ export function Toolbar({
         data-testid="liquid-toggle"
         data-tip="Faz os botões do ring se fundirem como gotas ao abrir e fechar"
         onClick={() => onLiquid(!liquid)}
-        className="group/sw flex h-8 items-center gap-2 rounded-lg px-1.5 text-[12px] font-medium text-[#D4D4D8] hover:text-[#FAFAFA]"
+        className="group/sw flex h-8 items-center gap-2 rounded-lg px-1.5 text-[12px] font-medium text-[#D4D4D8] hover:text-orbit-text"
       >
         <span
-          className={`relative h-[18px] w-8 flex-shrink-0 rounded-full transition-colors ${
-            liquid ? "bg-[var(--accent)]" : "bg-[#2A2A30]"
+          className={`relative h-[18px] w-8 shrink-0 rounded-full transition-colors ${
+            liquid ? "bg-(--accent)" : "bg-orbit-border"
           }`}
         >
           <span
             className={`absolute left-0.5 top-0.5 h-3.5 w-3.5 rounded-full transition-transform ${
-              liquid ? "translate-x-[14px] bg-[#0A0A0B]" : "bg-[#8B8B95]"
+              liquid ? "translate-x-[14px] bg-orbit-bg" : "bg-[#8B8B95]"
             }`}
           />
         </span>
@@ -117,16 +117,16 @@ export function Toolbar({
         data-testid="ascii-toggle"
         data-tip="Mostra a cena de caracteres (buraco negro e estrelas) atrás do ring"
         onClick={() => onAscii(!ascii)}
-        className="group/sw flex h-8 items-center gap-2 rounded-lg px-1.5 text-[12px] font-medium text-[#D4D4D8] hover:text-[#FAFAFA]"
+        className="group/sw flex h-8 items-center gap-2 rounded-lg px-1.5 text-[12px] font-medium text-[#D4D4D8] hover:text-orbit-text"
       >
         <span
-          className={`relative h-[18px] w-8 flex-shrink-0 rounded-full transition-colors ${
-            ascii ? "bg-[var(--accent)]" : "bg-[#2A2A30]"
+          className={`relative h-[18px] w-8 shrink-0 rounded-full transition-colors ${
+            ascii ? "bg-(--accent)" : "bg-orbit-border"
           }`}
         >
           <span
             className={`absolute left-0.5 top-0.5 h-3.5 w-3.5 rounded-full transition-transform ${
-              ascii ? "translate-x-[14px] bg-[#0A0A0B]" : "bg-[#8B8B95]"
+              ascii ? "translate-x-[14px] bg-orbit-bg" : "bg-[#8B8B95]"
             }`}
           />
         </span>
@@ -169,7 +169,7 @@ export function Toolbar({
             : "Criar um novo grupo"
         }
         onClick={onAddGroup}
-        className="flex h-8 flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-[#2A2A30] bg-[#17171B] px-3 text-[12px] font-medium text-[#efeee7] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+        className="flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-orbit-border bg-orbit-card px-3 text-[12px] font-medium text-orbit-text-dim transition-colors hover:border-(--accent) hover:text-(--accent)"
       >
         <Plus className="h-3.5 w-3.5" />
         Novo grupo

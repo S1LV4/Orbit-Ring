@@ -91,13 +91,13 @@ export function App() {
   ];
 
   return (
-    <div className="flex h-screen bg-[#0A0A0B]">
+    <div className="flex h-screen bg-orbit-bg">
       <div className="fixed top-0 left-0 right-0 h-9 z-50" style={{ WebkitAppRegion: "drag" } as any} />
 
-      <aside className="w-48 bg-[#141417] border-r border-[#2A2A30] flex flex-col">
-        <div className="px-4 py-5 border-b border-[#2A2A30]" style={{ WebkitAppRegion: "drag" } as any}>
+      <aside className="w-48 bg-[#141417] border-r border-orbit-border flex flex-col">
+        <div className="px-4 py-5 border-b border-orbit-border" style={{ WebkitAppRegion: "drag" } as any}>
           <div className="flex items-center gap-2.5">
-            <svg viewBox="0 0 128 128" className="w-7 h-7 flex-shrink-0">
+            <svg viewBox="0 0 128 128" className="w-7 h-7 shrink-0">
               <circle cx="64" cy="64" r="42" fill="none" stroke="#F7F8F4" strokeWidth="8" strokeLinecap="round" strokeDasharray="183 81" transform="rotate(-53 64 64)"/>
               <circle cx="64" cy="64" r="26" fill="none" stroke="#F7F8F4" strokeWidth="6" opacity=".34"/>
               <path d="M64 38 V48 M64 80 V90 M38 64 H48 M80 64 H90" stroke="#F7F8F4" strokeWidth="4" strokeLinecap="round" opacity=".55"/>
@@ -105,8 +105,8 @@ export function App() {
               <circle cx="99.9" cy="42.4" r="8" fill={accent}/>
             </svg>
             <div>
-              <h1 className="text-sm text-[#FAFAFA] tracking-tight leading-none"><span className="font-bold">orbit</span><span className="font-light">Ring</span></h1>
-              <p className="text-[10px] font-mono text-[#71717A] tracking-wide mt-0.5">v1.0.0</p>
+              <h1 className="text-sm text-orbit-text tracking-tight leading-none"><span className="font-bold">orbit</span><span className="font-light">Ring</span></h1>
+              <p className="text-[10px] font-mono text-orbit-text-muted tracking-wide mt-0.5">v1.0.0</p>
             </div>
           </div>
         </div>
@@ -118,8 +118,8 @@ export function App() {
               onClick={() => setTab(t.id)}
               className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
                 tab === t.id
-                  ? "text-[#0A0A0B]"
-                  : "text-[#71717A] hover:text-[#FAFAFA] hover:bg-[#17171B]"
+                  ? "text-orbit-bg"
+                  : "text-orbit-text-muted hover:text-orbit-text hover:bg-orbit-card"
               }`}
               style={tab === t.id ? { background: accent, color: "#0A0A0B" } : undefined}
             >
@@ -129,8 +129,8 @@ export function App() {
           ))}
         </nav>
 
-        <div className="px-3 py-3 border-t border-[#2A2A30]">
-          <div className="flex items-center gap-2 text-[10px] font-mono text-[#71717A]">
+        <div className="px-3 py-3 border-t border-orbit-border">
+          <div className="flex items-center gap-2 text-[10px] font-mono text-orbit-text-muted">
             {connectionIcon}
             <span>
               {state === "connected"
@@ -141,19 +141,19 @@ export function App() {
             </span>
           </div>
           {devices.length > 0 && (
-            <div className="mt-1 text-[10px] font-mono text-[#33333B]">
+            <div className="mt-1 text-[10px] font-mono text-orbit-border-light">
               {devices.length} device{devices.length > 1 ? "s" : ""}
             </div>
           )}
         </div>
 
-        <div className="px-3 py-3 border-t border-[#2A2A30]" style={{ WebkitAppRegion: "no-drag" } as any}>
+        <div className="px-3 py-3 border-t border-orbit-border" style={{ WebkitAppRegion: "no-drag" } as any}>
           <AuthorCredit author="@S1LV4" prefix="developed by" size={18} />
           <a
             href="https://github.com/S1LV4/Orbit-Ring"
             target="_blank"
             rel="noreferrer noopener"
-            className="mt-1.5 block text-[10px] font-mono text-[#71717A] hover:text-[var(--accent)] transition-colors"
+            className="mt-1.5 block text-[10px] font-mono text-orbit-text-muted hover:text-(--accent) transition-colors"
           >
             open source · github
           </a>
@@ -209,8 +209,8 @@ export function App() {
         )}
         {tab === "settings" && (
           <div className="p-6">
-            <h2 className="text-base font-semibold mb-5 flex items-center gap-2 text-[#FAFAFA]">
-              <Settings className="w-4 h-4 text-[#71717A]" />
+            <h2 className="text-base font-semibold mb-5 flex items-center gap-2 text-orbit-text">
+              <Settings className="w-4 h-4 text-orbit-text-muted" />
               Settings
             </h2>
             <div className="space-y-2 max-w-md">
@@ -221,17 +221,17 @@ export function App() {
               ].map((opt) => (
                 <label
                   key={opt.key}
-                  className="flex items-center justify-between p-3 orbit-card cursor-pointer hover:border-[#33333B] transition-colors"
+                  className="flex items-center justify-between p-3 orbit-card cursor-pointer hover:border-orbit-border-light transition-colors"
                 >
-                  <span className="text-sm text-[#efeee7]">{opt.label}</span>
+                  <span className="text-sm text-orbit-text-dim">{opt.label}</span>
                   <div className="relative">
                     <input
                       type="checkbox"
                       defaultChecked={opt.defaultChecked}
                       className="sr-only peer"
                     />
-                    <div className="w-9 h-5 bg-[#2A2A30] rounded-full peer-checked:bg-[var(--accent)] transition-colors" />
-                    <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-[#0A0A0B] rounded-full transition-transform peer-checked:translate-x-4" />
+                    <div className="w-9 h-5 bg-orbit-border rounded-full peer-checked:bg-(--accent) transition-colors" />
+                    <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-orbit-bg rounded-full transition-transform peer-checked:translate-x-4" />
                   </div>
                 </label>
               ))}

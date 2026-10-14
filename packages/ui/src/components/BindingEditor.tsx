@@ -123,16 +123,16 @@ export function BindingEditor({
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-base font-semibold flex items-center gap-2 text-[#FAFAFA]">
-          <Mouse className="w-4 h-4 text-[#71717A]" />
+        <h2 className="text-base font-semibold flex items-center gap-2 text-orbit-text">
+          <Mouse className="w-4 h-4 text-orbit-text-muted" />
           Button Bindings
         </h2>
         <button
           onClick={handleIdentify}
           className={`orbit-btn flex items-center gap-2 border ${
             identifying
-              ? "text-[#0A0A0B] animate-pulse"
-              : "border-[#2A2A30] text-[#71717A] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+              ? "text-orbit-bg animate-pulse"
+              : "border-orbit-border text-orbit-text-muted hover:border-(--accent) hover:text-(--accent)"
           }`}
           style={identifying ? { background: "var(--accent)", borderColor: "var(--accent)" } : undefined}
         >
@@ -149,19 +149,19 @@ export function BindingEditor({
               onClick={() => setSelectedButton(key)}
               className={`w-full text-left p-3 rounded-lg border transition-all duration-150 ${
                 selectedButton === key
-                  ? "border-[var(--accent)]"
+                  ? "border-(--accent)"
                   : lastEvent?.button === key && lastEvent?.action === "press"
-                  ? "border-[var(--accent)] opacity-60"
-                  : "border-[#2A2A30] bg-[#17171B] hover:border-[#33333B]"
+                  ? "border-(--accent) opacity-60"
+                  : "border-orbit-border bg-orbit-card hover:border-orbit-border-light"
               }`}
               style={selectedButton === key ? { background: `color-mix(in srgb, var(--accent) 8%, #17171B)` } : undefined}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xs font-medium text-[#efeee7]">{label}</div>
-                  <div className="text-[10px] font-mono text-[#71717A] mt-0.5">{description}</div>
+                  <div className="text-xs font-medium text-orbit-text-dim">{label}</div>
+                  <div className="text-[10px] font-mono text-orbit-text-muted mt-0.5">{description}</div>
                 </div>
-                <div className="text-[10px] font-mono text-[#33333B]">{getActionLabel(key)}</div>
+                <div className="text-[10px] font-mono text-orbit-border-light">{getActionLabel(key)}</div>
               </div>
             </button>
           ))}
@@ -170,7 +170,7 @@ export function BindingEditor({
         <div>
           {selectedButton ? (
             <div className="space-y-4">
-              <h3 className="text-[10px] font-mono uppercase tracking-widest text-[#71717A]">
+              <h3 className="text-[10px] font-mono uppercase tracking-widest text-orbit-text-muted">
                 Action for: {BUTTON_LABELS[selectedButton]?.label ?? selectedButton}
               </h3>
               {ACTION_PRESETS.map((category) => (
@@ -188,11 +188,11 @@ export function BindingEditor({
                           onSave({ button: selectedButton, action: preset.action });
                           onTest(preset.action);
                         }}
-                        className="p-2.5 text-left orbit-card hover:border-[var(--accent)] transition-colors"
+                        className="p-2.5 text-left orbit-card hover:border-(--accent) transition-colors"
                       >
-                        <div className="text-xs text-[#efeee7]">{preset.label}</div>
+                        <div className="text-xs text-orbit-text-dim">{preset.label}</div>
                         {"label" in preset.action && (
-                          <div className="text-[10px] font-mono text-[#33333B] mt-0.5">
+                          <div className="text-[10px] font-mono text-orbit-border-light mt-0.5">
                             {(preset.action as any).label}
                           </div>
                         )}
@@ -230,7 +230,7 @@ export function BindingEditor({
                     }}
                   />
                 </div>
-                <p className="text-[10px] font-mono text-[#33333B] mt-1.5">
+                <p className="text-[10px] font-mono text-orbit-border-light mt-1.5">
                   press the key combination you want
                 </p>
               </div>
@@ -246,10 +246,10 @@ export function BindingEditor({
               </button>
             </div>
           ) : (
-            <div className="text-center py-16 text-[#71717A]">
+            <div className="text-center py-16 text-orbit-text-muted">
               <Keyboard className="w-10 h-10 mx-auto mb-3 opacity-15" />
-              <p className="text-sm text-[#efeee7]">Select a button to configure</p>
-              <p className="text-[10px] font-mono mt-2 text-[#33333B]">
+              <p className="text-sm text-orbit-text-dim">Select a button to configure</p>
+              <p className="text-[10px] font-mono mt-2 text-orbit-border-light">
                 or click "Identify" and press a button on your mouse
               </p>
             </div>
