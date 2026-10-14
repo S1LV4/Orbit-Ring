@@ -412,7 +412,11 @@ var ring_default = {
 // ../shared/locales/pt-BR/tray.json
 var tray_default = {
   openConfig: "Abrir configura\xE7\xF5es",
-  quit: "Sair"
+  quit: "Sair",
+  checkUpdates: "Procurar atualiza\xE7\xF5es",
+  checkingUpdates: "Procurando atualiza\xE7\xF5es\u2026",
+  downloadingUpdate: "Baixando a vers\xE3o {version}\u2026 {percent}%",
+  restartToUpdate: "Reiniciar para atualizar para {version}"
 };
 
 // ../shared/locales/en-US/app.json
@@ -823,7 +827,11 @@ var ring_default2 = {
 // ../shared/locales/en-US/tray.json
 var tray_default2 = {
   openConfig: "Open settings",
-  quit: "Quit"
+  quit: "Quit",
+  checkUpdates: "Check for updates",
+  checkingUpdates: "Checking for updates\u2026",
+  downloadingUpdate: "Downloading version {version}\u2026 {percent}%",
+  restartToUpdate: "Restart to update to {version}"
 };
 
 // ../shared/locales/es-ES/app.json
@@ -1234,7 +1242,11 @@ var ring_default3 = {
 // ../shared/locales/es-ES/tray.json
 var tray_default3 = {
   openConfig: "Abrir ajustes",
-  quit: "Salir"
+  quit: "Salir",
+  checkUpdates: "Buscar actualizaciones",
+  checkingUpdates: "Buscando actualizaciones\u2026",
+  downloadingUpdate: "Descargando la versi\xF3n {version}\u2026 {percent}%",
+  restartToUpdate: "Reiniciar para actualizar a {version}"
 };
 
 // ../shared/src/i18n.ts
@@ -1285,6 +1297,77 @@ function createTranslator(locale, messages = MESSAGES) {
 var import_ws = require("ws");
 var import_child_process = require("child_process");
 var path = __toESM(require("path"));
+var import_electron_updater = require("electron-updater");
+
+// src/updater.ts
+var SIX_HOURS = 6 * 60 * 60 * 1e3;
+var message = (e) => e instanceof Error ? e.message : String(e);
+function startUpdater(opts) {
+  let status = { state: opts.enabled ? "idle" : "disabled" };
+  const current = () => status;
+  const set = (next) => {
+    status = next;
+    opts.onStatus(next);
+  };
+  set(status);
+  if (!opts.enabled) {
+    return { check: async () => {
+    }, install: () => {
+    }, stop: () => {
+    }, status: () => status };
+  }
+  const { updater } = opts;
+  const timers = opts.timers ?? { setInterval, clearInterval: (id) => clearInterval(id) };
+  updater.autoDownload = true;
+  updater.autoInstallOnAppQuit = true;
+  updater.on("checking-for-update", () => set({ state: "checking" }));
+  updater.on("update-not-available", () => set({ state: "none" }));
+  updater.on("update-available", (info) => set({ state: "downloading", version: String(info?.version ?? ""), percent: 0 }));
+  updater.on("download-progress", (p) => {
+    const version = status.state === "downloading" ? status.version : "";
+    set({ state: "downloading", version, percent: Math.round(Number(p?.percent) || 0) });
+  });
+  updater.on("update-downloaded", (info) => set({ state: "ready", version: String(info?.version ?? "") }));
+  updater.on("error", (e) => {
+    if (status.state !== "ready") set({ state: "error", message: message(e) });
+  });
+  const check = async () => {
+    if (status.state === "downloading" || status.state === "ready") return;
+    try {
+      await updater.checkForUpdates();
+    } catch (e) {
+      if (current().state !== "ready") set({ state: "error", message: message(e) });
+    }
+  };
+  const timer = timers.setInterval(() => {
+    void check();
+  }, opts.intervalMs ?? SIX_HOURS);
+  void check();
+  return {
+    check,
+    install: () => {
+      if (status.state === "ready") updater.quitAndInstall(true, true);
+    },
+    stop: () => timers.clearInterval(timer),
+    status: () => status
+  };
+}
+function updateMenuItem(status) {
+  switch (status.state) {
+    case "disabled":
+      return null;
+    case "checking":
+      return { key: "tray.checkingUpdates", enabled: false, action: null };
+    case "downloading":
+      return { key: "tray.downloadingUpdate", params: { version: status.version, percent: status.percent }, enabled: false, action: null };
+    case "ready":
+      return { key: "tray.restartToUpdate", params: { version: status.version }, enabled: true, action: "install" };
+    default:
+      return { key: "tray.checkUpdates", enabled: true, action: "check" };
+  }
+}
+
+// src/main.ts
 import_electron.app.disableHardwareAcceleration();
 var translator = null;
 function t(key, params) {
@@ -1581,15 +1664,25 @@ function createConfigWindow() {
     configWindow = null;
   });
 }
-function createTray() {
-  const icon = import_electron.nativeImage.createFromPath(path.join(ASSETS, "tray-icon.png"));
-  tray = new import_electron.Tray(icon);
-  tray.setToolTip("OrbitRing");
-  const contextMenu = import_electron.Menu.buildFromTemplate([
+var updates = null;
+var updateStatus = { state: "disabled" };
+function buildTrayMenu() {
+  if (!tray) return;
+  const item = updateMenuItem(updateStatus);
+  const updateEntries = item ? [{
+    label: t(item.key, item.params),
+    enabled: item.enabled,
+    click: () => {
+      if (item.action === "install") updates?.install();
+      else if (item.action === "check") void updates?.check();
+    }
+  }] : [];
+  tray.setContextMenu(import_electron.Menu.buildFromTemplate([
     {
       label: t("tray.openConfig"),
       click: () => createConfigWindow()
     },
+    ...updateEntries,
     { type: "separator" },
     {
       label: t("tray.quit"),
@@ -1597,9 +1690,25 @@ function createTray() {
         import_electron.app.quit();
       }
     }
-  ]);
-  tray.setContextMenu(contextMenu);
+  ]));
+}
+function createTray() {
+  const icon = import_electron.nativeImage.createFromPath(path.join(ASSETS, "tray-icon.png"));
+  tray = new import_electron.Tray(icon);
+  tray.setToolTip("OrbitRing");
+  buildTrayMenu();
   tray.on("double-click", () => createConfigWindow());
+}
+function startUpdates() {
+  updates = startUpdater({
+    updater: import_electron_updater.autoUpdater,
+    enabled: IS_PACKAGED,
+    onStatus: (status) => {
+      updateStatus = status;
+      if (status.state === "error") console.warn("[orbitring] Update check failed:", status.message);
+      buildTrayMenu();
+    }
+  });
 }
 var RING_CONTENT_RADIUS = 190;
 function showRing(cursorX, cursorY) {
@@ -1729,12 +1838,14 @@ import_electron.app.whenReady().then(() => {
   }
   createRingWindow();
   createTray();
+  startUpdates();
   createConfigWindow();
   setTimeout(connectService, IS_PACKAGED ? 1500 : 500);
 });
 import_electron.app.on("window-all-closed", () => {
 });
 import_electron.app.on("before-quit", () => {
+  updates?.stop();
   stopCueFollow();
   if (cue && !cue.isDestroyed()) cue.destroy();
   releaseWin32State();

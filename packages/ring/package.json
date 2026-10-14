@@ -15,6 +15,7 @@
     "test:e2e:ci": "npm run build:ring && playwright test e2e/ring.e2e.test.ts e2e/ring-input e2e/ring-edit e2e/ring-image e2e/ring-parity"
   },
   "dependencies": {
+    "electron-updater": "6.8.9",
     "koffi": "^3.3.3",
     "node-hid": "^3.1.0",
     "sharp": "^0.35.5",
@@ -105,6 +106,13 @@
       "createStartMenuShortcut": true,
       "shortcutName": "OrbitRing",
       "artifactName": "OrbitRing-Setup-${version}.${ext}"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "S1LV4",
+        "repo": "Orbit-Ring"
+      }
+    ]
   }
 }

@@ -1,4 +1,8 @@
 {
   "openConfig": "Open settings",
-  "quit": "Quit"
+  "quit": "Quit",
+  "checkUpdates": "Check for updates",
+  "checkingUpdates": "Checking for updates…",
+  "downloadingUpdate": "Downloading version {version}… {percent}%",
+  "restartToUpdate": "Restart to update to {version}"
 }
