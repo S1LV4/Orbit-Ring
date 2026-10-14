@@ -11,11 +11,11 @@ const RUNNER_POLL_MS = 400;
 const TOAST_REPEAT_MS = 3_000;
 
 const TITLE = "PowerToys";
-const NOT_WINDOWS_LABEL = "PowerToys só existe no Windows";
-const NOT_INSTALLED_LABEL = "PowerToys não instalado · instale com: winget install Microsoft.PowerToys";
-const NOT_RUNNING_TEXT = "PowerToys não está em execução";
+const i18n = require("./i18n")(__dirname);
+const t = i18n.t;
+const label = (id) => t(`labels.${id}`);
 const PEEK_HOSTS = new Set(["explorer", "powertoys.peek.ui"]);
-const AWAKE_MODES = ["inativo", "ativo (indefinido)", "ativo (temporizado)", "ativo (até data definida)"];
+const AWAKE_MODES = ["off", "indefinite", "timed", "until"];
 
 let host = null;
 let timer = null;
@@ -119,7 +119,7 @@ function showToast(message) {
 }
 
 const VK_NAMES = {
-  8: "Backspace", 9: "Tab", 13: "Enter", 27: "Esc", 32: "Espaço", 33: "PgUp", 34: "PgDn", 35: "End", 36: "Home",
+  8: "Backspace", 9: "Tab", 13: "Enter", 27: "Esc", 32: "space", 33: "PgUp", 34: "PgDn", 35: "End", 36: "Home",
   37: "←", 38: "↑", 39: "→", 40: "↓", 44: "PrtSc", 45: "Ins", 46: "Del",
   186: ";", 187: "=", 188: ",", 189: "-", 190: ".", 191: "/", 192: "`", 219: "[", 220: "\\", 221: "]", 222: "'",
 };
@@ -127,7 +127,7 @@ const VK_NAMES = {
 function formatHotkey(h) {
   if (!h || typeof h !== "object" || typeof h.code !== "number" || h.code <= 0) return "";
   const c = h.code;
-  let key = VK_NAMES[c] || "";
+  let key = VK_NAMES[c] === "space" ? t("keys.space") : VK_NAMES[c] || "";
   if (!key && ((c >= 48 && c <= 57) || (c >= 65 && c <= 90))) key = String.fromCharCode(c);
   if (!key && c >= 96 && c <= 105) key = `Num${c - 96}`;
   if (!key && c >= 112 && c <= 135) key = `F${c - 111}`;
@@ -209,26 +209,26 @@ function moduleEnabled(def) {
 }
 
 function actionState(id, def) {
-  if (!info) return { text: "…", label: "PowerToys · verificando instalação…" };
-  if (!info.supported) return { text: "–", label: NOT_WINDOWS_LABEL };
-  if (!info.installed) return { text: "–", label: NOT_INSTALLED_LABEL };
+  if (!info) return { text: "…", label: t("checking") };
+  if (!info.supported) return { text: "–", label: t("notWindows") };
+  if (!info.installed) return { text: "–", label: t("notInstalled") };
   if (moduleEnabled(def) === false) {
-    const st = { text: "–", label: `${def.label} · desativado no PowerToys` };
+    const st = { text: "–", label: t("disabled", { label: label(id) }) };
     if (def.stateful) st.active = false;
     return st;
   }
-  const stopped = info.running ? "" : " · PowerToys parado";
+  const stopped = info.running ? "" : t("stopped");
   if (id === "settings") {
-    return { label: `PowerToys${info.version ? ` ${info.version}` : ""} · configurações${stopped}` };
+    return { label: t("settings", { version: info.version ? ` ${info.version}` : "", stopped }) };
   }
   if (id === "awake") {
     const mode = awake ? awake.mode : 0;
     const active = !!(info.running && info.awakeRunning && mode >= 1 && mode <= 3);
-    const what = active ? `${AWAKE_MODES[mode]}${awake.keepDisplayOn ? " · tela ligada" : ""}` : "inativo";
-    return { active, label: `Awake · ${what}${stopped} · clique para abrir as configurações` };
+    const what = active ? `${t(`awake.modes.${AWAKE_MODES[mode]}`)}${awake.keepDisplayOn ? t("awake.screenOn") : ""}` : t("awake.modes.off");
+    return { active, label: t("awake.state", { what, stopped }) };
   }
   const key = hotkeys[id] ? ` · ${hotkeys[id]}` : "";
-  return { label: `${def.label}${key}${stopped}` };
+  return { label: `${label(id)}${key}${stopped}` };
 }
 
 function buildState() {
@@ -262,7 +262,7 @@ async function fireEvent(id, def) {
   if (def.guard === "explorer") {
     const fg = await h.foreground();
     if (fg[0] === "ok" && !PEEK_HOSTS.has(String(fg[1] || "").toLowerCase())) {
-      showToast(`${def.label}: selecione um arquivo no Explorador de Arquivos antes de acionar.`);
+      showToast(t("toast.selectFile", { label: label(id) }));
       return { handled: false, reason: "needs_explorer" };
     }
   }
@@ -270,36 +270,36 @@ async function fireEvent(id, def) {
   let r = await h.set(def.event);
   if (r[0] === "missing") {
     if (await runnerRunning()) {
-      showToast(`${def.label} não respondeu: o módulo ainda não está ativo ou esta versão do PowerToys não oferece este acionamento.`);
+      showToast(t("toast.noResponseModule", { label: label(id) }));
       return { handled: false, reason: "event_missing" };
     }
     if (info.runElevated || !info.exe || !launch(info.exe, [])) {
-      showToast(`${NOT_RUNNING_TEXT}. Abra o PowerToys e tente de novo.`);
+      showToast(t("toast.notRunning"));
       return { handled: false, reason: "not_running" };
     }
     if (!(await waitForEvent(def.event))) {
-      showToast(`${NOT_RUNNING_TEXT}: foi iniciado, mas ${def.label} não ficou disponível a tempo.`);
+      showToast(t("toast.startedLate", { label: label(id) }));
       return { handled: false, reason: "not_running" };
     }
     r = await h.set(def.event);
   }
   if (r[0] === "ok") return { handled: true };
   if (r[0] === "denied") {
-    showToast("O PowerToys está em execução como administrador e não aceita o acionamento pelo OrbitRing.");
+    showToast(t("toast.admin"));
     return { handled: false, reason: "access_denied" };
   }
   if (r[0] === "missing") {
-    showToast(`${def.label} não respondeu.`);
+    showToast(t("toast.noResponse", { label: label(id) }));
     return { handled: false, reason: "event_missing" };
   }
-  showToast(`Não foi possível acionar ${def.label}.`);
+  showToast(t("toast.failed", { label: label(id) }));
   return { handled: false, reason: r[0] === "bad" ? "unsafe_event" : "helper_failed" };
 }
 
 function openSettings(def) {
   if (!SETTINGS_WINDOWS.has(def.window) || !info.exe) return { handled: false, reason: "unsafe_window" };
   if (!launch(info.exe, [`--open-settings=${def.window}`])) {
-    showToast("Não foi possível abrir as configurações do PowerToys.");
+    showToast(t("toast.settingsFailed"));
     return { handled: false, reason: "launch_failed" };
   }
   return { handled: true };
@@ -313,15 +313,15 @@ async function runAction(actionId) {
   else refreshEnabledSync();
 
   if (!info || !info.supported) {
-    showToast(NOT_WINDOWS_LABEL);
+    showToast(t("notWindows"));
     return { handled: false, reason: "not_windows" };
   }
   if (!info.installed) {
-    showToast(NOT_INSTALLED_LABEL);
+    showToast(t("notInstalled"));
     return { handled: false, reason: "not_installed" };
   }
   if (moduleEnabled(def) === false) {
-    showToast(`${def.label} está desativado. Ative o módulo nas Configurações do PowerToys.`);
+    showToast(t("toast.disabled", { label: label(actionId) }));
     notifyIfChanged();
     return { handled: false, reason: "module_disabled" };
   }
@@ -334,11 +334,12 @@ async function runAction(actionId) {
 module.exports = {
   onLoad(h) {
     host = h && typeof h === "object" ? h : null;
+    if (host && host.locale) i18n.setLocale(host.locale);
     console.log("[powertoys] Plugin loaded");
     refresh(true).then(() => {
       if (!info) return;
-      if (!info.supported) console.log(`[powertoys] ${NOT_WINDOWS_LABEL}`);
-      else if (!info.installed) console.log(`[powertoys] ${NOT_INSTALLED_LABEL}`);
+      if (!info.supported) console.log("[powertoys] Windows only");
+      else if (!info.installed) console.log("[powertoys] PowerToys not installed");
       else console.log(`[powertoys] PowerToys ${info.version || "?"} em ${info.dir} (${info.running ? "em execução" : "parado"})`);
     });
     if (timer) clearInterval(timer);
@@ -364,6 +365,12 @@ module.exports = {
     }
   },
 
+  onLocaleChanged(locale) {
+    i18n.setLocale(locale);
+    lastSnapshot = "";
+    if (host && typeof host.stateChanged === "function") host.stateChanged();
+  },
+
   getState() {
     return buildState();
   },
@@ -372,7 +379,7 @@ module.exports = {
     return [];
   },
 
-  _internals: { formatHotkey, escapeXml, toastXml, NOT_INSTALLED_LABEL, NOT_WINDOWS_LABEL, NOT_RUNNING_TEXT },
+  _internals: { formatHotkey, escapeXml, toastXml },
 
   __test: {
     configure(d) {

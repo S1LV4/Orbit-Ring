@@ -1,0 +1,16 @@
+{
+  "manifest": {
+    "name": "Discord Voice Control",
+    "description": "Control Discord voice (mute, deafen)",
+    "actions": {
+      "toggle_mute": {
+        "name": "Toggle Mute",
+        "description": "Toggle Discord microphone mute"
+      },
+      "toggle_deafen": {
+        "name": "Toggle Deafen",
+        "description": "Toggle Discord audio deafen"
+      }
+    }
+  }
+}

@@ -3,7 +3,7 @@ import * as path from "path";
 import * as os from "os";
 import type { OrbitRingConfig, ButtonBinding, AppProfile, RingSettings, AppRingProfileMap } from "@orbitring/shared";
 import { DEFAULT_GROUPS } from "@orbitring/shared/src/ring-catalog";
-import { createTranslator, resolveLocale } from "@orbitring/shared/src/i18n";
+import { SYSTEM_LOCALE, createTranslator, isLocaleSetting, resolveLocale, type LocaleSetting } from "@orbitring/shared/src/i18n";
 
 const CONFIG_DIR = path.join(os.homedir(), ".orbit");
 const CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
@@ -150,6 +150,17 @@ export class ConfigStore {
       (p) => p.id !== profileId
     );
     this.save();
+  }
+
+  getLocale(): LocaleSetting {
+    return isLocaleSetting(this.config.locale) ? this.config.locale : SYSTEM_LOCALE;
+  }
+
+  setLocale(locale: unknown): boolean {
+    if (!isLocaleSetting(locale)) return false;
+    this.config.locale = locale;
+    this.save();
+    return true;
   }
 
   getRingSettings(): RingSettings {

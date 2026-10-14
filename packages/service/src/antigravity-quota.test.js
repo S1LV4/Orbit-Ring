@@ -1,3 +1,5 @@
+process.env.ORBIT_PLUGIN_LOCALE = "pt-BR";
+
 const path = require("path");
 
 const PLUGIN_DIR = path.resolve(__dirname, "../../../plugins/antigravity-usage");
@@ -108,14 +110,14 @@ describe("fração e renovação", () => {
 
   test("nome da janela: pelo id, pelo nome, pela distância até a renovação, genérico", () => {
     expect(quota.windowName("gemini-5h", "", null, T0)).toBe("5h");
-    expect(quota.windowName("3p-weekly", "", null, T0)).toBe("semana");
+    expect(quota.windowName("3p-weekly", "", null, T0)).toBe("week");
     expect(quota.windowName("", "Five Hour Limit Remaining", null, T0)).toBe("5h");
-    expect(quota.windowName("", "Weekly Limit", null, T0)).toBe("semana");
-    expect(quota.windowName("x-daily", "", null, T0)).toBe("dia");
-    expect(quota.windowName("gemini-weekly", "", T0 + 3 * HOUR, T0)).toBe("semana");
+    expect(quota.windowName("", "Weekly Limit", null, T0)).toBe("week");
+    expect(quota.windowName("x-daily", "", null, T0)).toBe("day");
+    expect(quota.windowName("gemini-weekly", "", T0 + 3 * HOUR, T0)).toBe("week");
     expect(quota.windowName("", "", T0 + 4 * HOUR, T0)).toBe("5h");
     expect(quota.windowName("", "", T0 + 5 * HOUR, T0)).toBe("5h");
-    expect(quota.windowName("", "", T0 + 6 * 24 * HOUR, T0)).toBe("semana");
+    expect(quota.windowName("", "", T0 + 6 * 24 * HOUR, T0)).toBe("week");
     expect(quota.windowName("", "", T0 + 12 * HOUR, T0)).toBe("");
     expect(quota.windowName("bucket-x", "", null, T0)).toBe("");
     expect(quota.windowName("limit-15h", "", null, T0)).toBe("");
@@ -168,11 +170,11 @@ describe("RetrieveUserQuotaSummary", () => {
   const EXPECTED = {
     gemini: [
       { id: "gemini-5h", window: "5h", used: 42, resetAt: T0 + 130 * 60_000 },
-      { id: "gemini-weekly", window: "semana", used: 20, resetAt: T0 + 5 * 24 * HOUR },
+      { id: "gemini-weekly", window: "week", used: 20, resetAt: T0 + 5 * 24 * HOUR },
     ],
     others: [
       { id: "3p-5h", window: "5h", used: 75, resetAt: T0 + 4 * HOUR },
-      { id: "3p-weekly", window: "semana", used: 40, resetAt: T0 + 6 * 24 * HOUR },
+      { id: "3p-weekly", window: "week", used: 40, resetAt: T0 + 6 * 24 * HOUR },
     ],
   };
 
@@ -203,7 +205,7 @@ describe("RetrieveUserQuotaSummary", () => {
     ] }] }, T0);
     expect(r.groups.gemini).toEqual([
       { id: "gemini-5h", window: "5h", used: null, resetAt: T0 + HOUR },
-      { id: "gemini-weekly", window: "semana", used: null, resetAt: null },
+      { id: "gemini-weekly", window: "week", used: null, resetAt: null },
     ]);
     expect(quota.hasData(r)).toBe(false);
   });
@@ -274,7 +276,7 @@ describe("GetUserStatus", () => {
       { modelName: "Gemini 3 Pro", quota_info: { remaining_fraction: 0.4, reset_time: iso(T0 + 6 * 24 * HOUR) } },
     ] } } };
     expect(quota.parseUserStatus(body, T0).groups.gemini).toEqual([
-      { id: "", window: "semana", used: 60, resetAt: T0 + 6 * 24 * HOUR, model: "Gemini 3 Pro" },
+      { id: "", window: "week", used: 60, resetAt: T0 + 6 * 24 * HOUR, model: "Gemini 3 Pro" },
     ]);
   });
 

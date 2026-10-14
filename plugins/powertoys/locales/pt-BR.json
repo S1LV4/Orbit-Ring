@@ -1,0 +1,150 @@
+{
+  "manifest": {
+    "name": "PowerToys",
+    "description": "Aciona os utilitários do Microsoft PowerToys direto no ring (Color Picker, Always On Top, FancyZones, Régua de Tela, Extrator de Texto, Peek…). Requer o PowerToys instalado: o plugin verifica a instalação e avisa quando ele ou um módulo não está disponível.",
+    "actions": {
+      "color_picker": {
+        "name": "PowerToys · Color Picker",
+        "description": "Abre o seletor de cores do PowerToys para copiar a cor de qualquer ponto da tela."
+      },
+      "always_on_top": {
+        "name": "PowerToys · Always On Top",
+        "description": "Fixa (ou solta) a janela ativa sempre no topo das outras."
+      },
+      "awake": {
+        "name": "PowerToys · Awake",
+        "description": "Mostra se o Awake está mantendo o computador acordado. O clique abre a página do Awake nas configurações do PowerToys (o plugin não altera configurações)."
+      },
+      "fancyzones_editor": {
+        "name": "PowerToys · Editor do FancyZones",
+        "description": "Abre o editor de layouts do FancyZones."
+      },
+      "measure_tool": {
+        "name": "PowerToys · Régua de Tela",
+        "description": "Abre a Régua de Tela (Screen Ruler) para medir distâncias em pixels."
+      },
+      "text_extractor": {
+        "name": "PowerToys · Extrator de Texto",
+        "description": "Seleciona uma área da tela e copia o texto reconhecido (OCR)."
+      },
+      "peek": {
+        "name": "PowerToys · Peek",
+        "description": "Pré-visualiza o arquivo selecionado no Explorador de Arquivos (o Explorador precisa ser a janela ativa)."
+      },
+      "shortcut_guide": {
+        "name": "PowerToys · Guia de Atalhos",
+        "description": "Mostra o guia de atalhos de teclado do Windows."
+      },
+      "find_my_mouse": {
+        "name": "PowerToys · Localizar Mouse",
+        "description": "Destaca a posição do ponteiro do mouse na tela."
+      },
+      "mouse_highlighter": {
+        "name": "PowerToys · Realçador do Mouse",
+        "description": "Liga ou desliga o realce dos cliques do mouse."
+      },
+      "mouse_crosshairs": {
+        "name": "PowerToys · Mira do Ponteiro",
+        "description": "Liga ou desliga a mira centrada no ponteiro do mouse."
+      },
+      "mouse_jump": {
+        "name": "PowerToys · Mouse Jump",
+        "description": "Abre a miniatura das telas para saltar o ponteiro para outro monitor."
+      },
+      "crop_and_lock_thumbnail": {
+        "name": "PowerToys · Crop And Lock (miniatura)",
+        "description": "Recorta uma área da janela ativa em uma miniatura ao vivo."
+      },
+      "crop_and_lock_reparent": {
+        "name": "PowerToys · Crop And Lock (recortar janela)",
+        "description": "Recorta a janela ativa, mantendo-a interativa dentro de uma janela menor."
+      },
+      "command_palette": {
+        "name": "PowerToys · Paleta de Comandos",
+        "description": "Abre a Paleta de Comandos (Command Palette) do PowerToys."
+      },
+      "powertoys_run": {
+        "name": "PowerToys · PowerToys Run",
+        "description": "Abre o lançador PowerToys Run."
+      },
+      "advanced_paste": {
+        "name": "PowerToys · Colagem Avançada",
+        "description": "Abre a Colagem Avançada (Advanced Paste) na janela ativa."
+      },
+      "workspaces": {
+        "name": "PowerToys · Editor de Workspaces",
+        "description": "Abre o editor de Workspaces."
+      },
+      "zoomit": {
+        "name": "PowerToys · ZoomIt (zoom)",
+        "description": "Ativa o zoom de tela do ZoomIt."
+      },
+      "zoomit_draw": {
+        "name": "PowerToys · ZoomIt (desenhar)",
+        "description": "Ativa o modo de desenho na tela do ZoomIt."
+      },
+      "light_switch": {
+        "name": "PowerToys · Light Switch",
+        "description": "Alterna o Windows entre o tema claro e o escuro."
+      },
+      "settings": {
+        "name": "PowerToys · Configurações",
+        "description": "Abre as configurações do PowerToys."
+      }
+    }
+  },
+  "labels": {
+    "color_picker": "Color Picker",
+    "always_on_top": "Always On Top",
+    "awake": "Awake",
+    "fancyzones_editor": "Editor do FancyZones",
+    "measure_tool": "Régua de Tela",
+    "text_extractor": "Extrator de Texto",
+    "peek": "Peek",
+    "shortcut_guide": "Guia de Atalhos",
+    "find_my_mouse": "Localizar Mouse",
+    "mouse_highlighter": "Realçador do Mouse",
+    "mouse_crosshairs": "Mira do Ponteiro",
+    "mouse_jump": "Mouse Jump",
+    "crop_and_lock_thumbnail": "Crop And Lock (miniatura)",
+    "crop_and_lock_reparent": "Crop And Lock (recortar janela)",
+    "command_palette": "Paleta de Comandos",
+    "powertoys_run": "PowerToys Run",
+    "advanced_paste": "Colagem Avançada",
+    "workspaces": "Editor de Workspaces",
+    "zoomit": "ZoomIt (zoom)",
+    "zoomit_draw": "ZoomIt (desenhar)",
+    "light_switch": "Light Switch",
+    "settings": "Configurações"
+  },
+  "notWindows": "PowerToys só existe no Windows",
+  "notInstalled": "PowerToys não instalado · instale com: winget install Microsoft.PowerToys",
+  "checking": "PowerToys · verificando instalação…",
+  "disabled": "{label} · desativado no PowerToys",
+  "stopped": " · PowerToys parado",
+  "settings": "PowerToys{version} · configurações{stopped}",
+  "awake": {
+    "modes": {
+      "off": "inativo",
+      "indefinite": "ativo (indefinido)",
+      "timed": "ativo (temporizado)",
+      "until": "ativo (até data definida)"
+    },
+    "screenOn": " · tela ligada",
+    "state": "Awake · {what}{stopped} · clique para abrir as configurações"
+  },
+  "keys": {
+    "space": "Espaço"
+  },
+  "toast": {
+    "selectFile": "{label}: selecione um arquivo no Explorador de Arquivos antes de acionar.",
+    "noResponseModule": "{label} não respondeu: o módulo ainda não está ativo ou esta versão do PowerToys não oferece este acionamento.",
+    "notRunning": "PowerToys não está em execução. Abra o PowerToys e tente de novo.",
+    "startedLate": "PowerToys não está em execução: foi iniciado, mas {label} não ficou disponível a tempo.",
+    "admin": "O PowerToys está em execução como administrador e não aceita o acionamento pelo OrbitRing.",
+    "noResponse": "{label} não respondeu.",
+    "failed": "Não foi possível acionar {label}.",
+    "settingsFailed": "Não foi possível abrir as configurações do PowerToys.",
+    "disabled": "{label} está desativado. Ative o módulo nas Configurações do PowerToys."
+  }
+}

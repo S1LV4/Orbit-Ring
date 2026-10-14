@@ -1,0 +1,105 @@
+{
+  "manifest": {
+    "name": "Steam",
+    "description": "Shows the running game, the active download and recently played games (each with its cover) in the ring, and opens the library, store, friends and Big Picture. Needs Steam installed; reads only Steam's registry entries and local files, with no login and no Web API.",
+    "actions": {
+      "playing": {
+        "name": "Steam · Playing",
+        "description": "Shows the running game and the session time. Clicking opens the Steam library."
+      },
+      "downloads": {
+        "name": "Steam · Downloads",
+        "description": "Progress of the current download or update. Clicking opens the downloads page."
+      },
+      "library": {
+        "name": "Steam · Library",
+        "description": "Opens the Steam game library."
+      },
+      "store": {
+        "name": "Steam · Store",
+        "description": "Opens the Steam store."
+      },
+      "friends": {
+        "name": "Steam · Friends",
+        "description": "Opens the Steam friends list."
+      },
+      "big_picture": {
+        "name": "Steam · Big Picture",
+        "description": "Opens Big Picture mode."
+      },
+      "status_online": {
+        "name": "Steam · Go online",
+        "description": "Sets your Steam chat status to online."
+      },
+      "status_away": {
+        "name": "Steam · Go away",
+        "description": "Sets your Steam chat status to away."
+      },
+      "status_invisible": {
+        "name": "Steam · Go invisible",
+        "description": "Sets your Steam chat status to invisible."
+      },
+      "status_offline": {
+        "name": "Steam · Go offline",
+        "description": "Signs out of Steam friends chat (offline status)."
+      }
+    }
+  },
+  "notWindows": "Steam: Windows only for now",
+  "notInstalled": "Steam is not installed",
+  "checking": "checking Steam…",
+  "idle": {
+    "library": "open the library",
+    "store": "open the store",
+    "friends": "open the friends list",
+    "big_picture": "open Big Picture mode",
+    "status_online": "go online",
+    "status_away": "go away",
+    "status_invisible": "go invisible",
+    "status_offline": "go offline in chat"
+  },
+  "game": "game",
+  "playing": {
+    "withTime": "{name} · {time}",
+    "noTime": "{name} · running",
+    "nothing": "nothing running"
+  },
+  "gameState": {
+    "runningWithTime": "running · {time}",
+    "running": "running",
+    "updating": "updating",
+    "updatingPercent": "updating {percent}%",
+    "updatePaused": "update paused at {percent}%",
+    "played": "{name} · {ago}"
+  },
+  "download": {
+    "nothing": "nothing downloading",
+    "preparing": "{name} · preparing download",
+    "paused": "{name} · paused at {percent}%",
+    "installing": "{name} · installing",
+    "progress": "{name} · {percent}% · {done} of {total}"
+  },
+  "played": {
+    "justNow": "played just now",
+    "minutes": "played {count} min ago",
+    "hours": "played {count} h ago",
+    "yesterday": "played yesterday",
+    "days": {
+      "one": "played {count} day ago",
+      "other": "played {count} days ago"
+    },
+    "months": {
+      "one": "played {count} month ago",
+      "other": "played {count} months ago"
+    },
+    "years": {
+      "one": "played {count} year ago",
+      "other": "played {count} years ago"
+    }
+  },
+  "toast": {
+    "openFailed": "Could not open Steam.",
+    "alreadyRunning": "{name} is already running.",
+    "notInstalled": "Steam is not installed."
+  }
+}

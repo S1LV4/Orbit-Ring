@@ -1,0 +1,81 @@
+{
+  "manifest": {
+    "name": "Gemini CLI",
+    "description": "Gemini CLI quota (Pro and Flash models, across every Windows and WSL account) right in the ring",
+    "actions": {
+      "pro": {
+        "name": "Gemini · Pro",
+        "description": "Quota of the Gemini CLI Pro models (the one closest to its limit), right on the button. Click to refresh and see the details in a notification."
+      },
+      "flash": {
+        "name": "Gemini · Flash",
+        "description": "Quota of the Gemini CLI Flash and Flash-Lite models (the one closest to its limit), right on the button. Click to refresh and see the details in a notification."
+      },
+      "worst": {
+        "name": "Gemini · Usage",
+        "description": "The Gemini CLI model closest to its limit, across all of them. Click to refresh and see the details in a notification."
+      }
+    }
+  },
+  "common": {
+    "moments": "moments",
+    "days": {
+      "one": "{count} day",
+      "other": "{count} days"
+    },
+    "date": "{month}/{day}"
+  },
+  "groups": {
+    "pro": "Pro",
+    "flash": "Flash",
+    "worst": "Usage"
+  },
+  "errors": {
+    "expired": "token expired · open Gemini CLI",
+    "noProject": "project not set up · open Gemini CLI",
+    "api": "quota API failed"
+  },
+  "bucket": {
+    "usage": "{group} {percent}% · {model}",
+    "renewed": " · quota renewed",
+    "renews": " · resets in {left}",
+    "read": " · read {age} ago"
+  },
+  "staleWsl": " · WSL stopped",
+  "state": {
+    "loading": "Gemini · {name} · loading quota…",
+    "error": "Gemini · {name} · {error}{stale}",
+    "noQuota": "Gemini · {name} · {group} has no reported quota{stale}",
+    "usage": "Gemini · {name} · {bucket}{stale}",
+    "accountUnavailable": "Gemini · {name} · account unavailable"
+  },
+  "empty": {
+    "loading": "Gemini CLI · loading quota…",
+    "apiKey": "Gemini with an API key · no quota to show",
+    "notConnected": "Gemini CLI · not connected (log in with `gemini`)"
+  },
+  "dyn": {
+    "name": "Gemini · {group} · {account}",
+    "descWorst": "Model closest to its limit in the Gemini CLI account in {account}.",
+    "descGroup": "Quota of the {group} models of the Gemini CLI account in {account}."
+  },
+  "moreAccounts": {
+    "one": " · +{count} account",
+    "other": " · +{count} accounts"
+  },
+  "detail": {
+    "loading": "loading quota…",
+    "noQuota": "{group}: no reported quota",
+    "renewed": "quota renewed",
+    "usage": "{group}: {percent}% · {model}{left}",
+    "renews": " · resets in {left}",
+    "live": "live",
+    "read": "read {age} ago"
+  },
+  "apiKeyLine": "{place}: API key (no quota to show)",
+  "toast": {
+    "title": "Gemini CLI · Quota",
+    "accountUnavailable": "{name}: account unavailable",
+    "account": "Account"
+  }
+}

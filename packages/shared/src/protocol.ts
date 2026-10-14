@@ -8,6 +8,7 @@ export type ServiceMessage =
   | { type: "active_app"; processName: string; title: string }
   | { type: "config_loaded"; config: unknown }
   | { type: "ring_config"; ring: RingSettings }
+  | { type: "locale"; locale: string }
   | { type: "agents"; agents: AgentStatus[] }
   | { type: "claude_usage"; usage: import("./types").ClaudeUsage }
   | { type: "app_ring_profiles"; profiles: AppRingProfileMap }
@@ -26,6 +27,7 @@ export type UIMessage =
   | { type: "save_profile"; profile: AppProfile }
   | { type: "delete_profile"; profileId: string }
   | { type: "save_ring"; ring: RingSettings }
+  | { type: "set_locale"; locale: string }
   | { type: "test_action"; action: Action }
   | { type: "start_macro_record" }
   | { type: "stop_macro_record" }

@@ -1,3 +1,4 @@
+import { readManifestText } from "./plugin-text";
 import * as fs from "fs";
 import * as path from "path";
 import type { PluginCatalogEntry } from "@orbitring/shared";
@@ -49,13 +50,14 @@ function readFolders(root: string | undefined): FolderManifest[] {
   return out;
 }
 
-export function listCatalog(catalogDir: string | undefined, pluginsDir: string): PluginCatalogEntry[] {
+export function listCatalog(catalogDir: string | undefined, pluginsDir: string, locale?: string): PluginCatalogEntry[] {
   const installed = new Map(readFolders(pluginsDir).map((p) => [p.id, p.version]));
   return readFolders(catalogDir)
-    .map(({ dir: _dir, ...p }) => {
+    .map(({ dir, ...p }) => {
       const installedVersion = installed.get(p.id) ?? null;
+      const text = readManifestText(dir, locale);
       return {
-        ...p, installedVersion,
+        ...p, name: text.name ?? p.name, description: text.description ?? p.description, installedVersion,
         updateAvailable: installedVersion !== null && compareVersions(p.version, installedVersion) > 0,
       };
     })

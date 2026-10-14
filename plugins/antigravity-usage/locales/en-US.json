@@ -1,0 +1,118 @@
+{
+  "manifest": {
+    "name": "Antigravity",
+    "description": "Google Antigravity quota usage (Gemini and Claude/GPT, 5-hour and weekly windows) right in the ring",
+    "actions": {
+      "gemini": {
+        "name": "Antigravity · Gemini",
+        "description": "Quota usage of the Gemini models in Antigravity (the tightest window), right on the button. Click to refresh and see the details in a notification."
+      },
+      "others": {
+        "name": "Antigravity · Claude and GPT",
+        "description": "Quota usage of the Claude and GPT models in Antigravity (the tightest window), right on the button. Click to refresh and see the details in a notification."
+      },
+      "worst": {
+        "name": "Antigravity · Usage",
+        "description": "The tightest Antigravity quota across every model group — the button for those who want just one. Click to refresh and see the details in a notification."
+      }
+    }
+  },
+  "groups": {
+    "gemini": "Gemini",
+    "others": "Claude and GPT",
+    "worst": "Usage"
+  },
+  "windows": {
+    "5h": "5h",
+    "day": "day",
+    "week": "week",
+    "month": "month"
+  },
+  "desktopReason": {
+    "no_cmdline": "no access to the local server's command line",
+    "no_token": "local server without --csrf_token",
+    "no_ports": "local server has no open port (starting?)",
+    "unauthorized": "token refused by the local server (401/403)",
+    "timeout": "local server did not answer in time",
+    "bad_response": "unexpected answer from the local server{http}",
+    "httpCode": " (HTTP {code})",
+    "no_quota": "no quota data · log in to Antigravity",
+    "scan_error": "could not list the processes",
+    "default": "local server did not answer"
+  },
+  "cliReason": {
+    "wsl_stopped": "WSL stopped",
+    "expired": "token expired · open agy in WSL",
+    "unauthorized": "login refused · open agy in WSL",
+    "forbidden": "access denied by the quota API (403)",
+    "rate_limited": "the quota API throttled the requests (429)",
+    "no_quota": "API without quota data",
+    "bad_token_file": "agy login file unreadable",
+    "no_login": "no agy login",
+    "cloud_off": "CLI closed · cloud lookup turned off",
+    "unreachable": "CLI running · local port unreachable",
+    "default": "quota API failed"
+  },
+  "stale": {
+    "scanError": "Antigravity · could not list the processes",
+    "closed": "Antigravity closed",
+    "wslStopped": "Antigravity · WSL stopped",
+    "cliClosed": "Antigravity · CLI closed",
+    "reason": "Antigravity · {reason}",
+    "noNews": "Antigravity · no new data"
+  },
+  "fallback": {
+    "loading": "Antigravity · loading usage…",
+    "cliPart": "CLI in {where}: {reason}",
+    "unavailable": "Antigravity · usage unavailable ({reason})",
+    "windowsOnly": "Antigravity · available on Windows only",
+    "closed": "Antigravity closed · open it to see the usage",
+    "withCli": "{label} · {cli}"
+  },
+  "state": {
+    "plan": " · plan {plan}",
+    "headLive": "Antigravity · {where}",
+    "headStale": "{note} · last value {age} · {where}",
+    "groupNoData": "{head} · {group} · no quota data{tail}",
+    "group": "{head} · {group} · {text}{perModel}{tail}",
+    "noData": "{head} · no quota data{tail}",
+    "worst": "{head} · {group} {bucket}{other}{perModel}{tail}",
+    "otherGroup": " · {group} {percent}%",
+    "perModelWith": " · per model ({model})",
+    "perModel": " · per model",
+    "recentNone": "Antigravity · {where} · no recent data"
+  },
+  "moreAccounts": {
+    "one": " · +{count} account",
+    "other": " · +{count} accounts"
+  },
+  "bucket": {
+    "renewed": "renewed",
+    "usage": "{window} {pct}{left}",
+    "leftBrief": " ({left})",
+    "left": " (resets in {left})"
+  },
+  "accountId": "account {id}",
+  "dyn": {
+    "name": "Antigravity · {title} · {name}",
+    "description": "Antigravity quota ({title}) of the account seen in {name}."
+  },
+  "toast": {
+    "title": "Antigravity · Usage",
+    "accountUnavailable": "Account unavailable",
+    "accounts": {
+      "one": "{count} account",
+      "other": "{count} accounts"
+    },
+    "noData": "no quota data",
+    "groupLine": "{group}: {text}{perModel}",
+    "perModel": " (per model)",
+    "staleTail": " · {note} · {age}"
+  },
+  "age": {
+    "justNow": "just now",
+    "minutes": "{count} min ago",
+    "hours": "{count} h ago",
+    "days": "{count} d ago"
+  }
+}

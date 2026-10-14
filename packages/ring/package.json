@@ -12,7 +12,7 @@
     "pack": "npm run compile && electron-builder --win --dir",
     "dist": "npm run compile && electron-builder --win",
     "test:e2e": "npm run build:ring && playwright test",
-    "test:e2e:ci": "npm run build:ring && playwright test e2e/ring.e2e.test.ts e2e/ring-input e2e/ring-edit e2e/ring-image e2e/ring-parity"
+    "test:e2e:ci": "npm run build:ring && playwright test e2e/ring.e2e.test.ts e2e/ring-input e2e/ring-edit e2e/ring-image e2e/ring-parity e2e/ring-locale"
   },
   "dependencies": {
     "electron-updater": "6.8.9",

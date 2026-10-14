@@ -90,6 +90,28 @@ async function main() {
   await until(() => last.config_loaded, "config after save");
   assert(JSON.stringify(last.config_loaded.config).includes(`"ascii":${flipped.ascii}`), "saved ring settings persist in the config");
 
+  console.log("language");
+  await until(() => last.locale, "language on connect");
+  assert(last.locale.locale === "system", "a fresh install follows the system language");
+  last.locale = null;
+  send({ type: "set_locale", locale: "es-ES" });
+  await until(() => last.locale, "language broadcast");
+  assert(last.locale.locale === "es-ES", "a picked language is saved and broadcast to every window");
+  last.config_loaded = null;
+  send({ type: "get_config" });
+  await until(() => last.config_loaded, "config after language change");
+  assert(last.config_loaded.config.locale === "es-ES", "the picked language persists in the config");
+  last.plugin_catalog = null;
+  send({ type: "get_plugin_catalog" });
+  await until(() => last.plugin_catalog, "catalog in Spanish");
+  const discord = last.plugin_catalog.plugins.find((p) => p.id === "com.orbitring.discord");
+  assert(discord && discord.name === "Control de voz de Discord", "the plugin catalog follows the picked language");
+  const beforeLocaleError = errors.length;
+  send({ type: "set_locale", locale: "fr-FR" });
+  await until(() => errors.length > beforeLocaleError, "error for an unknown language");
+  ok("an unknown language is refused with an error");
+  send({ type: "set_locale", locale: "system" });
+
   console.log("plugin catalog");
   send({ type: "get_plugin_catalog" });
   await until(() => last.plugin_catalog, "catalog");

@@ -1,3 +1,5 @@
+process.env.ORBIT_PLUGIN_LOCALE = "pt-BR";
+
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -544,7 +546,9 @@ describe("manifesto", () => {
   test("id, ações e ícones no formato do ring", () => {
     const manifest = JSON.parse(fs.readFileSync(path.join(PLUGIN_DIR, "manifest.json"), "utf8"));
     expect(manifest).toMatchObject({ id: "com.orbitring.codex", name: "Codex", main: "index.js" });
-    expect(manifest.actions.map((a) => [a.id, a.name])).toEqual([["session", "Codex · Sessão (5h)"], ["week", "Codex · Semana"]]);
+    expect(manifest.actions.map((a) => [a.id, a.name])).toEqual([["session", "Codex · Session (5h)"], ["week", "Codex · Week"]]);
+    const pt = JSON.parse(fs.readFileSync(path.join(path.dirname(require.resolve(path.join(PLUGIN_DIR, "manifest.json"))), "locales", "pt-BR.json"), "utf8")).manifest;
+    expect(Object.entries(pt.actions).map(([id, a]) => [id, a.name])).toEqual([["session", "Codex · Sessão (5h)"], ["week", "Codex · Semana"]]);
     for (const a of manifest.actions) {
       expect(a.stateful).toBe(true);
       expect(a.icon).not.toMatch(/<svg|"/);

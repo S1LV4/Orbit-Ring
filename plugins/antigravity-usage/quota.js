@@ -1,3 +1,4 @@
+const i18n = require("./i18n")(__dirname);
 const HOUR = 3600_000;
 const DAY = 24 * HOUR;
 
@@ -41,19 +42,19 @@ const usedFrom = (fraction) => Math.round((1 - fraction) * 1000) / 10;
 
 function windowName(id, displayName, resetAt, t) {
   const s = `${id || ""} ${displayName || ""}`.toLowerCase();
-  if (/week|semana|(^|[^0-9])7 ?d(ay)?s?\b/.test(s)) return "semana";
+  if (/week|semana|(^|[^0-9])7 ?d(ay)?s?\b/.test(s)) return "week";
   if (/(^|[^0-9])5 ?h(ours?)?\b|5-hour|five[ -]?hour|session/.test(s)) return "5h";
-  if (/dail|\bday\b|(^|[^0-9])24 ?h/.test(s)) return "dia";
-  if (/month/.test(s)) return "mês";
+  if (/dail|\bday\b|(^|[^0-9])24 ?h/.test(s)) return "day";
+  if (/month/.test(s)) return "month";
   if (typeof resetAt === "number" && typeof t === "number") {
     const d = resetAt - t;
     if (d > 0 && d <= 5 * HOUR + 10 * 60_000) return "5h";
-    if (d > DAY && d <= 7 * DAY + HOUR) return "semana";
+    if (d > DAY && d <= 7 * DAY + HOUR) return "week";
   }
   return "";
 }
 
-const WINDOW_ORDER = ["5h", "dia", "semana", "mês"];
+const WINDOW_ORDER = ["5h", "day", "week", "month"];
 function sortBuckets(list) {
   const rank = (b) => { const i = WINDOW_ORDER.indexOf(b.window); return i < 0 ? 99 : i; };
   return list.slice().sort((a, b) => rank(a) - rank(b));
@@ -185,10 +186,10 @@ function formatRemaining(resetAt, t) {
 
 function formatAge(ms) {
   const mins = Math.max(0, Math.floor(ms / 60000));
-  if (mins < 1) return "agora há pouco";
-  if (mins < 60) return `há ${mins} min`;
-  if (mins < 48 * 60) return `há ${Math.floor(mins / 60)} h`;
-  return `há ${Math.floor(mins / (24 * 60))} d`;
+  if (mins < 1) return i18n.t("age.justNow");
+  if (mins < 60) return i18n.t("age.minutes", { count: mins });
+  if (mins < 48 * 60) return i18n.t("age.hours", { count: Math.floor(mins / 60) });
+  return i18n.t("age.days", { count: Math.floor(mins / (24 * 60)) });
 }
 
 module.exports = {

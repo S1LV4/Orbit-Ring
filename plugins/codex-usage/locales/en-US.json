@@ -1,0 +1,94 @@
+{
+  "manifest": {
+    "name": "Codex",
+    "description": "OpenAI Codex CLI usage (5-hour session and week, across every Windows and WSL account) right in the ring",
+    "actions": {
+      "session": {
+        "name": "Codex · Session (5h)",
+        "description": "Codex 5-hour session usage, right on the button. Click to refresh and see the details in a notification."
+      },
+      "week": {
+        "name": "Codex · Week",
+        "description": "Codex weekly usage, right on the button. Click to refresh and see the details in a notification."
+      }
+    }
+  },
+  "common": {
+    "moments": "moments",
+    "days": {
+      "one": "{count} day",
+      "other": "{count} days"
+    },
+    "date": "{month}/{day}"
+  },
+  "tiers": {
+    "session": {
+      "name": "Session",
+      "long": "Session (5h)"
+    },
+    "week": {
+      "name": "Week",
+      "long": "Week"
+    }
+  },
+  "window": {
+    "usage": "{tier} {percent}%",
+    "idleSince": " · unused since {when}",
+    "renews": " · resets in {left}",
+    "read": " · read {age} ago"
+  },
+  "noData": {
+    "apiError": "usage API failed",
+    "openCodex": "open Codex to refresh"
+  },
+  "staleWsl": " · WSL stopped",
+  "state": {
+    "loading": "Codex · {name} · loading usage…",
+    "noData": "Codex · {name} · no usage data ({reason}){stale}",
+    "noLimit": "Codex · {name} · {tier} has no reported limit{stale}",
+    "usage": "Codex · {name} · {window}{stale}",
+    "accountUnavailable": "Codex · {name} · account unavailable"
+  },
+  "empty": {
+    "loading": "Codex · loading usage…",
+    "apiKey": "Codex with an API key · no quota to show",
+    "notConnected": "Codex · not connected (log in with `codex`)"
+  },
+  "dyn": {
+    "name": "Codex · {tier} · {account}",
+    "descSession": "5-hour session usage of the Codex account in {account}.",
+    "descWeek": "Weekly usage of the Codex account in {account}."
+  },
+  "moreAccounts": {
+    "one": " · +{count} account",
+    "other": " · +{count} accounts"
+  },
+  "credits": {
+    "unlimited": "unlimited credits",
+    "balance": "credits: {amount}",
+    "some": "has credits"
+  },
+  "source": {
+    "live": "live",
+    "read": "read {age} ago{where}",
+    "where": " in {place}"
+  },
+  "detail": {
+    "noData": "{name}\nNo usage data ({reason}){stale}",
+    "noLimit": "{tier}: no reported limit",
+    "idle": "{tier}: 0% · unused since {when}",
+    "usage": "{tier}: {percent}%{renews}",
+    "renews": " · resets in {left}"
+  },
+  "line": {
+    "noData": "{name}: no usage data ({reason})",
+    "noLimit": "{tier} –",
+    "usage": "{tier} {percent}%{left}"
+  },
+  "apiKeyLine": "{place}: API key (no quota to show)",
+  "toast": {
+    "title": "Codex · Usage",
+    "accountUnavailable": "{name}: account unavailable",
+    "account": "Account"
+  }
+}

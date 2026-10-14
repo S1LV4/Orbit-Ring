@@ -4,6 +4,7 @@ import { ED, editSig } from "./edit";
 import { CAT, FALLBACK_ICON, iconMarkup, normDisplay, pluginDisplay, pluginImage, pluginState, sanitize, type RawGroup } from "../utils/catalog";
 import { actId, gIdx, initNodes, isAct, slotIds } from "../utils/geometry";
 import { isTheme, setTheme } from "../utils/themes";
+import { applyLocaleSetting } from "../i18n";
 import { setStyle } from "../utils/math";
 import { cancelDrag, pinSnap } from "../hooks/useEdit";
 
@@ -47,6 +48,7 @@ export interface PluginAction {
   image?: string;
 }
 export interface RingConfig {
+  locale?: string;
   theme?: string;
   accent?: string;
   liquid?: boolean;
@@ -62,6 +64,7 @@ export interface RingConfig {
 
 export function applyConfig(cfg: RingConfig): void {
   if (!cfg) return;
+  if (cfg.locale !== undefined && applyLocaleSetting(cfg.locale)) return;
   if (cfg.theme) setTheme(isTheme(cfg.theme) ? cfg.theme : "dark", false);
   if (cfg.accent) {
     document.documentElement.style.setProperty("--acc", cfg.accent);

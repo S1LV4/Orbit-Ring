@@ -1,0 +1,150 @@
+{
+  "manifest": {
+    "name": "PowerToys",
+    "description": "Triggers Microsoft PowerToys utilities straight from the ring (Color Picker, Always On Top, FancyZones, Screen Ruler, Text Extractor, Peek…). Needs PowerToys installed: the plugin checks the installation and tells you when it or a module is not available.",
+    "actions": {
+      "color_picker": {
+        "name": "PowerToys · Color Picker",
+        "description": "Opens the PowerToys Color Picker to copy the color of any point on the screen."
+      },
+      "always_on_top": {
+        "name": "PowerToys · Always On Top",
+        "description": "Pins (or unpins) the active window above the others."
+      },
+      "awake": {
+        "name": "PowerToys · Awake",
+        "description": "Shows whether Awake is keeping the computer awake. Clicking opens the Awake page in PowerToys settings (the plugin does not change settings)."
+      },
+      "fancyzones_editor": {
+        "name": "PowerToys · FancyZones Editor",
+        "description": "Opens the FancyZones layout editor."
+      },
+      "measure_tool": {
+        "name": "PowerToys · Screen Ruler",
+        "description": "Opens Screen Ruler to measure distances in pixels."
+      },
+      "text_extractor": {
+        "name": "PowerToys · Text Extractor",
+        "description": "Selects an area of the screen and copies the recognized text (OCR)."
+      },
+      "peek": {
+        "name": "PowerToys · Peek",
+        "description": "Previews the file selected in File Explorer (Explorer must be the active window)."
+      },
+      "shortcut_guide": {
+        "name": "PowerToys · Shortcut Guide",
+        "description": "Shows the Windows keyboard shortcut guide."
+      },
+      "find_my_mouse": {
+        "name": "PowerToys · Find My Mouse",
+        "description": "Highlights where the mouse pointer is on the screen."
+      },
+      "mouse_highlighter": {
+        "name": "PowerToys · Mouse Highlighter",
+        "description": "Turns mouse click highlighting on or off."
+      },
+      "mouse_crosshairs": {
+        "name": "PowerToys · Mouse Pointer Crosshairs",
+        "description": "Turns the crosshairs centered on the mouse pointer on or off."
+      },
+      "mouse_jump": {
+        "name": "PowerToys · Mouse Jump",
+        "description": "Opens a thumbnail of the screens to jump the pointer to another monitor."
+      },
+      "crop_and_lock_thumbnail": {
+        "name": "PowerToys · Crop And Lock (thumbnail)",
+        "description": "Crops an area of the active window into a live thumbnail."
+      },
+      "crop_and_lock_reparent": {
+        "name": "PowerToys · Crop And Lock (reparent)",
+        "description": "Crops the active window, keeping it interactive inside a smaller window."
+      },
+      "command_palette": {
+        "name": "PowerToys · Command Palette",
+        "description": "Opens the PowerToys Command Palette."
+      },
+      "powertoys_run": {
+        "name": "PowerToys · PowerToys Run",
+        "description": "Opens the PowerToys Run launcher."
+      },
+      "advanced_paste": {
+        "name": "PowerToys · Advanced Paste",
+        "description": "Opens Advanced Paste in the active window."
+      },
+      "workspaces": {
+        "name": "PowerToys · Workspaces Editor",
+        "description": "Opens the Workspaces editor."
+      },
+      "zoomit": {
+        "name": "PowerToys · ZoomIt (zoom)",
+        "description": "Turns on ZoomIt screen zoom."
+      },
+      "zoomit_draw": {
+        "name": "PowerToys · ZoomIt (draw)",
+        "description": "Turns on ZoomIt screen drawing."
+      },
+      "light_switch": {
+        "name": "PowerToys · Light Switch",
+        "description": "Switches Windows between the light and dark theme."
+      },
+      "settings": {
+        "name": "PowerToys · Settings",
+        "description": "Opens the PowerToys settings."
+      }
+    }
+  },
+  "labels": {
+    "color_picker": "Color Picker",
+    "always_on_top": "Always On Top",
+    "awake": "Awake",
+    "fancyzones_editor": "FancyZones Editor",
+    "measure_tool": "Screen Ruler",
+    "text_extractor": "Text Extractor",
+    "peek": "Peek",
+    "shortcut_guide": "Shortcut Guide",
+    "find_my_mouse": "Find My Mouse",
+    "mouse_highlighter": "Mouse Highlighter",
+    "mouse_crosshairs": "Mouse Pointer Crosshairs",
+    "mouse_jump": "Mouse Jump",
+    "crop_and_lock_thumbnail": "Crop And Lock (thumbnail)",
+    "crop_and_lock_reparent": "Crop And Lock (reparent)",
+    "command_palette": "Command Palette",
+    "powertoys_run": "PowerToys Run",
+    "advanced_paste": "Advanced Paste",
+    "workspaces": "Workspaces Editor",
+    "zoomit": "ZoomIt (zoom)",
+    "zoomit_draw": "ZoomIt (draw)",
+    "light_switch": "Light Switch",
+    "settings": "Settings"
+  },
+  "notWindows": "PowerToys exists only on Windows",
+  "notInstalled": "PowerToys is not installed · install it with: winget install Microsoft.PowerToys",
+  "checking": "PowerToys · checking the installation…",
+  "disabled": "{label} · disabled in PowerToys",
+  "stopped": " · PowerToys stopped",
+  "settings": "PowerToys{version} · settings{stopped}",
+  "awake": {
+    "modes": {
+      "off": "inactive",
+      "indefinite": "active (indefinitely)",
+      "timed": "active (timed)",
+      "until": "active (until a set time)"
+    },
+    "screenOn": " · screen on",
+    "state": "Awake · {what}{stopped} · click to open the settings"
+  },
+  "keys": {
+    "space": "Space"
+  },
+  "toast": {
+    "selectFile": "{label}: select a file in File Explorer before triggering it.",
+    "noResponseModule": "{label} did not respond: the module is not active yet or this PowerToys version does not offer this trigger.",
+    "notRunning": "PowerToys is not running. Open PowerToys and try again.",
+    "startedLate": "PowerToys is not running: it was started, but {label} was not available in time.",
+    "admin": "PowerToys is running as administrator and does not accept triggers from OrbitRing.",
+    "noResponse": "{label} did not respond.",
+    "failed": "Could not trigger {label}.",
+    "settingsFailed": "Could not open the PowerToys settings.",
+    "disabled": "{label} is disabled. Turn the module on in the PowerToys settings."
+  }
+}

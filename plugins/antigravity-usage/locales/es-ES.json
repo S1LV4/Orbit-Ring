@@ -1,0 +1,118 @@
+{
+  "manifest": {
+    "name": "Antigravity",
+    "description": "Uso de la cuota de Google Antigravity (Gemini y Claude/GPT, ventanas de 5 h y semanal) directamente en el ring",
+    "actions": {
+      "gemini": {
+        "name": "Antigravity · Gemini",
+        "description": "Uso de la cuota de los modelos Gemini en Antigravity (la ventana más ajustada), directamente en el botón. Haz clic para actualizar y ver los detalles en una notificación."
+      },
+      "others": {
+        "name": "Antigravity · Claude y GPT",
+        "description": "Uso de la cuota de los modelos Claude y GPT en Antigravity (la ventana más ajustada), directamente en el botón. Haz clic para actualizar y ver los detalles en una notificación."
+      },
+      "worst": {
+        "name": "Antigravity · Uso",
+        "description": "La cuota más ajustada de Antigravity entre todos los grupos de modelos: el botón para quien quiere uno solo. Haz clic para actualizar y ver los detalles en una notificación."
+      }
+    }
+  },
+  "groups": {
+    "gemini": "Gemini",
+    "others": "Claude y GPT",
+    "worst": "Uso"
+  },
+  "windows": {
+    "5h": "5h",
+    "day": "día",
+    "week": "semana",
+    "month": "mes"
+  },
+  "desktopReason": {
+    "no_cmdline": "sin acceso a la línea de comandos del servidor local",
+    "no_token": "servidor local sin --csrf_token",
+    "no_ports": "servidor local sin puerto abierto (¿iniciando?)",
+    "unauthorized": "token rechazado por el servidor local (401/403)",
+    "timeout": "el servidor local no respondió a tiempo",
+    "bad_response": "respuesta inesperada del servidor local{http}",
+    "httpCode": " (HTTP {code})",
+    "no_quota": "sin datos de cuota · inicia sesión en Antigravity",
+    "scan_error": "no se pudieron listar los procesos",
+    "default": "el servidor local no respondió"
+  },
+  "cliReason": {
+    "wsl_stopped": "WSL detenido",
+    "expired": "token caducado · abre agy en WSL",
+    "unauthorized": "inicio de sesión rechazado · abre agy en WSL",
+    "forbidden": "acceso denegado por la API de cuota (403)",
+    "rate_limited": "la API de cuota limitó las consultas (429)",
+    "no_quota": "API sin datos de cuota",
+    "bad_token_file": "archivo de inicio de sesión de agy ilegible",
+    "no_login": "sin inicio de sesión de agy",
+    "cloud_off": "CLI cerrado · consulta a la nube desactivada",
+    "unreachable": "CLI en ejecución · puerto local inaccesible",
+    "default": "falló la API de cuota"
+  },
+  "stale": {
+    "scanError": "Antigravity · no se pudieron listar los procesos",
+    "closed": "Antigravity cerrado",
+    "wslStopped": "Antigravity · WSL detenido",
+    "cliClosed": "Antigravity · CLI cerrado",
+    "reason": "Antigravity · {reason}",
+    "noNews": "Antigravity · sin datos nuevos"
+  },
+  "fallback": {
+    "loading": "Antigravity · cargando el uso…",
+    "cliPart": "CLI en {where}: {reason}",
+    "unavailable": "Antigravity · uso no disponible ({reason})",
+    "windowsOnly": "Antigravity · disponible solo en Windows",
+    "closed": "Antigravity cerrado · ábrelo para ver el uso",
+    "withCli": "{label} · {cli}"
+  },
+  "state": {
+    "plan": " · plan {plan}",
+    "headLive": "Antigravity · {where}",
+    "headStale": "{note} · último valor {age} · {where}",
+    "groupNoData": "{head} · {group} · sin datos de cuota{tail}",
+    "group": "{head} · {group} · {text}{perModel}{tail}",
+    "noData": "{head} · sin datos de cuota{tail}",
+    "worst": "{head} · {group} {bucket}{other}{perModel}{tail}",
+    "otherGroup": " · {group} {percent}%",
+    "perModelWith": " · por modelo ({model})",
+    "perModel": " · por modelo",
+    "recentNone": "Antigravity · {where} · sin datos recientes"
+  },
+  "moreAccounts": {
+    "one": " · +{count} cuenta",
+    "other": " · +{count} cuentas"
+  },
+  "bucket": {
+    "renewed": "renovado",
+    "usage": "{window} {pct}{left}",
+    "leftBrief": " ({left})",
+    "left": " (se renueva en {left})"
+  },
+  "accountId": "cuenta {id}",
+  "dyn": {
+    "name": "Antigravity · {title} · {name}",
+    "description": "Cuota de Antigravity ({title}) de la cuenta vista en {name}."
+  },
+  "toast": {
+    "title": "Antigravity · Uso",
+    "accountUnavailable": "Cuenta no disponible",
+    "accounts": {
+      "one": "{count} cuenta",
+      "other": "{count} cuentas"
+    },
+    "noData": "sin datos de cuota",
+    "groupLine": "{group}: {text}{perModel}",
+    "perModel": " (por modelo)",
+    "staleTail": " · {note} · {age}"
+  },
+  "age": {
+    "justNow": "hace un momento",
+    "minutes": "hace {count} min",
+    "hours": "hace {count} h",
+    "days": "hace {count} d"
+  }
+}

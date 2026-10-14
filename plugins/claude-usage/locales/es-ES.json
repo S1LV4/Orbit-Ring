@@ -1,0 +1,99 @@
+{
+  "manifest": {
+    "name": "Claude Code",
+    "description": "Uso de Claude Code (sesión de 5 h y semana, en todas las cuentas de Windows y WSL) y aprobación de solicitudes de confirmación directamente en el ring",
+    "actions": {
+      "show_usage": {
+        "name": "Claude · Sesión (5h)",
+        "description": "Uso de la sesión de 5 h de Claude Code, directamente en el botón. Haz clic para actualizar y ver los detalles en una notificación."
+      },
+      "usage_gauge": {
+        "name": "Claude · Semana",
+        "description": "Uso semanal de Claude Code, directamente en el botón. Haz clic para actualizar y ver los detalles en una notificación."
+      },
+      "approve": {
+        "name": "Claude · Aprobar",
+        "description": "Aprueba la solicitud de confirmación más antigua de Claude Code. El botón se ilumina mientras haya una solicitud esperando."
+      },
+      "decline": {
+        "name": "Claude · Rechazar",
+        "description": "Rechaza la solicitud de confirmación más antigua de Claude Code."
+      }
+    }
+  },
+  "tiers": {
+    "session": "Sesión",
+    "weekly": "Semana",
+    "sessionLong": "Sesión (5h):",
+    "weeklyLong": "Semana:"
+  },
+  "moments": "instantes",
+  "accountId": "cuenta {id}",
+  "staleWsl": " · WSL detenido",
+  "reasons": {
+    "noCredentials": "inicia sesión en Claude Code",
+    "unauthorized": "sesión caducada — abre Claude Code",
+    "api": "falló la API de uso"
+  },
+  "state": {
+    "unavailable": "Claude · uso no disponible ({reason})",
+    "loading": "Claude · {who}cargando el uso…",
+    "unavailableFor": "Claude · {who}uso no disponible ({reason})",
+    "usage": "Claude · {who}{summary}{stale}",
+    "accountUnavailable": "Claude · {name} · cuenta no disponible"
+  },
+  "summary": {
+    "usage": "{tier} {percent}%{left}",
+    "renews": " · se renueva en {left}"
+  },
+  "moreAccounts": {
+    "one": " · +{count} cuenta",
+    "other": " · +{count} cuentas"
+  },
+  "dyn": {
+    "name": "Claude · {tier} · {account}",
+    "descSession": "Uso de la sesión de 5 h de la cuenta de Claude Code en {account}.",
+    "descWeek": "Uso semanal de la cuenta de Claude Code en {account}."
+  },
+  "approvals": {
+    "portBusy": "Claude · aprobaciones no disponibles (puerto ocupado)",
+    "nothing": "Claude · nada pendiente",
+    "approve": "Aprobar · {summary}",
+    "decline": "Rechazar · {summary}",
+    "attentionTitle": "Claude pide confirmación"
+  },
+  "line": {
+    "unavailable": "{name}: no disponible ({reason})",
+    "part": "{tier} {percent}%{left}"
+  },
+  "toast": {
+    "title": "Claude · Uso",
+    "accountUnavailable": "{name}: cuenta no disponible",
+    "account": "Cuenta"
+  },
+  "hook": {
+    "denied": "Rechazado por el usuario en OrbitRing.",
+    "unknownOption": "Opción desconocida: {option}",
+    "settingsPath": "--settings necesita una ruta",
+    "timeout": "--timeout necesita un número de segundos (>= 5)",
+    "scriptMissing": "No se encontró el script del hook: {path}",
+    "badJson": "{file} no es un JSON válido ({error}) — no se cambió nada.",
+    "notObject": "{file} no contiene un objeto JSON — no se cambió nada.",
+    "hooksNotObject": "\"hooks\" en {file} no es un objeto — no se cambió nada.",
+    "eventNotList": "\"hooks.{event}\" en {file} no es una lista — no se cambió nada.",
+    "removed": "Hook eliminado. Se aplica a las próximas sesiones de Claude Code.",
+    "installed": "Hook instalado. Abre una nueva sesión de Claude Code (o revisa /hooks) para que se aplique."
+  },
+  "simulate": {
+    "noToken": "no se encontró el token en {path}",
+    "badAnswer": "respuesta no válida",
+    "description": "Solicitud de prueba de OrbitRing",
+    "serviceOk": "Servicio de aprobaciones OK en http://127.0.0.1:{port} — {count} solicitud(es) pendiente(s).",
+    "sent": "Solicitud enviada: {tool}: {detail}",
+    "instructions": "Mira el aviso junto al cursor, abre el ring y elige Aprobar o Rechazar (60 s)…",
+    "allowed": "APROBADO (allow)",
+    "denied": "RECHAZADO (deny)",
+    "noAnswer": "SIN RESPUESTA (ask) — Claude Code mostraría el prompt normal en la terminal",
+    "decision": "Decisión: {text}"
+  }
+}

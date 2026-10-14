@@ -23,10 +23,13 @@ const ACCOUNTS_FILE = "codex-accounts.json";
 const AUTH_CLAIM = "https://api.openai.com/auth";
 
 const MARK = (require("./manifest.json").actions.find((a) => a.keepIcon) || {}).icon;
+const i18n = require("./i18n")(__dirname);
 const TIERS = {
-  session: { key: "primary", name: "Sessão", long: "Sessão (5h)", defaultMinutes: 300 },
-  week: { key: "secondary", name: "Semana", long: "Semana", defaultMinutes: 10080 },
+  session: { key: "primary", defaultMinutes: 300 },
+  week: { key: "secondary", defaultMinutes: 10080 },
 };
+const tierName = (id) => i18n.t(`tiers.${id}.name`);
+const tierLong = (id) => i18n.t(`tiers.${id}.long`);
 
 let host = null;
 let timer = null;
@@ -454,32 +457,31 @@ function windowView(usage, tierId, t) {
 }
 
 function windowText(name, view, usage, t) {
-  let s = `${name} ${clampPct(view.percent)}%`;
-  if (view.reset) return `${s} · sem uso desde ${formatWhen(usage.at, t)}`;
+  let s = i18n.t("window.usage", { tier: name, percent: clampPct(view.percent) });
+  if (view.reset) return s + i18n.t("window.idleSince", { when: formatWhen(usage.at, t) });
   const left = formatRemaining(view.resetsAt, t);
-  if (left) s += ` · renova em ${left}`;
-  if (!isFresh(usage, t)) s += ` · lido há ${formatAge(t - usage.at)}`;
+  if (left) s += i18n.t("window.renews", { left });
+  if (!isFresh(usage, t)) s += i18n.t("window.read", { age: formatAge(t - usage.at) });
   return s;
 }
 
 function noDataReason(acc) {
-  if (acc.liveError === "api_error") return "falha na API de uso";
-  return "abra o Codex para atualizar";
+  if (acc.liveError === "api_error") return i18n.t("noData.apiError");
+  return i18n.t("noData.openCodex");
 }
 
 function accountTierState(acc, tierId, t) {
   const usage = usageOf(acc);
   const name = accountName(acc, usage);
-  const tier = TIERS[tierId];
-  const stale = isStale(acc) ? " · WSL parado" : "";
+  const stale = isStale(acc) ? i18n.t("staleWsl") : "";
   if (!usage) {
-    if (!acc.liveError) return { text: "…", label: `Codex · ${name} · carregando uso…` };
-    return { text: "–", label: `Codex · ${name} · sem dados de uso (${noDataReason(acc)})${stale}` };
+    if (!acc.liveError) return { text: "…", label: i18n.t("state.loading", { name }) };
+    return { text: "–", label: i18n.t("state.noData", { name, reason: noDataReason(acc), stale }) };
   }
   const view = windowView(usage, tierId, t);
-  if (!view) return { text: "–", label: `Codex · ${name} · ${tier.name} sem limite informado${stale}` };
+  if (!view) return { text: "–", label: i18n.t("state.noLimit", { name, tier: tierName(tierId), stale }) };
   const pct = clampPct(view.percent);
-  const st = { value: pct, text: `${pct}%`, label: `Codex · ${name} · ${windowText(tier.name, view, usage, t)}${stale}` };
+  const st = { value: pct, text: `${pct}%`, label: i18n.t("state.usage", { name, window: windowText(tierName(tierId), view, usage, t), stale }) };
   if (view.colored) st.status = statusFor(view.percent);
   return st;
 }
@@ -491,9 +493,9 @@ function tierPercent(acc, tierId, t) {
 }
 
 function emptyState() {
-  if (!scanned) return { text: "…", label: "Codex · carregando uso…" };
-  if (apiKeyLocations().length > 0) return { text: "–", label: "Codex com chave de API · sem cota para mostrar" };
-  return { text: "–", label: "Codex · não conectado (faça login com `codex`)" };
+  if (!scanned) return { text: "…", label: i18n.t("empty.loading") };
+  if (apiKeyLocations().length > 0) return { text: "–", label: i18n.t("empty.apiKey") };
+  return { text: "–", label: i18n.t("empty.notConnected") };
 }
 
 function pinnable() {
@@ -510,14 +512,13 @@ function buildActions() {
   const defs = [];
   for (const p of pinnable()) {
     for (const tierId of Object.keys(TIERS)) {
-      const tier = TIERS[tierId];
       defs.push({
         id: `${tierId}.${p.id}`,
-        name: `Codex · ${tier.name} · ${p.name}`,
+        name: i18n.t("dyn.name", { tier: tierName(tierId), account: p.name }),
         icon: MARK,
         keepIcon: true,
         stateful: true,
-        description: `Uso ${tierId === "session" ? "da sessão de 5h" : "semanal"} da conta do Codex em ${p.name}.`,
+        description: i18n.t(tierId === "session" ? "dyn.descSession" : "dyn.descWeek", { account: p.name }),
       });
     }
   }
@@ -537,7 +538,7 @@ function buildState() {
       const worst = list.reduce((m, a) => (tierPercent(a, tierId, t) > tierPercent(m, tierId, t) ? a : m), list[0]);
       const st = accountTierState(worst, tierId, t);
       const others = list.length - 1;
-      st.label += ` · +${others} conta${others > 1 ? "s" : ""}`;
+      st.label += i18n.t("moreAccounts", { count: others });
       out[tierId] = st;
     }
   }
@@ -545,7 +546,7 @@ function buildState() {
     for (const tierId of Object.keys(TIERS)) {
       out[`${tierId}.${p.id}`] = p.acc
         ? accountTierState(p.acc, tierId, t)
-        : { text: "–", label: `Codex · ${p.name} · conta indisponível` };
+        : { text: "–", label: i18n.t("state.accountUnavailable", { name: p.name }) };
     }
   }
   return out;
@@ -554,30 +555,30 @@ function buildState() {
 function creditsText(usage) {
   const c = usage && usage.credits;
   if (!c) return "";
-  if (c.unlimited) return "créditos ilimitados";
+  if (c.unlimited) return i18n.t("credits.unlimited");
   const n = Number(c.balance);
-  return c.balance != null && Number.isFinite(n) ? `créditos: ${formatNumber(n, 2)}` : "com créditos";
+  return c.balance != null && Number.isFinite(n) ? i18n.t("credits.balance", { amount: formatNumber(n, 2) }) : i18n.t("credits.some");
 }
 
 function sourceText(acc, usage, t) {
-  if (isFresh(usage, t)) return "ao vivo";
+  if (isFresh(usage, t)) return i18n.t("source.live");
   const loc = usage.locId ? locById(usage.locId) : null;
-  const where = loc && acc.sources.length > 1 ? ` em ${loc.short}` : "";
-  return `lido há ${formatAge(t - usage.at)}${where}`;
+  const where = loc && acc.sources.length > 1 ? i18n.t("source.where", { place: loc.short }) : "";
+  return i18n.t("source.read", { age: formatAge(t - usage.at), where });
 }
 
 function accountDetail(acc) {
   const t = now();
   const usage = usageOf(acc);
-  const stale = isStale(acc) ? " · WSL parado" : "";
-  if (!usage) return `${accountName(acc, null)}\nSem dados de uso (${noDataReason(acc)})${stale}`;
+  const stale = isStale(acc) ? i18n.t("staleWsl") : "";
+  if (!usage) return i18n.t("detail.noData", { name: accountName(acc, null), reason: noDataReason(acc), stale });
   const line = (tierId) => {
-    const tier = TIERS[tierId];
+    const tier = tierLong(tierId);
     const view = windowView(usage, tierId, t);
-    if (!view) return `${tier.long}: sem limite informado`;
-    if (view.reset) return `${tier.long}: 0% · sem uso desde ${formatWhen(usage.at, t)}`;
+    if (!view) return i18n.t("detail.noLimit", { tier });
+    if (view.reset) return i18n.t("detail.idle", { tier, when: formatWhen(usage.at, t) });
     const left = formatRemaining(view.resetsAt, t);
-    return `${tier.long}: ${clampPct(view.percent)}%${left ? ` · renova em ${left}` : ""}`;
+    return i18n.t("detail.usage", { tier, percent: clampPct(view.percent), renews: left ? i18n.t("detail.renews", { left }) : "" });
   };
   const plan = planOf(acc, usage);
   const tail = [locNames(acc), plan, sourceText(acc, usage, t), creditsText(usage)].filter(Boolean).join(" · ");
@@ -588,34 +589,35 @@ function accountLine(acc) {
   const t = now();
   const usage = usageOf(acc);
   const name = accountName(acc, usage);
-  if (!usage) return `${name}: sem dados de uso (${noDataReason(acc)})`;
+  if (!usage) return i18n.t("line.noData", { name, reason: noDataReason(acc) });
   const part = (tierId) => {
     const view = windowView(usage, tierId, t);
-    if (!view) return `${TIERS[tierId].name} –`;
+    if (!view) return i18n.t("line.noLimit", { tier: tierName(tierId) });
     const left = view.reset ? null : formatRemaining(view.resetsAt, t);
-    return `${TIERS[tierId].name} ${clampPct(view.percent)}%${left ? ` (${left})` : ""}`;
+    return i18n.t("line.usage", { tier: tierName(tierId), percent: clampPct(view.percent), left: left ? ` (${left})` : "" });
   };
   const extra = [sourceText(acc, usage, t), creditsText(usage)].filter(Boolean).join(" · ");
-  return `${name}: ${part("session")} · ${part("week")} · ${extra}${isStale(acc) ? " · WSL parado" : ""}`;
+  return `${name}: ${part("session")} · ${part("week")} · ${extra}${isStale(acc) ? i18n.t("staleWsl") : ""}`;
 }
 
 function usageToast(only) {
   if (only) return accountDetail(only);
   const list = accountList();
-  const keys = apiKeyLocations().map((l) => `${l.short}: chave de API (sem cota para mostrar)`);
+  const keys = apiKeyLocations().map((l) => i18n.t("apiKeyLine", { place: l.short }));
   if (list.length === 0) return emptyState().label.replace(/^Codex · /, "");
   if (list.length === 1) return [accountDetail(list[0]), ...keys].join("\n");
   return [...list.map(accountLine), ...keys].join("\n");
 }
 
 function toast(message) {
-  if (deps.showToast) { deps.showToast("Codex · Uso", message); return; }
-  common.showToast(TAG, "Codex · Uso", message);
+  if (deps.showToast) { deps.showToast(i18n.t("toast.title"), message); return; }
+  common.showToast(TAG, i18n.t("toast.title"), message);
 }
 
 module.exports = {
   onLoad(h) {
     host = h && typeof h === "object" ? h : null;
+    if (host && host.locale) i18n.setLocale(host.locale);
     console.log(`[${TAG}] Plugin loaded`);
     memory = common.createAccountMemory({
       file: ACCOUNTS_FILE, max: MAX_PINNABLE, now,
@@ -644,7 +646,7 @@ module.exports = {
       const acc = accountList().find((a) => a.id === dyn[2]);
       if (!acc) {
         const known = (memory ? memory.list() : []).find((r) => r.id === dyn[2]);
-        toast(`${known ? known.name : "Conta"}: conta indisponível`);
+        toast(i18n.t("toast.accountUnavailable", { name: known ? known.name : i18n.t("toast.account") }));
         return { available: false, reason: "account_unavailable" };
       }
       toast(usageToast(acc));
@@ -652,6 +654,13 @@ module.exports = {
     }
     toast(usageToast(null));
     return { available: accountList().some((a) => !!usageOf(a)) };
+  },
+
+  onLocaleChanged(locale) {
+    i18n.setLocale(locale);
+    lastSnapshot = "";
+    syncActions();
+    if (host && typeof host.stateChanged === "function") host.stateChanged();
   },
 
   getState() {

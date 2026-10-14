@@ -17,14 +17,16 @@ const MAX_PINNABLE = 8;
 const REMEMBER_MS = 30 * 24 * 3600_000;
 const ACCOUNTS_FILE = "claude-accounts.json";
 
+const i18n = require("./i18n")(__dirname);
 const ACTIONS = {
-  show_usage: { tier: "session", name: "Sessão" },
-  usage_gauge: { tier: "weekly", name: "Semana" },
+  show_usage: { tier: "session" },
+  usage_gauge: { tier: "weekly" },
 };
 const DYNAMIC = {
-  session: { tier: "session", name: "Sessão" },
-  week: { tier: "weekly", name: "Semana" },
+  session: { tier: "session" },
+  week: { tier: "weekly" },
 };
+const tierName = (tier) => i18n.t(`tiers.${tier}`);
 const MARK = (require("./manifest.json").actions.find((a) => a.keepIcon) || {}).icon;
 
 let host = null;
@@ -202,7 +204,7 @@ function accountName(acc, list, withPlan) {
   const base = locNames(acc);
   const clash = list.some((o) => o !== acc && locNames(o) === base);
   const extra = [];
-  if (clash) extra.push(emailLocal(acc) || `conta ${acc.id.slice(0, 4)}`);
+  if (clash) extra.push(emailLocal(acc) || i18n.t("accountId", { id: acc.id.slice(0, 4) }));
   if (withPlan && acc.plan) extra.push(acc.plan);
   return extra.length ? `${base} (${extra.join(", ")})` : base;
 }
@@ -269,11 +271,11 @@ function buildActions() {
       const d = DYNAMIC[kind];
       defs.push({
         id: `${kind}.${p.id}`,
-        name: `Claude · ${d.name} · ${p.name}`,
+        name: i18n.t("dyn.name", { tier: tierName(d.tier), account: p.name }),
         icon: MARK,
         keepIcon: true,
         stateful: true,
-        description: `Uso ${kind === "session" ? "da sessão de 5h" : "semanal"} da conta do Claude Code em ${p.name}.`,
+        description: i18n.t(kind === "session" ? "dyn.descSession" : "dyn.descWeek", { account: p.name }),
       });
     }
   }
@@ -457,7 +459,7 @@ function statusFor(percent) {
 function formatRemaining(resetsAt, t) {
   if (typeof resetsAt !== "number") return null;
   const mins = Math.max(0, Math.round((resetsAt - t) / 60000));
-  if (mins < 1) return "instantes";
+  if (mins < 1) return i18n.t("moments");
   if (mins < 60) return `${mins}min`;
   if (mins < 24 * 60) return `${Math.floor(mins / 60)}h${String(mins % 60).padStart(2, "0")}`;
   const hours = Math.round(mins / 60);
@@ -466,19 +468,19 @@ function formatRemaining(resetsAt, t) {
 }
 
 function reasonText(reason) {
-  if (reason === "no_credentials") return "faça login no Claude Code";
-  if (reason === "unauthorized") return "sessão expirada — abra o Claude Code";
-  return "falha na API de uso";
+  if (reason === "no_credentials") return i18n.t("reasons.noCredentials");
+  if (reason === "unauthorized") return i18n.t("reasons.unauthorized");
+  return i18n.t("reasons.api");
 }
 
 function unavailableLabel(reason) {
-  return `Claude · uso indisponível (${reasonText(reason)})`;
+  return i18n.t("state.unavailable", { reason: reasonText(reason) });
 }
 
 function tierSummary(name, tier, t) {
   const pct = Math.round(tier.percent);
   const left = formatRemaining(tier.resetsAt, t);
-  return `${name} ${pct}%${left ? ` · renova em ${left}` : ""}`;
+  return i18n.t("summary.usage", { tier: name, percent: pct, left: left ? i18n.t("summary.renews", { left }) : "" });
 }
 
 function gauge(tier, label) {
@@ -486,15 +488,15 @@ function gauge(tier, label) {
   return { value: pct, text: `${pct}%`, status: statusFor(tier.percent), label };
 }
 
-const staleNote = (acc) => (acc && isStale(acc) ? " · WSL parado" : "");
+const staleNote = (acc) => (acc && isStale(acc) ? i18n.t("staleWsl") : "");
 
-function accountTierState(acc, usage, tier, tierName, name, t) {
+function accountTierState(acc, usage, tier, tierLabel, name, t) {
   const who = name ? `${name} · ` : "";
-  if (!usage) return { text: "…", label: `Claude · ${who}carregando uso…` };
+  if (!usage) return { text: "…", label: i18n.t("state.loading", { who }) };
   if (!usage.available) {
-    return { text: "–", label: name ? `Claude · ${who}uso indisponível (${reasonText(usage.reason)})` : unavailableLabel(usage.reason) };
+    return { text: "–", label: name ? i18n.t("state.unavailableFor", { who, reason: reasonText(usage.reason) }) : unavailableLabel(usage.reason) };
   }
-  return gauge(usage[tier], `Claude · ${who}${tierSummary(tierName, usage[tier], t)}${staleNote(acc)}`);
+  return gauge(usage[tier], i18n.t("state.usage", { who, summary: tierSummary(tierLabel, usage[tier], t), stale: staleNote(acc) }));
 }
 
 function buildState() {
@@ -502,7 +504,8 @@ function buildState() {
   const out = {};
   const list = accountList();
   for (const id of Object.keys(ACTIONS)) {
-    const { tier, name } = ACTIONS[id];
+    const { tier } = ACTIONS[id];
+    const name = tierName(tier);
     if (list.length === 0) {
       out[id] = accountTierState(null, legacyUsage, tier, name, "", t);
     } else if (list.length === 1) {
@@ -513,12 +516,12 @@ function buildState() {
         const failed = list.find((a) => a.usage);
         out[id] = failed
           ? { text: "–", label: unavailableLabel(failed.usage.reason) }
-          : { text: "…", label: "Claude · carregando uso…" };
+          : { text: "…", label: i18n.t("state.loading", { who: "" }) };
       } else {
         const worst = ready.reduce((m, a) => (a.usage[tier].percent > m.usage[tier].percent ? a : m), ready[0]);
         const others = list.length - 1;
         const st = accountTierState(worst, worst.usage, tier, name, accountName(worst, list, true), t);
-        st.label += ` · +${others} conta${others > 1 ? "s" : ""}`;
+        st.label += i18n.t("moreAccounts", { count: others });
         out[id] = st;
       }
     }
@@ -527,8 +530,8 @@ function buildState() {
     for (const kind of Object.keys(DYNAMIC)) {
       const d = DYNAMIC[kind];
       out[`${kind}.${p.id}`] = p.acc
-        ? accountTierState(p.acc, p.acc.usage, d.tier, d.name, accountName(p.acc, list, true), t)
-        : { text: "–", label: `Claude · ${p.name} · conta indisponível` };
+        ? accountTierState(p.acc, p.acc.usage, d.tier, tierName(d.tier), accountName(p.acc, list, true), t)
+        : { text: "–", label: i18n.t("state.accountUnavailable", { name: p.name }) };
     }
   }
   Object.assign(out, buildApprovalState());
@@ -539,8 +542,8 @@ function buildApprovalState() {
   const pending = permissions ? permissions.pending() : [];
   if (pending.length === 0) {
     const label = permissions && !permissionsUp
-      ? "Claude · aprovações indisponíveis (porta ocupada)"
-      : "Claude · nada pendente";
+      ? i18n.t("approvals.portBusy")
+      : i18n.t("approvals.nothing");
     return { approve: { active: false, label }, decline: { active: false, label } };
   }
   const summary = pending[0].summary;
@@ -549,9 +552,9 @@ function buildApprovalState() {
       active: true,
       status: "amber",
       text: pending.length > 1 ? String(pending.length) : undefined,
-      label: `Aprovar · ${summary}`,
+      label: i18n.t("approvals.approve", { summary }),
     },
-    decline: { active: true, status: "red", label: `Recusar · ${summary}` },
+    decline: { active: true, status: "red", label: i18n.t("approvals.decline", { summary }) },
   };
 }
 
@@ -570,7 +573,7 @@ function syncAttention() {
     if (oldest) {
       host.attention({
         id: nextId,
-        title: "Claude pede confirmação",
+        title: i18n.t("approvals.attentionTitle"),
         text: oldest.summary,
         pluginId: PLUGIN_ID,
         actionIds: ["approve", "decline"],
@@ -624,19 +627,19 @@ $xml.LoadXml('${toastXml(title, message)}')
 function toastMessage(u) {
   if (!u || !u.available) return unavailableLabel(u && u.reason).replace(/^Claude · /, "");
   const t = now();
-  return `${tierSummary("Sessão (5h):", u.session, t)}\n${tierSummary("Semana:", u.weekly, t)}`;
+  return `${tierSummary(i18n.t("tiers.sessionLong"), u.session, t)}\n${tierSummary(i18n.t("tiers.weeklyLong"), u.weekly, t)}`;
 }
 
 function accountLine(acc, list) {
   const name = accountName(acc, list, true);
   const u = acc.usage;
-  if (!u || !u.available) return `${name}: indisponível (${reasonText(u && u.reason)})`;
+  if (!u || !u.available) return i18n.t("line.unavailable", { name, reason: reasonText(u && u.reason) });
   const t = now();
   const part = (label, tier) => {
     const left = formatRemaining(tier.resetsAt, t);
-    return `${label} ${Math.round(tier.percent)}%${left ? ` (${left})` : ""}`;
+    return i18n.t("line.part", { tier: label, percent: Math.round(tier.percent), left: left ? ` (${left})` : "" });
   };
-  return `${name}: ${part("Sessão", u.session)} · ${part("Semana", u.weekly)}${staleNote(acc)}`;
+  return `${name}: ${part(tierName("session"), u.session)} · ${part(tierName("weekly"), u.weekly)}${staleNote(acc)}`;
 }
 
 function usageToast(only) {
@@ -654,6 +657,7 @@ function usageToast(only) {
 module.exports = {
   async onLoad(h) {
     host = h && typeof h === "object" ? h : null;
+    if (host && host.locale) i18n.setLocale(host.locale);
     console.log("[claude-usage] Plugin loaded");
     loadRemembered();
     actionsSnapshot = JSON.stringify(buildActions());
@@ -696,15 +700,23 @@ module.exports = {
       const acc = accountList().find((a) => a.id === dyn[2]);
       if (!acc) {
         const known = remembered.find((r) => r.id === dyn[2]);
-        showToast("Claude · Uso", `${known ? known.name : "Conta"}: conta indisponível`);
+        showToast(i18n.t("toast.title"), i18n.t("toast.accountUnavailable", { name: known ? known.name : i18n.t("toast.account") }));
         return { available: false, reason: "account_unavailable" };
       }
-      showToast("Claude · Uso", usageToast(acc));
+      showToast(i18n.t("toast.title"), usageToast(acc));
       return acc.usage;
     }
-    showToast("Claude · Uso", usageToast(null));
+    showToast(i18n.t("toast.title"), usageToast(null));
     const list = accountList();
     return list.length === 0 ? legacyUsage : list.length === 1 ? list[0].usage : list.map((a) => a.usage);
+  },
+
+  onLocaleChanged(locale) {
+    i18n.setLocale(locale);
+    lastSnapshot = "";
+    syncActions();
+    syncAttention();
+    if (host && typeof host.stateChanged === "function") host.stateChanged();
   },
 
   getState() {

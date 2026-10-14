@@ -1,0 +1,94 @@
+{
+  "manifest": {
+    "name": "Codex",
+    "description": "Uso de OpenAI Codex CLI (sesión de 5 h y semana, en todas las cuentas de Windows y WSL) directamente en el ring",
+    "actions": {
+      "session": {
+        "name": "Codex · Sesión (5h)",
+        "description": "Uso de la sesión de 5 h de Codex, directamente en el botón. Haz clic para actualizar y ver los detalles en una notificación."
+      },
+      "week": {
+        "name": "Codex · Semana",
+        "description": "Uso semanal de Codex, directamente en el botón. Haz clic para actualizar y ver los detalles en una notificación."
+      }
+    }
+  },
+  "common": {
+    "moments": "instantes",
+    "days": {
+      "one": "{count} día",
+      "other": "{count} días"
+    },
+    "date": "{day}/{month}"
+  },
+  "tiers": {
+    "session": {
+      "name": "Sesión",
+      "long": "Sesión (5h)"
+    },
+    "week": {
+      "name": "Semana",
+      "long": "Semana"
+    }
+  },
+  "window": {
+    "usage": "{tier} {percent}%",
+    "idleSince": " · sin uso desde {when}",
+    "renews": " · se renueva en {left}",
+    "read": " · leído hace {age}"
+  },
+  "noData": {
+    "apiError": "falló la API de uso",
+    "openCodex": "abre Codex para actualizar"
+  },
+  "staleWsl": " · WSL detenido",
+  "state": {
+    "loading": "Codex · {name} · cargando el uso…",
+    "noData": "Codex · {name} · sin datos de uso ({reason}){stale}",
+    "noLimit": "Codex · {name} · {tier} sin límite informado{stale}",
+    "usage": "Codex · {name} · {window}{stale}",
+    "accountUnavailable": "Codex · {name} · cuenta no disponible"
+  },
+  "empty": {
+    "loading": "Codex · cargando el uso…",
+    "apiKey": "Codex con clave de API · sin cuota que mostrar",
+    "notConnected": "Codex · no conectado (inicia sesión con `codex`)"
+  },
+  "dyn": {
+    "name": "Codex · {tier} · {account}",
+    "descSession": "Uso de la sesión de 5 h de la cuenta de Codex en {account}.",
+    "descWeek": "Uso semanal de la cuenta de Codex en {account}."
+  },
+  "moreAccounts": {
+    "one": " · +{count} cuenta",
+    "other": " · +{count} cuentas"
+  },
+  "credits": {
+    "unlimited": "créditos ilimitados",
+    "balance": "créditos: {amount}",
+    "some": "con créditos"
+  },
+  "source": {
+    "live": "en vivo",
+    "read": "leído hace {age}{where}",
+    "where": " en {place}"
+  },
+  "detail": {
+    "noData": "{name}\nSin datos de uso ({reason}){stale}",
+    "noLimit": "{tier}: sin límite informado",
+    "idle": "{tier}: 0% · sin uso desde {when}",
+    "usage": "{tier}: {percent}%{renews}",
+    "renews": " · se renueva en {left}"
+  },
+  "line": {
+    "noData": "{name}: sin datos de uso ({reason})",
+    "noLimit": "{tier} –",
+    "usage": "{tier} {percent}%{left}"
+  },
+  "apiKeyLine": "{place}: clave de API (sin cuota que mostrar)",
+  "toast": {
+    "title": "Codex · Uso",
+    "accountUnavailable": "{name}: cuenta no disponible",
+    "account": "Cuenta"
+  }
+}

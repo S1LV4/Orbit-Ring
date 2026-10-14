@@ -29,11 +29,13 @@ const MAX_PINNABLE = 5;
 const ACCOUNTS_FILE = "gemini-accounts.json";
 const API_AUTH_TYPES = new Set(["gemini-api-key", "vertex-ai"]);
 
+const i18n = require("./i18n")(__dirname);
 const GROUPS = {
-  pro: { name: "Pro", match: (id) => /pro/i.test(id) },
-  flash: { name: "Flash", match: (id) => /flash/i.test(id) },
-  worst: { name: "Uso", match: () => true },
+  pro: { match: (id) => /pro/i.test(id) },
+  flash: { match: (id) => /flash/i.test(id) },
+  worst: { match: () => true },
 };
+const groupName = (id) => i18n.t(`groups.${id}`);
 const MARK = (require("./manifest.json").actions.find((a) => a.keepIcon) || {}).icon;
 
 let host = null;
@@ -378,32 +380,32 @@ function notifyIfChanged() {
 }
 
 function errorText(error) {
-  if (error === "expired") return "token expirado · abra o Gemini CLI";
-  if (error === "no_project") return "projeto não configurado · abra o Gemini CLI";
-  return "falha na API de cota";
+  if (error === "expired") return i18n.t("errors.expired");
+  if (error === "no_project") return i18n.t("errors.noProject");
+  return i18n.t("errors.api");
 }
 
 function bucketText(groupId, b, usage, t) {
-  let s = `${GROUPS[groupId].name} ${clampPct(b.used)}% · ${b.modelId}`;
-  if (b.renewed) return `${s} · cota renovada`;
+  let s = i18n.t("bucket.usage", { group: groupName(groupId), percent: clampPct(b.used), model: b.modelId });
+  if (b.renewed) return s + i18n.t("bucket.renewed");
   const left = formatRemaining(b.resetsAt, t);
-  if (left) s += ` · renova em ${left}`;
-  if (t - usage.at >= FRESH_MS) s += ` · lido há ${formatAge(t - usage.at)}`;
+  if (left) s += i18n.t("bucket.renews", { left });
+  if (t - usage.at >= FRESH_MS) s += i18n.t("bucket.read", { age: formatAge(t - usage.at) });
   return s;
 }
 
 function accountGroupState(acc, groupId, list, t) {
   const name = accountName(acc, list);
-  const stale = isStale(acc) ? " · WSL parado" : "";
+  const stale = isStale(acc) ? i18n.t("staleWsl") : "";
   const usage = usageOf(acc, t);
   if (!usage) {
-    if (!acc.error) return { text: "…", label: `Gemini · ${name} · carregando cota…` };
-    return { text: "–", label: `Gemini · ${name} · ${errorText(acc.error)}${stale}` };
+    if (!acc.error) return { text: "…", label: i18n.t("state.loading", { name }) };
+    return { text: "–", label: i18n.t("state.error", { name, error: errorText(acc.error), stale }) };
   }
   const b = worstBucket(usage, groupId, t);
-  if (!b) return { text: "–", label: `Gemini · ${name} · ${GROUPS[groupId].name} sem cota informada${stale}` };
+  if (!b) return { text: "–", label: i18n.t("state.noQuota", { name, group: groupName(groupId), stale }) };
   const pct = clampPct(b.used);
-  return { value: pct, text: `${pct}%`, status: statusFor(b.used), label: `Gemini · ${name} · ${bucketText(groupId, b, usage, t)}${stale}` };
+  return { value: pct, text: `${pct}%`, status: statusFor(b.used), label: i18n.t("state.usage", { name, bucket: bucketText(groupId, b, usage, t), stale }) };
 }
 
 function groupPercent(acc, groupId, t) {
@@ -413,9 +415,9 @@ function groupPercent(acc, groupId, t) {
 }
 
 function emptyState() {
-  if (!scanned) return { text: "…", label: "Gemini CLI · carregando cota…" };
-  if (apiKeyLocations().length > 0) return { text: "–", label: "Gemini com chave de API · sem cota para mostrar" };
-  return { text: "–", label: "Gemini CLI · não conectado (faça login com `gemini`)" };
+  if (!scanned) return { text: "…", label: i18n.t("empty.loading") };
+  if (apiKeyLocations().length > 0) return { text: "–", label: i18n.t("empty.apiKey") };
+  return { text: "–", label: i18n.t("empty.notConnected") };
 }
 
 function pinnable() {
@@ -432,16 +434,15 @@ function buildActions() {
   const defs = [];
   for (const p of pinnable()) {
     for (const groupId of Object.keys(GROUPS)) {
-      const g = GROUPS[groupId];
       defs.push({
         id: `${groupId}.${p.id}`,
-        name: `Gemini · ${g.name} · ${p.name}`,
+        name: i18n.t("dyn.name", { group: groupName(groupId), account: p.name }),
         icon: MARK,
         keepIcon: true,
         stateful: true,
         description: groupId === "worst"
-          ? `Modelo mais perto do limite na conta do Gemini CLI em ${p.name}.`
-          : `Cota dos modelos ${g.name} da conta do Gemini CLI em ${p.name}.`,
+          ? i18n.t("dyn.descWorst", { account: p.name })
+          : i18n.t("dyn.descGroup", { group: groupName(groupId), account: p.name }),
       });
     }
   }
@@ -461,7 +462,7 @@ function buildState() {
       const worst = list.reduce((m, a) => (groupPercent(a, groupId, t) > groupPercent(m, groupId, t) ? a : m), list[0]);
       const st = accountGroupState(worst, groupId, list, t);
       const others = list.length - 1;
-      st.label += ` · +${others} conta${others > 1 ? "s" : ""}`;
+      st.label += i18n.t("moreAccounts", { count: others });
       out[groupId] = st;
     }
   }
@@ -469,7 +470,7 @@ function buildState() {
     for (const groupId of Object.keys(GROUPS)) {
       out[`${groupId}.${p.id}`] = p.acc
         ? accountGroupState(p.acc, groupId, list, t)
-        : { text: "–", label: `Gemini · ${p.name} · conta indisponível` };
+        : { text: "–", label: i18n.t("state.accountUnavailable", { name: p.name }) };
     }
   }
   return out;
@@ -478,16 +479,17 @@ function buildState() {
 function accountDetail(acc, list) {
   const t = now();
   const name = accountName(acc, list);
-  const stale = isStale(acc) ? " · WSL parado" : "";
+  const stale = isStale(acc) ? i18n.t("staleWsl") : "";
   const usage = usageOf(acc, t);
-  if (!usage) return `${name}\n${acc.error ? errorText(acc.error) : "carregando cota…"}${stale}`;
+  if (!usage) return `${name}\n${acc.error ? errorText(acc.error) : i18n.t("detail.loading")}${stale}`;
   const line = (groupId) => {
     const b = worstBucket(usage, groupId, t);
-    if (!b) return `${GROUPS[groupId].name}: sem cota informada`;
-    const left = b.renewed ? "cota renovada" : formatRemaining(b.resetsAt, t);
-    return `${GROUPS[groupId].name}: ${clampPct(b.used)}% · ${b.modelId}${left ? (b.renewed ? ` · ${left}` : ` · renova em ${left}`) : ""}`;
+    if (!b) return i18n.t("detail.noQuota", { group: groupName(groupId) });
+    const left = b.renewed ? i18n.t("detail.renewed") : formatRemaining(b.resetsAt, t);
+    const tail = left ? (b.renewed ? ` · ${left}` : i18n.t("detail.renews", { left })) : "";
+    return i18n.t("detail.usage", { group: groupName(groupId), percent: clampPct(b.used), model: b.modelId, left: tail });
   };
-  const when = t - usage.at < FRESH_MS ? "ao vivo" : `lido há ${formatAge(t - usage.at)}`;
+  const when = t - usage.at < FRESH_MS ? i18n.t("detail.live") : i18n.t("detail.read", { age: formatAge(t - usage.at) });
   const tail = [name, acc.tier, when].filter(Boolean).join(" · ");
   return `${line("pro")}\n${line("flash")}\n${tail}${stale}`;
 }
@@ -496,31 +498,32 @@ function accountLine(acc, list) {
   const t = now();
   const name = accountName(acc, list);
   const usage = usageOf(acc, t);
-  if (!usage) return `${name}: ${acc.error ? errorText(acc.error) : "carregando cota…"}`;
+  if (!usage) return `${name}: ${acc.error ? errorText(acc.error) : i18n.t("detail.loading")}`;
   const part = (groupId) => {
     const b = worstBucket(usage, groupId, t);
-    return `${GROUPS[groupId].name} ${b ? `${clampPct(b.used)}%` : "–"}`;
+    return `${groupName(groupId)} ${b ? `${clampPct(b.used)}%` : "–"}`;
   };
-  return `${name}: ${part("pro")} · ${part("flash")}${isStale(acc) ? " · WSL parado" : ""}`;
+  return `${name}: ${part("pro")} · ${part("flash")}${isStale(acc) ? i18n.t("staleWsl") : ""}`;
 }
 
 function usageToast(only) {
   const list = accountList();
   if (only) return accountDetail(only, list);
-  const keys = apiKeyLocations().map((l) => `${l.short}: chave de API (sem cota para mostrar)`);
+  const keys = apiKeyLocations().map((l) => i18n.t("apiKeyLine", { place: l.short }));
   if (list.length === 0) return emptyState().label;
   if (list.length === 1) return [accountDetail(list[0], list), ...keys].join("\n");
   return [...list.map((a) => accountLine(a, list)), ...keys].join("\n");
 }
 
 function toast(message) {
-  if (deps.showToast) { deps.showToast("Gemini CLI · Cota", message); return; }
-  common.showToast(TAG, "Gemini CLI · Cota", message);
+  if (deps.showToast) { deps.showToast(i18n.t("toast.title"), message); return; }
+  common.showToast(TAG, i18n.t("toast.title"), message);
 }
 
 module.exports = {
   onLoad(h) {
     host = h && typeof h === "object" ? h : null;
+    if (host && host.locale) i18n.setLocale(host.locale);
     console.log(`[${TAG}] Plugin loaded`);
     memory = common.createAccountMemory({
       file: ACCOUNTS_FILE, max: MAX_PINNABLE, now,
@@ -550,7 +553,7 @@ module.exports = {
       const acc = accountList().find((a) => a.id === dyn[2]);
       if (!acc) {
         const known = (memory ? memory.list() : []).find((r) => r.id === dyn[2]);
-        toast(`${known ? known.name : "Conta"}: conta indisponível`);
+        toast(i18n.t("toast.accountUnavailable", { name: known ? known.name : i18n.t("toast.account") }));
         return { available: false, reason: "account_unavailable" };
       }
       toast(usageToast(acc));
@@ -558,6 +561,13 @@ module.exports = {
     }
     toast(usageToast(null));
     return { available: accountList().some((a) => !!usageOf(a, t)) };
+  },
+
+  onLocaleChanged(locale) {
+    i18n.setLocale(locale);
+    lastSnapshot = "";
+    syncActions();
+    if (host && typeof host.stateChanged === "function") host.stateChanged();
   },
 
   getState() {

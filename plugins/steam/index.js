@@ -23,8 +23,6 @@ const EXEC_TIMEOUT_MS = 4_000;
 const TOAST_REPEAT_MS = 3_000;
 
 const TITLE = "Steam";
-const NOT_WINDOWS_LABEL = "Steam: só no Windows por enquanto";
-const NOT_INSTALLED_LABEL = "Steam não instalado";
 const GAME_ID = /^game\.([0-9]{1,10})$/;
 const STEAM_URL = /^steam:\/\/[a-z0-9]+(\/[a-z0-9]+){0,3}$/;
 const IMAGE_URI = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/]+={0,2})$/;
@@ -41,16 +39,9 @@ const URLS = {
   status_invisible: "steam://friends/status/invisible",
   status_offline: "steam://friends/status/offline",
 };
-const IDLE_LABELS = {
-  library: "abrir a biblioteca",
-  store: "abrir a loja",
-  friends: "abrir a lista de amigos",
-  big_picture: "abrir o modo Big Picture",
-  status_online: "ficar online",
-  status_away: "ficar ausente",
-  status_invisible: "ficar invisível",
-  status_offline: "ficar offline no chat",
-};
+const IDLE_IDS = ["library", "store", "friends", "big_picture", "status_online", "status_away", "status_invisible", "status_offline"];
+const i18n = require("./i18n")(__dirname);
+const t = i18n.t;
 
 let host = null;
 let timer = null;
@@ -192,21 +183,21 @@ function fmtDuration(ms) {
 function fmtPlayedAgo(lastPlayedSec, nowMs) {
   const diff = nowMs - lastPlayedSec * 1000;
   const min = Math.floor(diff / 60_000);
-  if (min < 1) return "jogado agora há pouco";
-  if (min < 60) return `jogado há ${min} min`;
+  if (min < 1) return t("played.justNow");
+  if (min < 60) return t("played.minutes", { count: min });
   const h = Math.floor(min / 60);
-  if (h < 24) return `jogado há ${h} h`;
+  if (h < 24) return t("played.hours", { count: h });
   const d = Math.floor(h / 24);
-  if (d === 1) return "jogado ontem";
-  if (d < 60) return `jogado há ${d} dias`;
+  if (d === 1) return t("played.yesterday");
+  if (d < 60) return t("played.days", { count: d });
   const mo = Math.floor(d / 30);
-  if (mo < 24) return `jogado há ${mo} meses`;
-  return `jogado há ${Math.floor(d / 365)} anos`;
+  if (mo < 24) return t("played.months", { count: mo });
+  return t("played.years", { count: Math.floor(d / 365) });
 }
 
 function fmtBytes(n) {
   const gb = n / (1024 ** 3);
-  if (gb >= 1) return `${gb.toFixed(1).replace(".", ",")} GB`;
+  if (gb >= 1) return `${i18n.number(gb, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} GB`;
   return `${Math.max(0, Math.round(n / (1024 ** 2)))} MB`;
 }
 
@@ -230,11 +221,11 @@ function downloadingApp() {
 
 function downloadState(app) {
   const p = downloadProgress(app);
-  if (p.percent === null) return { text: "…", label: `${app.name} · preparando download` };
+  if (p.percent === null) return { text: "…", label: t("download.preparing", { name: app.name }) };
   const base = { value: p.percent, text: `${p.percent}%` };
-  if (app.paused) return { ...base, label: `${app.name} · pausado em ${p.percent}%` };
-  if (p.done >= p.total) return { ...base, label: `${app.name} · instalando` };
-  return { ...base, label: `${app.name} · ${p.percent}% · ${fmtBytes(p.done)} de ${fmtBytes(p.total)}` };
+  if (app.paused) return { ...base, label: t("download.paused", { name: app.name, percent: p.percent }) };
+  if (p.done >= p.total) return { ...base, label: t("download.installing", { name: app.name }) };
+  return { ...base, label: t("download.progress", { name: app.name, percent: p.percent, done: fmtBytes(p.done), total: fmtBytes(p.total) }) };
 }
 
 function sessionText() {
@@ -245,37 +236,37 @@ function sessionText() {
 function buildState() {
   const out = {};
   if (!ready()) {
-    const label = info && !info.supported ? NOT_WINDOWS_LABEL : info ? NOT_INSTALLED_LABEL : "verificando o Steam…";
+    const label = info && !info.supported ? t("notWindows") : info ? t("notInstalled") : t("checking");
     for (const id of STATIC_IDS) out[id] = { text: "–", label };
     return out;
   }
-  for (const id of Object.keys(IDLE_LABELS)) out[id] = { label: IDLE_LABELS[id] };
+  for (const id of IDLE_IDS) out[id] = { label: t(`idle.${id}`) };
 
   if (running) {
     const app = apps.get(running.appid);
-    const name = app ? app.name : "jogo";
+    const name = app ? app.name : t("game");
     const dur = sessionText();
-    out.playing = { active: true, label: dur ? `${name} · ${dur}` : `${name} · em execução` };
+    out.playing = { active: true, label: dur ? t("playing.withTime", { name, time: dur }) : t("playing.noTime", { name }) };
   } else {
-    out.playing = { active: false, label: "nada em execução" };
+    out.playing = { active: false, label: t("playing.nothing") };
   }
 
   const dl = downloadingApp();
-  out.downloads = dl ? downloadState(dl) : { label: "nada baixando" };
+  out.downloads = dl ? downloadState(dl) : { label: t("download.nothing") };
 
   for (const id of recent) {
     const app = apps.get(id);
     if (!app) continue;
     if (running && running.appid === id) {
       const dur = sessionText();
-      out[`game.${id}`] = { active: true, label: dur ? `em execução · ${dur}` : "em execução" };
+      out[`game.${id}`] = { active: true, label: dur ? t("gameState.runningWithTime", { time: dur }) : t("gameState.running") };
     } else if (app.updating) {
       const p = downloadProgress(app);
       out[`game.${id}`] = p.percent === null
-        ? { active: false, label: "atualizando" }
-        : { active: false, value: p.percent, label: `${app.paused ? "atualização pausada em" : "atualizando"} ${p.percent}%` };
+        ? { active: false, label: t("gameState.updating") }
+        : { active: false, value: p.percent, label: t(app.paused ? "gameState.updatePaused" : "gameState.updatingPercent", { percent: p.percent }) };
     } else {
-      out[`game.${id}`] = { active: false, label: `${app.name} · ${fmtPlayedAgo(app.lastPlayed, now())}` };
+      out[`game.${id}`] = { active: false, label: t("gameState.played", { name: app.name, ago: fmtPlayedAgo(app.lastPlayed, now()) }) };
     }
   }
   return out;
@@ -421,7 +412,7 @@ function openLink(url) {
   let ok = false;
   try { ok = world().open(url) !== false; } catch { ok = false; }
   if (!ok) {
-    showToast("Não foi possível abrir o Steam.");
+    showToast(t("toast.openFailed"));
     return { handled: false, reason: "open_failed" };
   }
   return { handled: true };
@@ -433,11 +424,11 @@ async function runAction(actionId) {
 
   if (!info || (!info.installed && info.supported && now() - infoAt >= NOT_INSTALLED_RECHECK_MS)) await tick(true);
   if (!info || !info.supported) {
-    showToast(NOT_WINDOWS_LABEL);
+    showToast(t("notWindows"));
     return { handled: false, reason: "not_windows" };
   }
   if (!info.installed) {
-    showToast(`${NOT_INSTALLED_LABEL}.`);
+    showToast(t("toast.notInstalled"));
     return { handled: false, reason: "not_installed" };
   }
 
@@ -446,7 +437,7 @@ async function runAction(actionId) {
   const appid = String(Number(game[1]));
   if (!isAppId(appid) || !recent.includes(appid) || !apps.has(appid)) return { handled: false, reason: "unknown_game" };
   if (running && running.appid === appid) {
-    showToast(`${apps.get(appid).name} já está em execução.`);
+    showToast(t("toast.alreadyRunning", { name: apps.get(appid).name }));
     return { handled: false, reason: "already_running" };
   }
   const result = openLink(`steam://rungameid/${appid}`);
@@ -457,12 +448,13 @@ async function runAction(actionId) {
 module.exports = {
   async onLoad(h) {
     host = h && typeof h === "object" ? h : null;
+    if (host && host.locale) i18n.setLocale(host.locale);
     const gen = ++generation;
     log("Plugin loaded");
     const first = tick(true).then(() => {
       if (gen !== generation || !info) return;
-      if (!info.supported) log(NOT_WINDOWS_LABEL);
-      else if (!info.installed) log(NOT_INSTALLED_LABEL);
+      if (!info.supported) log("Windows only");
+      else if (!info.installed) log("Steam not installed");
       else log(`Steam em ${info.dir} · ${folders.length} biblioteca(s) · ${apps.size} app(s) instalados · ${recent.length} jogos recentes`);
     }).catch((e) => { log("erro na verificação inicial:", e && e.message); });
     let waitTimer = null;
@@ -495,6 +487,12 @@ module.exports = {
     }
   },
 
+  onLocaleChanged(locale) {
+    i18n.setLocale(locale);
+    lastState = "";
+    if (host && typeof host.stateChanged === "function") host.stateChanged();
+  },
+
   getState() {
     return buildState();
   },
@@ -505,7 +503,7 @@ module.exports = {
 
   _internals: {
     fmtDuration, fmtPlayedAgo, fmtBytes, validImage, openerCommand, downloadState,
-    URLS, MARK, MAX_GAMES, NOT_INSTALLED_LABEL, NOT_WINDOWS_LABEL, STEAM_URL,
+    URLS, MARK, MAX_GAMES, STEAM_URL,
   },
 
   __test: {

@@ -99,6 +99,11 @@ Rules that the compatibility tests enforce or that reviewers will check:
 - Read other applications' data read-only, and never log or store credentials.
 - Icons are inner SVG markup for a 24×24 viewBox (no `<svg>` wrapper).
 - Include a `README.md`, and a test suite in `packages/service/src/`.
+- Translate it: put the texts in `locales/en-US.json`, `pt-BR.json` and `es-ES.json` (with a
+  `manifest` section for the plugin and action names), copy `packages/service/plugin-kit/i18n.js`
+  into the plugin, and use `require("./i18n")(__dirname).t("key")` in code. Call
+  `setLocale(host.locale)` in `onLoad` and handle `onLocaleChanged(locale)`.
+  `npm test` checks the dictionaries.
 
 To try it, drop the folder in `~/.orbit/plugins/` (the **Plugins folder** button opens it) and
 restart OrbitRing. To propose it for the catalog, add it under `plugins/` in a pull request. The

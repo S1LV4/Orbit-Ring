@@ -1,0 +1,99 @@
+{
+  "manifest": {
+    "name": "Claude Code",
+    "description": "Claude Code usage (5-hour session and week, across every Windows and WSL account) and approval of permission prompts right in the ring",
+    "actions": {
+      "show_usage": {
+        "name": "Claude · Session (5h)",
+        "description": "Claude Code 5-hour session usage, right on the button. Click to refresh and see the details in a notification."
+      },
+      "usage_gauge": {
+        "name": "Claude · Week",
+        "description": "Claude Code weekly usage, right on the button. Click to refresh and see the details in a notification."
+      },
+      "approve": {
+        "name": "Claude · Approve",
+        "description": "Approves the oldest Claude Code permission prompt. The button lights up while a prompt is waiting."
+      },
+      "decline": {
+        "name": "Claude · Decline",
+        "description": "Declines the oldest Claude Code permission prompt."
+      }
+    }
+  },
+  "tiers": {
+    "session": "Session",
+    "weekly": "Week",
+    "sessionLong": "Session (5h):",
+    "weeklyLong": "Week:"
+  },
+  "moments": "moments",
+  "accountId": "account {id}",
+  "staleWsl": " · WSL stopped",
+  "reasons": {
+    "noCredentials": "log in to Claude Code",
+    "unauthorized": "session expired — open Claude Code",
+    "api": "usage API failed"
+  },
+  "state": {
+    "unavailable": "Claude · usage unavailable ({reason})",
+    "loading": "Claude · {who}loading usage…",
+    "unavailableFor": "Claude · {who}usage unavailable ({reason})",
+    "usage": "Claude · {who}{summary}{stale}",
+    "accountUnavailable": "Claude · {name} · account unavailable"
+  },
+  "summary": {
+    "usage": "{tier} {percent}%{left}",
+    "renews": " · resets in {left}"
+  },
+  "moreAccounts": {
+    "one": " · +{count} account",
+    "other": " · +{count} accounts"
+  },
+  "dyn": {
+    "name": "Claude · {tier} · {account}",
+    "descSession": "5-hour session usage of the Claude Code account in {account}.",
+    "descWeek": "Weekly usage of the Claude Code account in {account}."
+  },
+  "approvals": {
+    "portBusy": "Claude · approvals unavailable (port in use)",
+    "nothing": "Claude · nothing pending",
+    "approve": "Approve · {summary}",
+    "decline": "Decline · {summary}",
+    "attentionTitle": "Claude asks for approval"
+  },
+  "line": {
+    "unavailable": "{name}: unavailable ({reason})",
+    "part": "{tier} {percent}%{left}"
+  },
+  "toast": {
+    "title": "Claude · Usage",
+    "accountUnavailable": "{name}: account unavailable",
+    "account": "Account"
+  },
+  "hook": {
+    "denied": "Declined by the user in OrbitRing.",
+    "unknownOption": "Unknown option: {option}",
+    "settingsPath": "--settings needs a path",
+    "timeout": "--timeout needs a number of seconds (>= 5)",
+    "scriptMissing": "Hook script not found: {path}",
+    "badJson": "{file} is not valid JSON ({error}) — nothing was changed.",
+    "notObject": "{file} does not hold a JSON object — nothing was changed.",
+    "hooksNotObject": "\"hooks\" in {file} is not an object — nothing was changed.",
+    "eventNotList": "\"hooks.{event}\" in {file} is not a list — nothing was changed.",
+    "removed": "Hook removed. It applies to the next Claude Code sessions.",
+    "installed": "Hook installed. Open a new Claude Code session (or check /hooks) for it to apply."
+  },
+  "simulate": {
+    "noToken": "token not found in {path}",
+    "badAnswer": "invalid answer",
+    "description": "OrbitRing test request",
+    "serviceOk": "Approval service OK at http://127.0.0.1:{port} — {count} pending request(s).",
+    "sent": "Request sent: {tool}: {detail}",
+    "instructions": "Look at the notice next to the cursor, open the ring and pick Approve or Decline (60 s)…",
+    "allowed": "APPROVED (allow)",
+    "denied": "DECLINED (deny)",
+    "noAnswer": "NO ANSWER (ask) — Claude Code would show its usual prompt in the terminal",
+    "decision": "Decision: {text}"
+  }
+}

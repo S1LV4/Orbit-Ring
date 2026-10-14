@@ -52,12 +52,15 @@ var app_default = {
     title: "Configura\xE7\xF5es",
     autostart: "Iniciar com o sistema",
     tray: "Minimizar para a bandeja",
-    notify: "Notifica\xE7\xF5es"
+    notify: "Notifica\xE7\xF5es",
+    language: "Idioma",
+    languageSystem: "Sistema"
   },
   splash: {
     loading: "carregando...",
     ready: "pronto"
-  }
+  },
+  languageName: "Portugu\xEAs (Brasil)"
 };
 
 // ../shared/locales/pt-BR/bindings.json
@@ -446,12 +449,15 @@ var app_default2 = {
     title: "Settings",
     autostart: "Start with system",
     tray: "Minimize to tray",
-    notify: "Notifications"
+    notify: "Notifications",
+    language: "Language",
+    languageSystem: "System"
   },
   splash: {
     loading: "loading...",
     ready: "ready"
-  }
+  },
+  languageName: "English"
 };
 
 // ../shared/locales/en-US/bindings.json
@@ -861,12 +867,15 @@ var app_default3 = {
     title: "Ajustes",
     autostart: "Iniciar con el sistema",
     tray: "Minimizar a la bandeja",
-    notify: "Notificaciones"
+    notify: "Notificaciones",
+    language: "Idioma",
+    languageSystem: "Sistema"
   },
   splash: {
     loading: "cargando...",
     ready: "listo"
-  }
+  },
+  languageName: "Espa\xF1ol"
 };
 
 // ../shared/locales/es-ES/bindings.json
@@ -1267,6 +1276,13 @@ function resolveLocale(preferred) {
   }
   return DEFAULT_LOCALE;
 }
+var SYSTEM_LOCALE = "system";
+function isLocaleSetting(v) {
+  return v === SYSTEM_LOCALE || typeof v === "string" && LOCALES.includes(v);
+}
+function localeFor(setting, system) {
+  return isLocaleSetting(setting) && setting !== SYSTEM_LOCALE ? setting : resolveLocale(system);
+}
 function lookup(messages, key) {
   let v = messages;
   for (const part of key.split(".")) {
@@ -1369,9 +1385,10 @@ function updateMenuItem(status) {
 
 // src/main.ts
 import_electron.app.disableHardwareAcceleration();
+var localeSetting = SYSTEM_LOCALE;
 var translator = null;
 function t(key, params) {
-  translator ??= createTranslator(resolveLocale(import_electron.app.getPreferredSystemLanguages()));
+  translator ??= createTranslator(localeFor(localeSetting, import_electron.app.getPreferredSystemLanguages()));
   return translator(key, params);
 }
 var ring = null;
@@ -1389,6 +1406,7 @@ function sendRingState() {
   if (lastPluginActions) wc.send("ring-config", { pluginActions: lastPluginActions });
   if (lastRingConfig) wc.send("ring-config", ringConfigForRenderer());
   if (lastPluginStates) wc.send("ring-config", { pluginStates: lastPluginStates });
+  wc.send("ring-config", { locale: localeSetting });
 }
 var ATTENTION_GROUP_ID = "__attention";
 var attentionItems = [];
@@ -1780,6 +1798,11 @@ function connectService() {
         if (ring) {
           ring.webContents.send("ring-config", ringConfigForRenderer());
         }
+      } else if (msg.type === "locale") {
+        localeSetting = String(msg.locale);
+        translator = null;
+        buildTrayMenu();
+        if (ring && !ring.isDestroyed()) ring.webContents.send("ring-config", { locale: localeSetting });
       } else if (msg.type === "plugins") {
         const pluginActions = (msg.plugins || []).flatMap(
           (p) => (p.actions || []).map((a) => ({ id: `plugin:${p.id}:${a.id}`, name: a.name, icon: a.icon, iconActive: a.iconActive, keepIcon: a.keepIcon === true, image: typeof a.image === "string" ? a.image : void 0 }))

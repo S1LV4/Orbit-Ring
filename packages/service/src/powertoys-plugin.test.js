@@ -1,3 +1,5 @@
+process.env.ORBIT_PLUGIN_LOCALE = "pt-BR";
+
 const path = require("path");
 const fs = require("fs");
 const { EventEmitter } = require("events");
@@ -5,6 +7,7 @@ const { EventEmitter } = require("events");
 const PLUGIN_DIR = path.resolve(__dirname, "../../../plugins/powertoys");
 const plugin = require(path.join(PLUGIN_DIR, "index.js"));
 const { ACTIONS, EVENTS, isKnownEvent, EVENT_SHAPE, SETTINGS_WINDOWS } = require(path.join(PLUGIN_DIR, "actions.js"));
+const EN = require(path.join(PLUGIN_DIR, "locales", "en-US.json"));
 const { createDetector, parseRegOutput, parseTasklist, parseEnabledMap, UNINSTALL_KEYS } = require(path.join(PLUGIN_DIR, "detect.js"));
 const { createHelper, SCRIPT, helperArgs } = require(path.join(PLUGIN_DIR, "helper.js"));
 const manifest = JSON.parse(fs.readFileSync(path.join(PLUGIN_DIR, "manifest.json"), "utf8"));
@@ -173,7 +176,7 @@ describe("tabela de acionamento", () => {
         expect(a.kind).toBe("settings");
         expect(SETTINGS_WINDOWS.has(a.window)).toBe(true);
       }
-      expect(typeof a.label).toBe("string");
+      expect(typeof EN.labels[id]).toBe("string");
       if (id !== "settings") expect(typeof a.module).toBe("string");
     }
   });
@@ -384,6 +387,18 @@ describe("estado das ações", () => {
     ctx.clock += 5 * 60_000;
     await plugin.__test.refresh(false);
     expect(m.regCalls.length).toBeGreaterThan(before);
+  });
+
+  test("speaks the app language: key names follow it", () => {
+    const f = plugin._internals.formatHotkey;
+    try {
+      plugin.onLocaleChanged("en-US");
+      expect(f({ ctrl: true, code: 32 })).toBe("Ctrl+Space");
+      plugin.onLocaleChanged("es-ES");
+      expect(f({ ctrl: true, code: 32 })).toBe("Ctrl+Espacio");
+    } finally {
+      plugin.onLocaleChanged("pt-BR");
+    }
   });
 
   test("formatHotkey", () => {
