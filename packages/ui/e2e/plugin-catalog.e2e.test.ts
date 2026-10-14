@@ -3,7 +3,8 @@ import { test, expect, type Page } from "@playwright/test";
 const INSTALLED = [
   { id: "x.steam", name: "Steam", version: "1.0.0", author: "@S1LV4", description: "Biblioteca e jogos", loaded: true,
     actions: [{ id: "library", name: "Biblioteca" }, { id: "store", name: "Loja" }] },
-  { id: "x.power", name: "PowerToys", version: "1.0.0", author: "@S1LV4", description: "Atalhos", loaded: true, actions: [] },
+  { id: "x.power", name: "PowerToys", version: "1.0.0", author: "@S1LV4", description: "Atalhos", loaded: true, actions: [],
+    status: { text: "Não autorizado", tone: "error", action: { id: "authorize", label: "Autorizar" } } },
 ];
 const CATALOG = [
   { id: "x.codex", name: "Codex", version: "1.0.0", author: "@S1LV4", description: "Uso do Codex", actionCount: 2, installedVersion: null, updateAvailable: false },
@@ -94,4 +95,25 @@ test("installed list: details on demand, uninstall asks before sending remove_pl
   await details.getByRole("button", { name: "Desinstalar" }).click();
   await details.getByRole("button", { name: "Desinstalar" }).click();
   expect(sent.filter((m) => m.type === "remove_plugin")).toEqual([{ type: "remove_plugin", pluginId: "x.steam" }]);
+});
+
+test("installed list: a plugin's status is shown, and its button runs the plugin action", async ({ page }) => {
+  const sent = await openPlugins(page);
+  await page.getByRole("tab", { name: /Instalados/ }).click();
+  const power = page.locator('[data-testid="installed-plugin"][data-plugin-id="x.power"]');
+  await expect(power.getByTestId("plugin-status")).toHaveText("Não autorizado");
+  await expect(power.getByTestId("plugin-status")).toHaveAttribute("data-tone", "error");
+  await expect(page.locator('[data-plugin-id="x.steam"]').getByTestId("plugin-status")).toHaveCount(0);
+  await power.getByRole("button", { name: "Autorizar" }).click();
+  await expect.poll(() => sent.filter((m) => m.type === "execute_plugin_action")).toEqual([{ type: "execute_plugin_action", pluginId: "x.power", actionId: "authorize" }]);
+});
+
+test("installed list: a newer catalog version is offered right on the installed card", async ({ page }) => {
+  const sent = await openPlugins(page);
+  await page.getByRole("tab", { name: /Instalados/ }).click();
+  const power = page.locator('[data-testid="installed-plugin"][data-plugin-id="x.power"]');
+  await expect(power.getByRole("button", { name: "Atualizar para v1.1.0" })).toBeVisible();
+  await expect(page.locator('[data-plugin-id="x.steam"]').getByRole("button", { name: /Atualizar/ })).toHaveCount(0);
+  await power.getByRole("button", { name: "Atualizar para v1.1.0" }).click();
+  expect(sent.filter((m) => m.type === "install_plugin")).toEqual([{ type: "install_plugin", pluginId: "x.power" }]);
 });

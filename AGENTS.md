@@ -145,6 +145,10 @@ Tests run on developers' real machines, next to their real accounts.
 - Changing a plugin's behaviour bumps its `version`, so installed copies are offered the update.
 - Every plugin has a `README.md` and its own test suite in `packages/service/src/`. The
   compatibility suite and the system test load every catalog plugin automatically; a new plugin
+- A plugin that depends on an account or an authorization shows it in the plugin list with
+  `getStatus()` → `{ text, tone: "ok" | "warn" | "error" | "neutral", action?: { id, label } }`.
+  The action is a button on the installed card that calls `onAction(id)`. The loader re-announces
+  the plugin list when the status changes after `host.stateChanged()`.
   needs no registration there.
 - Installing the Claude Code hook (`plugins/claude-usage/hook/install-hook.js`) edits the user's
   Claude Code settings. Only the user runs it. Never run it from a script, a test or an agent.

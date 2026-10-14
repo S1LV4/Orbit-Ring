@@ -28,6 +28,7 @@ export interface PluginInfo {
   description?: string;
   actions: PluginAction[];
   loaded: boolean;
+  status?: { text: string; tone: "ok" | "warn" | "error" | "neutral"; action?: { id: string; label: string } };
 }
 
 export interface CatalogPlugin {
@@ -48,7 +49,10 @@ interface PluginManagerProps {
   onRemove?: (pluginId: string) => void;
   onToggle?: (pluginId: string, enabled: boolean) => void;
   onOpenFolder?: () => void;
+  onRunAction?: (pluginId: string, actionId: string) => void;
 }
+
+const TONE_COLOR = { ok: "var(--accent)", warn: "#FBBF24", error: "#F87171", neutral: "#8B8B95" } as const;
 
 type View = "catalog" | "installed";
 
@@ -106,7 +110,17 @@ function CatalogCard({ plugin, onInstall }: { plugin: CatalogPlugin; onInstall?:
   );
 }
 
-function InstalledCard({ plugin, selected, onSelect }: { plugin: PluginInfo; selected: boolean; onSelect: () => void }) {
+function InstalledCard({
+  plugin, selected, onSelect, update, onInstall, onRunAction,
+}: {
+  plugin: PluginInfo;
+  selected: boolean;
+  onSelect: () => void;
+  update?: CatalogPlugin;
+  onInstall?: (id: string) => void;
+  onRunAction?: (pluginId: string, actionId: string) => void;
+}) {
+  const status = plugin.status;
   return (
     <div
       className="orbit-card p-3 flex flex-col min-w-0 transition-colors"
@@ -115,6 +129,39 @@ function InstalledCard({ plugin, selected, onSelect }: { plugin: PluginInfo; sel
       data-plugin-id={plugin.id}
     >
       <CardBody name={plugin.name} version={plugin.version} description={plugin.description} author={plugin.author} />
+      {(status || update) && (
+        <div className="flex flex-wrap items-center gap-2 mt-2">
+          {status && (
+            <span
+              data-testid="plugin-status"
+              data-tone={status.tone}
+              className="flex min-w-0 items-center gap-1.5 text-[11px]"
+              style={{ color: TONE_COLOR[status.tone] ?? TONE_COLOR.neutral }}
+            >
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: "currentColor" }} />
+              <span className="truncate">{status.text}</span>
+            </span>
+          )}
+          {status?.action && (
+            <button
+              onClick={() => onRunAction?.(plugin.id, status.action!.id)}
+              className="px-2 py-0.5 rounded-md text-[11px] font-medium border border-orbit-border text-orbit-text-dim hover:border-(--accent) hover:text-(--accent) transition-colors"
+            >
+              {status.action.label}
+            </button>
+          )}
+          {update && (
+            <button
+              onClick={() => onInstall?.(plugin.id)}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium text-orbit-bg"
+              style={{ background: "var(--accent)" }}
+            >
+              <RefreshCw className="w-3 h-3" />
+              {t("plugins.updateTo", { version: update.version })}
+            </button>
+          )}
+        </div>
+      )}
       <div className="flex items-center justify-between gap-2 mt-2.5 pt-2.5 border-t border-orbit-border">
         <span
           className="flex items-center gap-1 text-[10px] font-mono"
@@ -229,6 +276,7 @@ export function PluginManager({
   onRemove,
   onToggle,
   onOpenFolder,
+  onRunAction,
 }: PluginManagerProps) {
   const [view, setView] = useState<View>("catalog");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -300,6 +348,9 @@ export function PluginManager({
                 plugin={p}
                 selected={selectedId === p.id}
                 onSelect={() => setSelectedId(selectedId === p.id ? null : p.id)}
+                update={catalog.find((c) => c.id === p.id && c.updateAvailable)}
+                onInstall={onInstall}
+                onRunAction={onRunAction}
               />
             ))}
           </div>

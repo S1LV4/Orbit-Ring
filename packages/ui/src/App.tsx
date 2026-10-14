@@ -196,6 +196,7 @@ export function App() {
             onOpenFolder={() =>
               send({ type: "open_plugins_folder" })
             }
+            onRunAction={(pluginId, actionId) => send({ type: "execute_plugin_action", pluginId, actionId })}
           />
         )}
         {tab === "settings" && (
