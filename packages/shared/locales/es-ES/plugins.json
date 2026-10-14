@@ -1,0 +1,34 @@
+{
+  "title": "Plugins",
+  "tabs": {
+    "catalog": "Catálogo",
+    "installed": "Instalados"
+  },
+  "by": "por",
+  "installedBadge": "instalado",
+  "installedVersion": "Instalada: v{version}",
+  "working": "Espera…",
+  "update": "Actualizar",
+  "install": "Instalar",
+  "loaded": "cargado",
+  "error": "error",
+  "actionCount": {
+    "one": "{count} acción",
+    "other": "{count} acciones"
+  },
+  "enabled": "Activado",
+  "disabled": "Desactivado",
+  "confirmDelete": "¿Borrar la carpeta de este plugin?",
+  "uninstall": "Desinstalar",
+  "cancel": "Cancelar",
+  "closeDetails": "Cerrar detalles",
+  "folderTip": "~/.orbit/plugins/ — copia aquí la carpeta de un plugin para instalarlo manualmente",
+  "folder": "Carpeta de plugins",
+  "emptyCatalog": "El catálogo está vacío",
+  "emptyCatalogHint": "copia la carpeta de un plugin en ~/.orbit/plugins/ para instalarlo manualmente",
+  "emptyInstalled": "No hay plugins instalados",
+  "emptyInstalledHint": "elige uno del catálogo o copia la carpeta de un plugin en ~/.orbit/plugins/",
+  "authorHintStart": "¿creando un plugin? una carpeta con un",
+  "authorHintFields": "(id, name, version, author, actions) ·",
+  "authorHintEnd": "muestra el enlace y la foto de tu perfil"
+}

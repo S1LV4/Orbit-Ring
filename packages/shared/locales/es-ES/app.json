@@ -1,0 +1,33 @@
+{
+  "nav": {
+    "ring": "Ring",
+    "bindings": "Botones",
+    "devices": "Dispositivos",
+    "profiles": "Perfiles",
+    "plugins": "Plugins",
+    "settings": "Ajustes"
+  },
+  "status": {
+    "connected": "conectado",
+    "connecting": "conectando...",
+    "offline": "sin conexión"
+  },
+  "deviceCount": {
+    "one": "{count} dispositivo",
+    "other": "{count} dispositivos"
+  },
+  "credit": {
+    "developedBy": "desarrollado por",
+    "openSource": "código abierto · github"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "autostart": "Iniciar con el sistema",
+    "tray": "Minimizar a la bandeja",
+    "notify": "Notificaciones"
+  },
+  "splash": {
+    "loading": "cargando...",
+    "ready": "listo"
+  }
+}

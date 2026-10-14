@@ -1,0 +1,17 @@
+{
+  "title": "Perfiles por aplicación",
+  "new": "Nuevo perfil",
+  "create": "Crear perfil",
+  "namePlaceholder": "Nombre (p. ej. VS Code)",
+  "processPlaceholder": "Proceso (p. ej. code.exe)",
+  "createButton": "Crear",
+  "cancel": "Cancelar",
+  "default": "Perfil predeterminado",
+  "defaultHint": "se usa cuando ningún perfil de aplicación coincide",
+  "actionCount": {
+    "one": "{count} acción",
+    "other": "{count} acciones"
+  },
+  "empty": "No hay perfiles de aplicación",
+  "emptyHint": "crea perfiles para tener acciones distintas en cada aplicación"
+}

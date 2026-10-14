@@ -1,0 +1,79 @@
+{
+  "title": "Button bindings",
+  "identify": "Identify",
+  "identifying": "press a button...",
+  "noAction": "No action",
+  "actionFor": "Action for: {button}",
+  "customShortcut": "Custom shortcut",
+  "customPlaceholder": "e.g. ctrl+shift+p",
+  "customHint": "press the key combination you want",
+  "removeAction": "remove action",
+  "selectButton": "Select a button to configure",
+  "selectHint": "or click \"Identify\" and press a button on your mouse",
+  "buttons": {
+    "side1": {
+      "label": "Side button 1",
+      "description": "Thumb / Back"
+    },
+    "side2": {
+      "label": "Side button 2",
+      "description": "Forward"
+    },
+    "side3": {
+      "label": "Side button 3",
+      "description": "Extra"
+    },
+    "side4": {
+      "label": "Side button 4",
+      "description": "Extra"
+    },
+    "dpi": {
+      "label": "DPI button",
+      "description": "Usually on top"
+    },
+    "scroll_left": {
+      "label": "Scroll left",
+      "description": "Scroll tilt"
+    },
+    "scroll_right": {
+      "label": "Scroll right",
+      "description": "Scroll tilt"
+    }
+  },
+  "categories": {
+    "navigate": "Navigate",
+    "system": "System",
+    "window": "Window",
+    "media": "Media",
+    "shortcuts": "Shortcuts"
+  },
+  "presets": {
+    "back": "Back",
+    "forward": "Forward",
+    "newTab": "New tab",
+    "closeTab": "Close tab",
+    "reopenTab": "Reopen tab",
+    "showDesktop": "Show desktop",
+    "taskView": "Task view",
+    "screenshot": "Screenshot",
+    "lockScreen": "Lock screen",
+    "openTerminal": "Open terminal",
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "close": "Close",
+    "desktopLeft": "Desktop left",
+    "desktopRight": "Desktop right",
+    "playPause": "Play / Pause",
+    "next": "Next",
+    "previous": "Previous",
+    "volumeUp": "Volume +",
+    "volumeDown": "Volume -",
+    "mute": "Mute",
+    "copy": "Copy",
+    "paste": "Paste",
+    "undo": "Undo",
+    "redo": "Redo",
+    "save": "Save",
+    "find": "Find"
+  }
+}

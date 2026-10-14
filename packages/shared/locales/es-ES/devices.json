@@ -1,0 +1,8 @@
+{
+  "title": "Dispositivos detectados",
+  "empty": "No se detectó ningún ratón",
+  "emptyHint": "conecta un ratón (USB, Bluetooth o inalámbrico) — el servicio lo detectará automáticamente",
+  "generic": "Genérico",
+  "connected": "conectado",
+  "lastEvent": "Último evento"
+}

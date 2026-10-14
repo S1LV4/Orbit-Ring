@@ -1,0 +1,33 @@
+{
+  "nav": {
+    "ring": "Ring",
+    "bindings": "Buttons",
+    "devices": "Devices",
+    "profiles": "Profiles",
+    "plugins": "Plugins",
+    "settings": "Settings"
+  },
+  "status": {
+    "connected": "connected",
+    "connecting": "connecting...",
+    "offline": "offline"
+  },
+  "deviceCount": {
+    "one": "{count} device",
+    "other": "{count} devices"
+  },
+  "credit": {
+    "developedBy": "developed by",
+    "openSource": "open source · github"
+  },
+  "settings": {
+    "title": "Settings",
+    "autostart": "Start with system",
+    "tray": "Minimize to tray",
+    "notify": "Notifications"
+  },
+  "splash": {
+    "loading": "loading...",
+    "ready": "ready"
+  }
+}

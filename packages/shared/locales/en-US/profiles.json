@@ -1,0 +1,17 @@
+{
+  "title": "App profiles",
+  "new": "New profile",
+  "create": "Create profile",
+  "namePlaceholder": "Name (e.g. VS Code)",
+  "processPlaceholder": "Process (e.g. code.exe)",
+  "createButton": "Create",
+  "cancel": "Cancel",
+  "default": "Default profile",
+  "defaultHint": "used when no app profile matches",
+  "actionCount": {
+    "one": "{count} action",
+    "other": "{count} actions"
+  },
+  "empty": "No app profiles yet",
+  "emptyHint": "create profiles to have different actions per app"
+}
