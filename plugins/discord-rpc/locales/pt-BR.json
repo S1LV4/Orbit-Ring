@@ -12,5 +12,35 @@
         "description": "Liga e desliga o áudio do Discord"
       }
     }
+  },
+  "auth": {
+    "connecting": "Discord · conectando…",
+    "not_running": "Discord fechado",
+    "waiting": "Discord · aprove o OrbitRing na janela do Discord",
+    "denied": "Discord · autorização recusada — clique para autorizar",
+    "error": "Discord · falha ao autorizar — clique para tentar de novo",
+    "not_approved": "Discord · controle de voz não liberado — clique para tentar de novo"
+  },
+  "voice": {
+    "toggle_mute": {
+      "on": "Discord · microfone mudo",
+      "off": "Discord · microfone ligado"
+    },
+    "toggle_deafen": {
+      "on": "Discord · áudio desligado",
+      "off": "Discord · áudio ligado"
+    }
+  },
+  "attention": {
+    "title": "Discord não autorizado",
+    "text": "O OrbitRing não consegue controlar a voz do Discord. Abra Configurações → Plugins e clique em Autorizar, ou clique em um botão do Discord no ring."
+  },
+  "status": {
+    "connecting": "Conectando ao Discord…",
+    "not_running": "Discord fechado",
+    "waiting": "Aguardando sua aprovação na janela do Discord",
+    "notAuthorized": "Não autorizado",
+    "authorized": "Autorizado como {user}",
+    "authorize": "Autorizar"
   }
 }

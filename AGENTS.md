@@ -105,6 +105,9 @@ Tests run on developers' real machines, next to their real accounts.
 - **A service started by a test never touches the real mouse.** Start it with
   `ORBIT_NO_INPUT_HOOK=1` (no global mouse hook — a stuck hook slows the cursor of the whole
   machine) and `ORBIT_PARENT_PID=<test pid>` (the service exits on its own if the test dies).
+  The system test never installs the Discord plugin: it would connect to the Discord running on
+  the machine and ask the user for authorization. Its behaviour is tested with a fake Discord
+  (`discord-plugin.test.js`).
 - **UI tests always mock the service socket** with `page.routeWebSocket("ws://localhost:9119")`
   before navigating. A UI test must never reach a running service or save a real config.
 - **No test talks to a third-party service or another app** (Anthropic, OpenAI, Google, Discord,
@@ -142,13 +145,13 @@ Tests run on developers' real machines, next to their real accounts.
   returns, the plugin must not reconnect or log.
 - A plugin never throws out of `onLoad`, `getState`, `getActions` or `onAction` for an expected
   condition (tool not installed, no account, offline); it reports that through its state.
-- Changing a plugin's behaviour bumps its `version`, so installed copies are offered the update.
-- Every plugin has a `README.md` and its own test suite in `packages/service/src/`. The
-  compatibility suite and the system test load every catalog plugin automatically; a new plugin
 - A plugin that depends on an account or an authorization shows it in the plugin list with
   `getStatus()` → `{ text, tone: "ok" | "warn" | "error" | "neutral", action?: { id, label } }`.
   The action is a button on the installed card that calls `onAction(id)`. The loader re-announces
   the plugin list when the status changes after `host.stateChanged()`.
+- Changing a plugin's behaviour bumps its `version`, so installed copies are offered the update.
+- Every plugin has a `README.md` and its own test suite in `packages/service/src/`. The
+  compatibility suite and the system test load every catalog plugin automatically; a new plugin
   needs no registration there.
 - Installing the Claude Code hook (`plugins/claude-usage/hook/install-hook.js`) edits the user's
   Claude Code settings. Only the user runs it. Never run it from a script, a test or an agent.

@@ -12,5 +12,35 @@
         "description": "Toggle Discord audio deafen"
       }
     }
+  },
+  "auth": {
+    "connecting": "Discord · connecting…",
+    "not_running": "Discord is not running",
+    "waiting": "Discord · approve OrbitRing in the Discord window",
+    "denied": "Discord · authorization refused — click to authorize",
+    "error": "Discord · authorization failed — click to try again",
+    "not_approved": "Discord · voice control not allowed — click to try again"
+  },
+  "voice": {
+    "toggle_mute": {
+      "on": "Discord · microphone muted",
+      "off": "Discord · microphone on"
+    },
+    "toggle_deafen": {
+      "on": "Discord · audio off",
+      "off": "Discord · audio on"
+    }
+  },
+  "attention": {
+    "title": "Discord not authorized",
+    "text": "OrbitRing cannot control your Discord voice. Open Settings → Plugins and click Authorize, or click a Discord button in the ring."
+  },
+  "status": {
+    "connecting": "Connecting to Discord…",
+    "not_running": "Discord is not running",
+    "waiting": "Waiting for your approval in the Discord window",
+    "notAuthorized": "Not authorized",
+    "authorized": "Authorized as {user}",
+    "authorize": "Authorize"
   }
 }
