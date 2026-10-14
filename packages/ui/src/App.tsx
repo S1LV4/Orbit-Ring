@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { AuthorCredit } from "./components/AuthorCredit";
+import { t } from "./i18n";
+import { DEFAULT_GROUPS } from "@orbitring/shared/src/ring-catalog";
 import {
   Mouse,
   Settings,
@@ -30,14 +32,7 @@ export function App() {
   const [plugins, setPlugins] = useState<PluginInfo[]>([]);
   const [catalog, setCatalog] = useState<CatalogPlugin[]>([]);
   const [ringSettings, setRingSettings] = useState<any>({
-    groups: [
-      { id: "edit", name: "Edicao", icon: "edit", actions: ["copy", "paste", "undo"] },
-      { id: "nav", name: "Navegacao", icon: "compass", actions: ["back", "forward", "refresh"] },
-      { id: "win", name: "Janelas", icon: "layers", actions: ["minimize", "maximize", "close"] },
-      { id: "media", name: "Midia", icon: "music", actions: ["playpause", "volmute"] },
-      { id: "cap", name: "Captura", icon: "aperture", actions: ["screenshot"] },
-      { id: "sys", name: "Sistema", icon: "settings", actions: ["save", "explorer", "find"] },
-    ],
+    groups: DEFAULT_GROUPS.map((g) => ({ ...g, actions: [...g.actions], name: t.dyn(`catalog.defaultGroups.${g.id}`) })),
     theme: "dark",
     size: 320,
     accent: "#C6F432",
@@ -82,12 +77,12 @@ export function App() {
   }[state];
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: "ring", label: "Ring", icon: <CircleDot className="w-4 h-4" /> },
-    { id: "bindings", label: "Buttons", icon: <Mouse className="w-4 h-4" /> },
-    { id: "devices", label: "Devices", icon: <Zap className="w-4 h-4" /> },
-    { id: "profiles", label: "Profiles", icon: <Layers className="w-4 h-4" /> },
-    { id: "plugins", label: "Plugins", icon: <Puzzle className="w-4 h-4" /> },
-    { id: "settings", label: "Settings", icon: <Settings className="w-4 h-4" /> },
+    { id: "ring", label: t("app.nav.ring"), icon: <CircleDot className="w-4 h-4" /> },
+    { id: "bindings", label: t("app.nav.bindings"), icon: <Mouse className="w-4 h-4" /> },
+    { id: "devices", label: t("app.nav.devices"), icon: <Zap className="w-4 h-4" /> },
+    { id: "profiles", label: t("app.nav.profiles"), icon: <Layers className="w-4 h-4" /> },
+    { id: "plugins", label: t("app.nav.plugins"), icon: <Puzzle className="w-4 h-4" /> },
+    { id: "settings", label: t("app.nav.settings"), icon: <Settings className="w-4 h-4" /> },
   ];
 
   return (
@@ -106,19 +101,19 @@ export function App() {
         </div>
 
         <nav className="flex-1 px-2 py-3 space-y-0.5" style={{ WebkitAppRegion: "no-drag" } as any}>
-          {tabs.map((t) => (
+          {tabs.map((tb) => (
             <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
+              key={tb.id}
+              onClick={() => setTab(tb.id)}
               className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
-                tab === t.id
+                tab === tb.id
                   ? "text-orbit-bg"
                   : "text-orbit-text-muted hover:text-orbit-text hover:bg-orbit-card"
               }`}
-              style={tab === t.id ? { background: accent, color: "#0A0A0B" } : undefined}
+              style={tab === tb.id ? { background: accent, color: "#0A0A0B" } : undefined}
             >
-              {t.icon}
-              {t.label}
+              {tb.icon}
+              {tb.label}
             </button>
           ))}
         </nav>
@@ -128,28 +123,28 @@ export function App() {
             {connectionIcon}
             <span>
               {state === "connected"
-                ? "connected"
+                ? t("app.status.connected")
                 : state === "connecting"
-                ? "connecting..."
-                : "offline"}
+                ? t("app.status.connecting")
+                : t("app.status.offline")}
             </span>
           </div>
           {devices.length > 0 && (
             <div className="mt-1 text-[10px] font-mono text-orbit-border-light">
-              {devices.length} device{devices.length > 1 ? "s" : ""}
+              {t("app.deviceCount", { count: devices.length })}
             </div>
           )}
         </div>
 
         <div className="px-3 py-3 border-t border-orbit-border" style={{ WebkitAppRegion: "no-drag" } as any}>
-          <AuthorCredit author="@S1LV4" prefix="developed by" size={18} />
+          <AuthorCredit author="@S1LV4" prefix={t("app.credit.developedBy")} size={18} />
           <a
             href="https://github.com/S1LV4/Orbit-Ring"
             target="_blank"
             rel="noreferrer noopener"
             className="mt-1.5 block text-[10px] font-mono text-orbit-text-muted hover:text-(--accent) transition-colors"
           >
-            open source · github
+            {t("app.credit.openSource")}
           </a>
         </div>
       </aside>
@@ -205,13 +200,13 @@ export function App() {
           <div className="p-6">
             <h2 className="text-base font-semibold mb-5 flex items-center gap-2 text-orbit-text">
               <Settings className="w-4 h-4 text-orbit-text-muted" />
-              Settings
+              {t("app.settings.title")}
             </h2>
             <div className="space-y-2 max-w-md">
               {[
-                { label: "Start with system", key: "autostart", defaultChecked: false },
-                { label: "Minimize to tray", key: "tray", defaultChecked: true },
-                { label: "Notifications", key: "notify", defaultChecked: true },
+                { label: t("app.settings.autostart"), key: "autostart", defaultChecked: false },
+                { label: t("app.settings.tray"), key: "tray", defaultChecked: true },
+                { label: t("app.settings.notify"), key: "notify", defaultChecked: true },
               ].map((opt) => (
                 <label
                   key={opt.key}

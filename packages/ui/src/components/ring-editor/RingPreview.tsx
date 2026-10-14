@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { RingGroup } from "@orbitring/shared";
 import type { RingPluginAction } from "./catalog";
+import { t } from "../../i18n";
 
 export const RING_SIZE = 640;
 const READY_TIMEOUT_MS = 1500;
@@ -183,7 +184,7 @@ export function RingPreview({ cfg, onMessage }: RingPreviewProps) {
         <iframe
           ref={iframeRef}
           src="./ring/ring.html"
-          title="Preview do ring"
+          title={t("editor.preview.title")}
           onLoad={onLoad}
           className="absolute left-0 top-0 border-0"
           style={{

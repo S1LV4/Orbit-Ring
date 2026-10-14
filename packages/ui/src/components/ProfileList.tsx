@@ -11,6 +11,7 @@ import {
   FileText,
   ChevronRight,
 } from "lucide-react";
+import { t } from "../i18n";
 
 interface ProfileListProps {
   config: any;
@@ -61,7 +62,7 @@ export function ProfileList({ config, onSave, onDelete }: ProfileListProps) {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-base font-semibold flex items-center gap-2 text-orbit-text">
           <Layers className="w-4 h-4 text-orbit-text-muted" />
-          App Profiles
+          {t("profiles.title")}
         </h2>
         <button
           onClick={() => setShowCreate(!showCreate)}
@@ -69,24 +70,24 @@ export function ProfileList({ config, onSave, onDelete }: ProfileListProps) {
           style={{ background: "var(--accent)" }}
         >
           <Plus className="w-3.5 h-3.5" />
-          <span className="text-xs font-mono">New Profile</span>
+          <span className="text-xs font-mono">{t("profiles.new")}</span>
         </button>
       </div>
 
       {showCreate && (
         <div className="mb-6 p-4 orbit-card" style={{ borderColor: "color-mix(in srgb, var(--accent) 40%, #2A2A30)" }}>
-          <h3 className="text-xs font-medium mb-3 text-orbit-text-dim">Create Profile</h3>
+          <h3 className="text-xs font-medium mb-3 text-orbit-text-dim">{t("profiles.create")}</h3>
           <div className="space-y-2">
             <input
               type="text"
-              placeholder="Name (e.g. VS Code)"
+              placeholder={t("profiles.namePlaceholder")}
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               className="orbit-input w-full font-mono text-xs"
             />
             <input
               type="text"
-              placeholder="Process (e.g. code.exe)"
+              placeholder={t("profiles.processPlaceholder")}
               value={newProcess}
               onChange={(e) => setNewProcess(e.target.value)}
               className="orbit-input w-full font-mono text-xs"
@@ -97,13 +98,13 @@ export function ProfileList({ config, onSave, onDelete }: ProfileListProps) {
                 className="orbit-btn text-xs text-orbit-bg"
                 style={{ background: "var(--accent)" }}
               >
-                Create
+                {t("profiles.createButton")}
               </button>
               <button
                 onClick={() => setShowCreate(false)}
                 className="orbit-btn text-xs border border-orbit-border text-orbit-text-muted hover:text-orbit-text-dim"
               >
-                Cancel
+                {t("profiles.cancel")}
               </button>
             </div>
           </div>
@@ -118,13 +119,13 @@ export function ProfileList({ config, onSave, onDelete }: ProfileListProps) {
           <Layers className="w-4 h-4" style={{ color: "var(--accent)" }} />
         </div>
         <div className="flex-1">
-          <h3 className="text-sm font-medium text-orbit-text">Default Profile</h3>
+          <h3 className="text-sm font-medium text-orbit-text">{t("profiles.default")}</h3>
           <p className="text-[10px] font-mono text-orbit-text-muted">
-            used when no app profile matches
+            {t("profiles.defaultHint")}
           </p>
         </div>
         <span className="orbit-pill text-[10px] font-mono text-orbit-text-muted">
-          {config?.defaultProfile?.bindings?.length ?? 0} actions
+          {t("profiles.actionCount", { count: config?.defaultProfile?.bindings?.length ?? 0 })}
         </span>
         <ChevronRight className="w-4 h-4 text-orbit-border-light" />
       </div>
@@ -143,7 +144,7 @@ export function ProfileList({ config, onSave, onDelete }: ProfileListProps) {
               <p className="text-[10px] font-mono text-orbit-text-muted">{profile.processMatch}</p>
             </div>
             <span className="orbit-pill text-[10px] font-mono text-orbit-text-muted">
-              {profile.bindings.length} actions
+              {t("profiles.actionCount", { count: profile.bindings.length })}
             </span>
             <button
               onClick={() => onDelete(profile.id)}
@@ -159,9 +160,9 @@ export function ProfileList({ config, onSave, onDelete }: ProfileListProps) {
       {profiles.length === 0 && (
         <div className="text-center py-12 text-orbit-text-muted">
           <Gamepad2 className="w-10 h-10 mx-auto mb-3 opacity-15" />
-          <p className="text-sm text-orbit-text-dim">No app profiles created</p>
+          <p className="text-sm text-orbit-text-dim">{t("profiles.empty")}</p>
           <p className="text-[10px] font-mono mt-2 text-orbit-border-light">
-            create profiles to have different actions per app
+            {t("profiles.emptyHint")}
           </p>
         </div>
       )}

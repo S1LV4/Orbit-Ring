@@ -1,5 +1,6 @@
 import type { RingGroup, RingSettings } from "@orbitring/shared";
 import { RING_MAX_ACTIONS } from "./catalog";
+import { t } from "../../i18n";
 
 export type Draft = RingSettings;
 
@@ -66,7 +67,7 @@ export function duplicateGroup(d: Draft, id: string, newId: string): Draft {
   const copy: RingGroup = {
     ...src,
     id: newId,
-    name: uniqueName(d, `${src.name} (cópia)`),
+    name: uniqueName(d, t("editor.copySuffix", { name: src.name })),
     actions: src.actions.slice(),
   };
   return addGroup(d, copy, i + 1);

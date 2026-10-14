@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { X } from "lucide-react";
+import { t } from "../../i18n";
 
 export interface ToastData {
   key: number;
@@ -46,7 +47,7 @@ export function Toast({ toast, onDismiss }: { toast: ToastData | null; onDismiss
           )}
           <button
             type="button"
-            aria-label="Fechar aviso"
+            aria-label={t("editor.toast.close")}
             onClick={onDismiss}
             className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[#8B8B95] hover:bg-orbit-border hover:text-orbit-text"
           >

@@ -10,6 +10,7 @@ import {
   Layout,
   Globe,
 } from "lucide-react";
+import { t } from "../i18n";
 
 interface BindingEditorProps {
   config: any;
@@ -19,72 +20,67 @@ interface BindingEditorProps {
   onIdentify: () => void;
 }
 
-const BUTTON_LABELS: Record<string, { label: string; description: string }> = {
-  side1: { label: "Side Button 1", description: "Thumb / Back" },
-  side2: { label: "Side Button 2", description: "Forward" },
-  side3: { label: "Side Button 3", description: "Extra" },
-  side4: { label: "Side Button 4", description: "Extra" },
-  dpi: { label: "DPI Button", description: "Usually on top" },
-  scroll_left: { label: "Scroll Left", description: "Scroll tilt" },
-  scroll_right: { label: "Scroll Right", description: "Scroll tilt" },
-};
+const BUTTONS = ["side1", "side2", "side3", "side4", "dpi", "scroll_left", "scroll_right"] as const;
+const BUTTON_LABELS = Object.fromEntries(
+  BUTTONS.map((id) => [id, { label: t(`bindings.buttons.${id}.label`), description: t(`bindings.buttons.${id}.description`) }]),
+) as Record<string, { label: string; description: string }>;
 
 const ACTION_PRESETS = [
   {
-    category: "Navigate",
+    category: t("bindings.categories.navigate"),
     icon: <Globe className="w-3.5 h-3.5" />,
     actions: [
-      { label: "Back", action: { type: "keystroke", key: "BrowserBack", modifiers: [], label: "Back" } },
-      { label: "Forward", action: { type: "keystroke", key: "BrowserForward", modifiers: [], label: "Forward" } },
-      { label: "New Tab", action: { type: "keystroke", key: "t", modifiers: ["ctrl"], label: "Ctrl+T" } },
-      { label: "Close Tab", action: { type: "keystroke", key: "w", modifiers: ["ctrl"], label: "Ctrl+W" } },
-      { label: "Reopen Tab", action: { type: "keystroke", key: "t", modifiers: ["ctrl", "shift"], label: "Ctrl+Shift+T" } },
+      { label: t("bindings.presets.back"), action: { type: "keystroke", key: "BrowserBack", modifiers: [], label: t("bindings.presets.back") } },
+      { label: t("bindings.presets.forward"), action: { type: "keystroke", key: "BrowserForward", modifiers: [], label: t("bindings.presets.forward") } },
+      { label: t("bindings.presets.newTab"), action: { type: "keystroke", key: "t", modifiers: ["ctrl"], label: "Ctrl+T" } },
+      { label: t("bindings.presets.closeTab"), action: { type: "keystroke", key: "w", modifiers: ["ctrl"], label: "Ctrl+W" } },
+      { label: t("bindings.presets.reopenTab"), action: { type: "keystroke", key: "t", modifiers: ["ctrl", "shift"], label: "Ctrl+Shift+T" } },
     ],
   },
   {
-    category: "System",
+    category: t("bindings.categories.system"),
     icon: <Monitor className="w-3.5 h-3.5" />,
     actions: [
-      { label: "Show Desktop", action: { type: "system", action: "show_desktop" } },
-      { label: "Task View", action: { type: "system", action: "task_view" } },
-      { label: "Screenshot", action: { type: "system", action: "screenshot" } },
-      { label: "Lock Screen", action: { type: "system", action: "lock_screen" } },
-      { label: "Open Terminal", action: { type: "system", action: "open_terminal" } },
+      { label: t("bindings.presets.showDesktop"), action: { type: "system", action: "show_desktop" } },
+      { label: t("bindings.presets.taskView"), action: { type: "system", action: "task_view" } },
+      { label: t("bindings.presets.screenshot"), action: { type: "system", action: "screenshot" } },
+      { label: t("bindings.presets.lockScreen"), action: { type: "system", action: "lock_screen" } },
+      { label: t("bindings.presets.openTerminal"), action: { type: "system", action: "open_terminal" } },
     ],
   },
   {
-    category: "Window",
+    category: t("bindings.categories.window"),
     icon: <Layout className="w-3.5 h-3.5" />,
     actions: [
-      { label: "Minimize", action: { type: "system", action: "minimize_window" } },
-      { label: "Maximize", action: { type: "system", action: "maximize_window" } },
-      { label: "Close", action: { type: "system", action: "close_window" } },
-      { label: "Desktop Left", action: { type: "system", action: "switch_desktop_left" } },
-      { label: "Desktop Right", action: { type: "system", action: "switch_desktop_right" } },
+      { label: t("bindings.presets.minimize"), action: { type: "system", action: "minimize_window" } },
+      { label: t("bindings.presets.maximize"), action: { type: "system", action: "maximize_window" } },
+      { label: t("bindings.presets.close"), action: { type: "system", action: "close_window" } },
+      { label: t("bindings.presets.desktopLeft"), action: { type: "system", action: "switch_desktop_left" } },
+      { label: t("bindings.presets.desktopRight"), action: { type: "system", action: "switch_desktop_right" } },
     ],
   },
   {
-    category: "Media",
+    category: t("bindings.categories.media"),
     icon: <Play className="w-3.5 h-3.5" />,
     actions: [
-      { label: "Play / Pause", action: { type: "system", action: "media_play_pause" } },
-      { label: "Next", action: { type: "system", action: "media_next" } },
-      { label: "Previous", action: { type: "system", action: "media_prev" } },
-      { label: "Volume +", action: { type: "system", action: "volume_up" } },
-      { label: "Volume -", action: { type: "system", action: "volume_down" } },
-      { label: "Mute", action: { type: "system", action: "volume_mute" } },
+      { label: t("bindings.presets.playPause"), action: { type: "system", action: "media_play_pause" } },
+      { label: t("bindings.presets.next"), action: { type: "system", action: "media_next" } },
+      { label: t("bindings.presets.previous"), action: { type: "system", action: "media_prev" } },
+      { label: t("bindings.presets.volumeUp"), action: { type: "system", action: "volume_up" } },
+      { label: t("bindings.presets.volumeDown"), action: { type: "system", action: "volume_down" } },
+      { label: t("bindings.presets.mute"), action: { type: "system", action: "volume_mute" } },
     ],
   },
   {
-    category: "Shortcuts",
+    category: t("bindings.categories.shortcuts"),
     icon: <Keyboard className="w-3.5 h-3.5" />,
     actions: [
-      { label: "Copy", action: { type: "keystroke", key: "c", modifiers: ["ctrl"], label: "Ctrl+C" } },
-      { label: "Paste", action: { type: "keystroke", key: "v", modifiers: ["ctrl"], label: "Ctrl+V" } },
-      { label: "Undo", action: { type: "keystroke", key: "z", modifiers: ["ctrl"], label: "Ctrl+Z" } },
-      { label: "Redo", action: { type: "keystroke", key: "y", modifiers: ["ctrl"], label: "Ctrl+Y" } },
-      { label: "Save", action: { type: "keystroke", key: "s", modifiers: ["ctrl"], label: "Ctrl+S" } },
-      { label: "Find", action: { type: "keystroke", key: "f", modifiers: ["ctrl"], label: "Ctrl+F" } },
+      { label: t("bindings.presets.copy"), action: { type: "keystroke", key: "c", modifiers: ["ctrl"], label: "Ctrl+C" } },
+      { label: t("bindings.presets.paste"), action: { type: "keystroke", key: "v", modifiers: ["ctrl"], label: "Ctrl+V" } },
+      { label: t("bindings.presets.undo"), action: { type: "keystroke", key: "z", modifiers: ["ctrl"], label: "Ctrl+Z" } },
+      { label: t("bindings.presets.redo"), action: { type: "keystroke", key: "y", modifiers: ["ctrl"], label: "Ctrl+Y" } },
+      { label: t("bindings.presets.save"), action: { type: "keystroke", key: "s", modifiers: ["ctrl"], label: "Ctrl+S" } },
+      { label: t("bindings.presets.find"), action: { type: "keystroke", key: "f", modifiers: ["ctrl"], label: "Ctrl+F" } },
     ],
   },
 ];
@@ -103,7 +99,7 @@ export function BindingEditor({
 
   const getActionLabel = (button: string): string => {
     const binding = bindings.find((b: any) => b.button === button);
-    if (!binding || binding.action.type === "none") return "No action";
+    if (!binding || binding.action.type === "none") return t("bindings.noAction");
     if (binding.action.label) return binding.action.label;
     if (binding.action.type === "system") return binding.action.action.replace(/_/g, " ");
     if (binding.action.type === "command") return binding.action.command;
@@ -125,7 +121,7 @@ export function BindingEditor({
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-base font-semibold flex items-center gap-2 text-orbit-text">
           <Mouse className="w-4 h-4 text-orbit-text-muted" />
-          Button Bindings
+          {t("bindings.title")}
         </h2>
         <button
           onClick={handleIdentify}
@@ -137,7 +133,7 @@ export function BindingEditor({
           style={identifying ? { background: "var(--accent)", borderColor: "var(--accent)" } : undefined}
         >
           <Search className="w-3.5 h-3.5" />
-          <span className="text-xs font-mono">{identifying ? "press a button..." : "Identify"}</span>
+          <span className="text-xs font-mono">{identifying ? t("bindings.identifying") : t("bindings.identify")}</span>
         </button>
       </div>
 
@@ -171,7 +167,7 @@ export function BindingEditor({
           {selectedButton ? (
             <div className="space-y-4">
               <h3 className="text-[10px] font-mono uppercase tracking-widest text-orbit-text-muted">
-                Action for: {BUTTON_LABELS[selectedButton]?.label ?? selectedButton}
+                {t("bindings.actionFor", { button: BUTTON_LABELS[selectedButton]?.label ?? selectedButton })}
               </h3>
               {ACTION_PRESETS.map((category) => (
                 <div key={category.category}>
@@ -206,12 +202,12 @@ export function BindingEditor({
                 <h4 className="text-[10px] font-mono uppercase tracking-wider mb-2 flex items-center gap-2"
                     style={{ color: "var(--accent)" }}>
                   <Terminal className="w-3.5 h-3.5" />
-                  Custom Shortcut
+                  {t("bindings.customShortcut")}
                 </h4>
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="e.g. ctrl+shift+p"
+                    placeholder={t("bindings.customPlaceholder")}
                     className="orbit-input flex-1 font-mono text-xs"
                     onKeyDown={(e) => {
                       e.preventDefault();
@@ -231,7 +227,7 @@ export function BindingEditor({
                   />
                 </div>
                 <p className="text-[10px] font-mono text-orbit-border-light mt-1.5">
-                  press the key combination you want
+                  {t("bindings.customHint")}
                 </p>
               </div>
 
@@ -242,15 +238,15 @@ export function BindingEditor({
                 className="text-[10px] font-mono text-red-400/60 hover:text-red-400 flex items-center gap-1 mt-4 transition-colors"
               >
                 <X className="w-3 h-3" />
-                remove action
+                {t("bindings.removeAction")}
               </button>
             </div>
           ) : (
             <div className="text-center py-16 text-orbit-text-muted">
               <Keyboard className="w-10 h-10 mx-auto mb-3 opacity-15" />
-              <p className="text-sm text-orbit-text-dim">Select a button to configure</p>
+              <p className="text-sm text-orbit-text-dim">{t("bindings.selectButton")}</p>
               <p className="text-[10px] font-mono mt-2 text-orbit-border-light">
-                or click "Identify" and press a button on your mouse
+                {t("bindings.selectHint")}
               </p>
             </div>
           )}

@@ -1,6 +1,6 @@
 import { useLayoutEffect } from "preact/hooks";
 import { CFG, E, S, sim, host, hostMode } from "../state/sim";
-import { CAT } from "../utils/catalog";
+import { CAT, actionLabel } from "../utils/catalog";
 import { ED } from "../state/edit";
 import { aAng, actId, gAng, gIdx, isAct, slotAng, slotIds } from "../utils/geometry";
 import { editKey } from "./useEdit";
@@ -60,7 +60,7 @@ export function release(): void { if (ED.on) return; const k = resolveFire(); if
 export function fire(key: string): void {
   if (ED.on || !isAct(key)) return; const aid = actId(key); const c = CAT[aid];
   const n = sim.nodes[key]; if (n) n.vs += 0.3;
-  sim.burst = 0.035; flash(c ? c.l : aid);
+  sim.burst = 0.035; flash(actionLabel(aid));
   const action = c ? c.a : { type: "system", action: aid };
   try { host()!.executeAction!(action); } catch (e) {  }
 }

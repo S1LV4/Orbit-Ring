@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -51,7 +51,7 @@
       <img src="./orbitring-icon.webp" alt="" draggable="false" />
       <div class="logo-text">orbit<span>Ring</span></div>
       <div class="loader"><div class="loader-bar"></div></div>
-      <div class="status">loading...</div>
+      <div class="status"></div>
     </div>
 
     <div id="root"></div>
@@ -65,7 +65,7 @@
         setTimeout(function() {
           var splash = document.getElementById('splash');
           if (splash) {
-            splash.querySelector('.status').textContent = 'ready';
+            splash.querySelector('.status').textContent = splash.dataset.ready || '';
             setTimeout(function() {
               splash.classList.add('hide');
               setTimeout(function() { splash.remove(); }, 500);

@@ -6,12 +6,13 @@ import { ActionIcon } from "./ActionIcon";
 import {
   GI,
   GROUP_ICON_IDS,
-  GROUP_ICON_LABELS,
+  groupIconLabel,
   RING_MAX_ACTIONS,
   resolveAction,
   type ActionCatalog,
 } from "./catalog";
 import { useDragReorder } from "./useDragReorder";
+import { t } from "../../i18n";
 
 interface GroupInspectorProps {
   group: RingGroup | undefined;
@@ -76,8 +77,8 @@ export function GroupInspector({
       <div className="px-4 pb-4 pt-1">
         <p className="rounded-lg border border-dashed border-orbit-border px-4 py-5 text-center text-[12px] leading-relaxed text-[#A1A1AA]">
           {hasGroups
-            ? "Selecione um grupo na lista acima ou clique nele no preview para editar."
-            : "Crie um grupo para começar a montar o ring."}
+            ? t("editor.inspector.selectGroup")
+            : t("editor.inspector.createFirst")}
         </p>
       </div>
     );
@@ -112,7 +113,7 @@ export function GroupInspector({
     <div className="space-y-4 px-4 pb-4 pt-1" data-testid="group-inspector">
       <div>
         <label htmlFor="re-group-name" className="re-field-label">
-          Nome
+          {t("editor.inspector.name")}
         </label>
         <div className="flex items-center gap-2">
           <input
@@ -120,7 +121,7 @@ export function GroupInspector({
             data-testid="group-name-input"
             value={group.name}
             maxLength={40}
-            placeholder="Nome do grupo"
+            placeholder={t("editor.inspector.namePlaceholder")}
             autoComplete="off"
             spellCheck={false}
             onFocus={() => {
@@ -135,8 +136,8 @@ export function GroupInspector({
           />
           <button
             type="button"
-            aria-label={`Excluir grupo ${group.name}`}
-            data-tip="Excluir grupo"
+            aria-label={t("editor.inspector.deleteGroupNamed", { name: group.name })}
+            data-tip={t("editor.inspector.deleteGroup")}
             data-testid="group-delete"
             onClick={onDelete}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-orbit-border text-[#8B8B95] transition-colors hover:border-[#F87171]/50 hover:bg-[#F87171]/10 hover:text-[#F87171]"
@@ -148,7 +149,7 @@ export function GroupInspector({
 
       <div>
         <span id="re-icon-label" className="re-field-label">
-          Ícone
+          {t("editor.inspector.icon")}
         </span>
         <div role="radiogroup" aria-labelledby="re-icon-label" className="grid grid-cols-8 gap-1">
           {GROUP_ICON_IDS.map((id) => {
@@ -159,8 +160,8 @@ export function GroupInspector({
                 type="button"
                 role="radio"
                 aria-checked={active}
-                aria-label={GROUP_ICON_LABELS[id] ?? id}
-                data-tip={GROUP_ICON_LABELS[id] ?? id}
+                aria-label={groupIconLabel(id)}
+                data-tip={groupIconLabel(id)}
                 data-testid="group-icon-option"
                 data-icon={id}
                 onClick={() => onIcon(id)}
@@ -179,10 +180,10 @@ export function GroupInspector({
 
       <div>
         <div className="mb-1.5 flex items-baseline justify-between">
-          <span className="text-[12px] font-medium text-[#A1A1AA]">Ações do grupo</span>
+          <span className="text-[12px] font-medium text-[#A1A1AA]">{t("editor.inspector.actions")}</span>
           <span
             data-testid="action-counter"
-            data-tip={full ? "Limite atingido: remova uma ação para adicionar outra." : `Até ${RING_MAX_ACTIONS} ações por grupo`}
+            data-tip={full ? t("editor.inspector.limitReached") : t("editor.inspector.limit", { max: RING_MAX_ACTIONS })}
             className={`font-mono text-[11px] tabular-nums ${full ? "text-[#FBBF24]" : "text-[#8B8B95]"}`}
           >
             {actions.length}/{RING_MAX_ACTIONS}
@@ -195,20 +196,20 @@ export function GroupInspector({
             className="rounded-lg border border-dashed border-orbit-border px-3.5 py-4 text-[12px] leading-relaxed text-[#A1A1AA]"
           >
             <p>
-              Nenhuma ação ainda. Escolha na{" "}
+              {t("editor.inspector.emptyStart")}{" "}
               <button
                 type="button"
                 onClick={onGoToLibrary}
                 className="rounded-sm font-medium text-(--accent) underline-offset-2 hover:underline"
               >
-                Biblioteca de ações
+                {t("editor.inspector.library")}
               </button>{" "}
-              ou clique no <span className="font-semibold text-orbit-text-dim">+</span> do preview.
+              {t("editor.inspector.emptyMiddle")} <span className="font-semibold text-orbit-text-dim">+</span> {t("editor.inspector.emptyEnd")}
             </p>
-            <p className="mt-1.5 text-[11px] text-[#8B8B95]">Um grupo vazio não aparece no ring real.</p>
+            <p className="mt-1.5 text-[11px] text-[#8B8B95]">{t("editor.inspector.emptyHint")}</p>
           </div>
         ) : (
-          <ol aria-label={`Ações de ${group.name}`} data-testid="group-actions" className="space-y-1">
+          <ol aria-label={t("editor.inspector.actionsOf", { name: group.name })} data-testid="group-actions" className="space-y-1">
             {actions.map((actionId, index) => {
               const a = resolveAction(catalog, actionId);
               const flash = highlightActionId === actionId;
@@ -223,7 +224,7 @@ export function GroupInspector({
                   data-testid="group-action"
                   data-action-id={actionId}
                   data-highlight={flash}
-                  aria-label={`${a.label}${a.known ? "" : " (indisponível)"}, posição ${index + 1} de ${actions.length}`}
+                  aria-label={t(a.known ? "editor.inspector.actionPosition" : "editor.inspector.actionPositionUnavailable", { label: a.label, position: index + 1, total: actions.length })}
                   {...rowProps(index)}
                   onKeyDown={(e) => onRowKeyDown(e, actionId, index)}
                   onContextMenu={(e) => {
@@ -253,17 +254,17 @@ export function GroupInspector({
                   {!a.known && (
                     <span
                       data-testid="action-unavailable"
-                      data-tip="Esta ação não existe mais no catálogo (plugin removido ou desativado). Ela não funciona no ring; você pode removê-la."
+                      data-tip={t("editor.inspector.unavailableTip")}
                       className="shrink-0 text-[11px] italic text-[#8B8B95]"
                     >
-                      indisponível
+                      {t("editor.inspector.unavailable")}
                     </span>
                   )}
                   <button
                     type="button"
                     tabIndex={-1}
-                    aria-label={`Remover ${a.label}`}
-                    data-tip="Remover do grupo"
+                    aria-label={t("editor.inspector.remove", { label: a.label })}
+                    data-tip={t("editor.inspector.removeTip")}
                     data-testid="action-remove"
                     onClick={() => onRemoveAction(actionId)}
                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[#8B8B95] hover:bg-[#F87171]/10 hover:text-[#F87171]"

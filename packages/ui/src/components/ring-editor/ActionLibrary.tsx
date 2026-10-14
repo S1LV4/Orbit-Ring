@@ -3,6 +3,7 @@ import { Check, ChevronDown, ChevronRight, Plus, Search, X } from "lucide-react"
 import type { RingGroup } from "@orbitring/shared";
 import { ActionIcon } from "./ActionIcon";
 import { RING_MAX_ACTIONS, filterCategories, type ActionCatalog, type ActionDef } from "./catalog";
+import { t } from "../../i18n";
 
 interface ActionLibraryProps {
   catalog: ActionCatalog;
@@ -32,8 +33,8 @@ export function LibrarySearch({
         role="searchbox"
         data-testid="library-search"
         value={query}
-        placeholder="Buscar ação…"
-        aria-label="Buscar ação na biblioteca"
+        placeholder={t("editor.library.search")}
+        aria-label={t("editor.library.searchLabel")}
         autoComplete="off"
         spellCheck={false}
         onChange={(e) => onQueryChange(e.target.value)}
@@ -48,7 +49,7 @@ export function LibrarySearch({
       {query ? (
         <button
           type="button"
-          aria-label="Limpar busca"
+          aria-label={t("editor.library.clear")}
           onClick={() => {
             onQueryChange("");
             searchRef.current?.focus();
@@ -83,8 +84,8 @@ export function ActionLibrary({ catalog, groups, selected, onToggle, query }: Ac
     for (const g of groups) {
       for (const a of g.actions) {
         const list = m.get(a);
-        if (list) list.push({ id: g.id, name: g.name || "Sem nome" });
-        else m.set(a, [{ id: g.id, name: g.name || "Sem nome" }]);
+        if (list) list.push({ id: g.id, name: g.name || t("editor.main.unnamed") });
+        else m.set(a, [{ id: g.id, name: g.name || t("editor.main.unnamed") }]);
       }
     }
     return m;
@@ -97,8 +98,8 @@ export function ActionLibrary({ catalog, groups, selected, onToggle, query }: Ac
     return (
       <div className="px-4 pb-6 pt-2" data-testid="library-empty">
         <div className="rounded-lg border border-dashed border-orbit-border px-4 py-6 text-center">
-          <p className="text-[13px] text-orbit-text-dim">Nenhum resultado</p>
-          <p className="mt-1 wrap-break-word text-[12px] text-[#8B8B95]">Nada encontrado para “{query.trim()}”.</p>
+          <p className="text-[13px] text-orbit-text-dim">{t("editor.library.noResults")}</p>
+          <p className="mt-1 wrap-break-word text-[12px] text-[#8B8B95]">{t("editor.library.noResultsFor", { query: query.trim() })}</p>
         </div>
       </div>
     );
@@ -109,12 +110,12 @@ export function ActionLibrary({ catalog, groups, selected, onToggle, query }: Ac
     const disabled = !added && (!selected || full);
     const others = (usage.get(a.id) ?? []).filter((u) => u.id !== selected?.id).map((u) => u.name);
     const tip = !selected
-      ? "Selecione um grupo para adicionar ações"
+      ? t("editor.library.selectGroup")
       : added
-        ? `Remover de “${selected.name}”`
+        ? t("editor.library.removeFrom", { group: selected.name })
         : full
-          ? `“${selected.name}” está cheio (${RING_MAX_ACTIONS}/${RING_MAX_ACTIONS}). Remova uma ação para adicionar outra.`
-          : `Adicionar a “${selected.name}”`;
+          ? t("editor.library.full", { group: selected.name, max: RING_MAX_ACTIONS })
+          : t("editor.library.addTo", { group: selected.name });
     return (
       <li key={a.id}>
         <button
@@ -145,7 +146,7 @@ export function ActionLibrary({ catalog, groups, selected, onToggle, query }: Ac
             </span>
             {others.length > 0 && (
               <span className="mt-0.5 block truncate text-[11px] leading-4 text-[#8B8B95]">
-                {added ? "Também em " : "Em "}
+                {added ? t("editor.library.alsoIn") : t("editor.library.in")}
                 {others.join(", ")}
               </span>
             )}
@@ -189,7 +190,7 @@ export function ActionLibrary({ catalog, groups, selected, onToggle, query }: Ac
               <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-[#D4D4D8]">{c.name}</span>
               {addedCount > 0 && (
                 <span
-                  data-tip={`${addedCount} ${addedCount === 1 ? "ação" : "ações"} desta categoria no grupo selecionado`}
+                  data-tip={t("editor.library.inCategory", { count: addedCount })}
                   className="shrink-0 rounded-full bg-[rgba(var(--accent-rgb),0.14)] px-1.5 font-mono text-[11px] leading-4 text-(--accent)"
                 >
                   {addedCount}

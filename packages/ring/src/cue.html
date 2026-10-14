@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
-<title>OrbitRing · aviso</title>
+<title>OrbitRing</title>
 <style>
   :root { --acc: #C6F432; --ink: #0A0A0B; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -68,14 +68,14 @@
     var cue = document.getElementById("cue"), label = document.getElementById("label");
     var title = document.getElementById("title"), summary = document.getElementById("summary"), count = document.getElementById("count");
     var timer = 0;
-    function isDark(hex) { // perceived luminance of #rrggbb
+    function isDark(hex) {
       var m = /^#([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return false;
       var n = parseInt(m[1], 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) < 60;
     }
     window.cueShow = function (d) {
       d = d || {};
       if (/^#[0-9a-f]{6}$/i.test(d.accent || "")) document.documentElement.style.setProperty("--acc", isDark(d.accent) ? "#FAFAFA" : d.accent);
-      title.textContent = d.title || "Atenção";
+      title.textContent = d.title || "";
       summary.textContent = d.text || "";
       var n = Number(d.count) || 0;
       count.hidden = n < 2; count.textContent = n > 9 ? "9+" : String(n);

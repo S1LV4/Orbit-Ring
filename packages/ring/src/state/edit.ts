@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import { signal } from "@preact/signals";
 
 export interface DragState {
@@ -23,7 +24,7 @@ export const ED = {
 export const editSig = signal(false);
 
 export const ADD = "+";
-export const ADD_LABEL = "Adicionar ação";
+export const ADD_LABEL = t("ring.addAction");
 
 export const hasParent = (): boolean => { try { return window.parent !== window; } catch (e) { return false; } };
 

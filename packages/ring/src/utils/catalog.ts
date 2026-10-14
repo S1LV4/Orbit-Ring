@@ -1,7 +1,9 @@
 import { CFG, type Group } from "../state/sim";
-import { CAT, GI, DEFAULT_GROUPS, FALLBACK_ICON, RING_MAX_GROUPS, pluginImage, type RingCatalogEntry, type RingCatalog } from "@orbitring/shared/src/ring-catalog";
+import { CAT, GI, DEFAULT_GROUPS as BASE_GROUPS, FALLBACK_ICON, RING_MAX_GROUPS, pluginImage, type RingCatalogEntry, type RingCatalog } from "@orbitring/shared/src/ring-catalog";
+import { t } from "../i18n";
 
-export { CAT, GI, DEFAULT_GROUPS, FALLBACK_ICON, pluginImage };
+export { CAT, GI, FALLBACK_ICON, pluginImage };
+export const DEFAULT_GROUPS = BASE_GROUPS.map((g) => ({ ...g, name: t.dyn(`catalog.defaultGroups.${g.id}`) }));
 export type CatEntry = RingCatalogEntry;
 export type Catalog = RingCatalog;
 
@@ -54,5 +56,7 @@ export function keepsIcon(aid: string): boolean {
 }
 export function actionLabel(aid: string): string {
   const d = pluginDisplay[aid], c = CAT[aid];
-  return (d && d.label) || (c ? c.l : aid);
+  if (d && d.label) return d.label;
+  if (c && c.l) return c.l;
+  return c && t.has(`catalog.actions.${aid}`) ? t.dyn(`catalog.actions.${aid}`) : aid;
 }

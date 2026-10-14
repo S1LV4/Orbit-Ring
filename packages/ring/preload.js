@@ -1,4 +1,6 @@
 "use strict";
+
+// src/preload.ts
 var import_electron = require("electron");
 import_electron.contextBridge.exposeInMainWorld("ring", {
   executeAction: (action) => import_electron.ipcRenderer.send("execute-action", action),

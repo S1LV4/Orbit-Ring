@@ -2,26 +2,24 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import type { OrbitRingConfig, ButtonBinding, AppProfile, RingSettings, AppRingProfileMap } from "@orbitring/shared";
+import { DEFAULT_GROUPS } from "@orbitring/shared/src/ring-catalog";
+import { createTranslator, resolveLocale } from "@orbitring/shared/src/i18n";
 
 const CONFIG_DIR = path.join(os.homedir(), ".orbit");
 const CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
 
-const DEFAULT_RING: RingSettings = {
-  groups: [
-    { id: "edit", name: "Edição", icon: "edit", actions: ["copy", "paste", "undo"] },
-    { id: "nav", name: "Navegação", icon: "compass", actions: ["back", "forward", "refresh"] },
-    { id: "win", name: "Janelas", icon: "layers", actions: ["minimize", "maximize", "close"] },
-    { id: "media", name: "Mídia", icon: "music", actions: ["playpause", "volmute"] },
-    { id: "cap", name: "Captura", icon: "aperture", actions: ["screenshot"] },
-    { id: "sys", name: "Sistema", icon: "settings", actions: ["save", "explorer", "find"] },
-  ],
-  theme: "dark",
-  size: 320,
-  accent: "#8b5cf6",
-  speed: 1,
-  liquid: true,
-  ascii: true,
-};
+export function defaultRing(locale: string = Intl.DateTimeFormat().resolvedOptions().locale): RingSettings {
+  const t = createTranslator(resolveLocale(locale));
+  return {
+    groups: DEFAULT_GROUPS.map((g) => ({ id: g.id, name: t.dyn(`catalog.defaultGroups.${g.id}`), icon: g.icon, actions: [...g.actions] })),
+    theme: "dark",
+    size: 320,
+    accent: "#8b5cf6",
+    speed: 1,
+    liquid: true,
+    ascii: true,
+  };
+}
 
 const DEFAULT_CONFIG: OrbitRingConfig = {
   version: 1,
@@ -155,7 +153,7 @@ export class ConfigStore {
   }
 
   getRingSettings(): RingSettings {
-    return this.config.ring ?? DEFAULT_RING;
+    return this.config.ring ?? defaultRing();
   }
 
   saveRingSettings(ring: RingSettings) {

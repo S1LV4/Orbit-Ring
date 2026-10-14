@@ -7,7 +7,7 @@
   "scripts": {
     "build:ring": "esbuild src/ring-app.tsx --bundle --outfile=src/ring-bundle.js --jsx=automatic --jsx-import-source=preact --format=iife --target=es2020",
     "watch:ring": "esbuild src/ring-app.tsx --bundle --outfile=src/ring-bundle.js --jsx=automatic --jsx-import-source=preact --format=iife --target=es2020 --watch",
-    "compile": "esbuild src/main.ts --platform=node --format=cjs --outfile=main.js && esbuild src/preload.ts --platform=node --format=cjs --outfile=preload.js",
+    "compile": "node build-main.cjs",
     "dev": "npm run build:ring && electron .",
     "pack": "npm run compile && electron-builder --win --dir",
     "dist": "npm run compile && electron-builder --win",
