@@ -1,6 +1,6 @@
 {
   "name": "orbitring",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "license": "GPL-3.0-only",
   "description": "OrbitRing — radial actions menu and mouse button remapper for any mouse",
