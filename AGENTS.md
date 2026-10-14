@@ -190,7 +190,17 @@ Tests run on developers' real machines, next to their real accounts.
 - To add a language: create the folder with every namespace, register it in
   `packages/shared/src/i18n.ts`, add a case to `packages/ui/e2e/i18n.e2e.test.ts`.
 - Tests that read the screen run with `locale: "pt-BR"` (set in both Playwright configs).
-- Plugins are not translated yet: their action names and states come from each plugin.
+- Plugins translate themselves. Each plugin has `locales/<tag>.json` for `en-US`, `pt-BR` and
+  `es-ES`: a `manifest` section (plugin name, description and the name/description of every
+  manifest action, applied by the loader and the catalog) plus the plugin's own texts. A plugin
+  that builds text in code carries `i18n.js`, an exact copy of
+  `packages/service/plugin-kit/i18n.js` (one instance per plugin folder, so every file of the
+  plugin shares the language). It reads `host.locale` in `onLoad()` and follows
+  `onLocaleChanged(locale)`. `manifest.json` holds the English text.
+  `plugins-i18n.test.js` checks all of it for every catalog plugin. A dictionary object must not
+  have a key named after a plural category (`one`, `other`…) unless it is a plural.
+- Plugin tests pin the language with `process.env.ORBIT_PLUGIN_LOCALE = "pt-BR"` at the top of
+  the file and check the other languages explicitly.
 
 ## Code conventions
 
