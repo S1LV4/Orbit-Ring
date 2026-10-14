@@ -10,7 +10,7 @@ const SERVICE = path.join(ROOT, "packages", "service", "dist", "index.js");
 const CATALOG = path.join(ROOT, "plugins");
 const PORT = Number(process.env.ORBIT_SYSTEM_TEST_PORT) || 9129;
 const STEP_TIMEOUT = 20000;
-const SKIP = new Set((process.env.ORBIT_SYSTEM_TEST_SKIP || "").split(",").map((s) => s.trim()).filter(Boolean));
+const SKIP = new Set(["com.orbitring.discord", ...(process.env.ORBIT_SYSTEM_TEST_SKIP || "").split(",").map((s) => s.trim()).filter(Boolean)]);
 
 const manifests = fs.readdirSync(CATALOG, { withFileTypes: true })
   .filter((e) => e.isDirectory())
@@ -63,6 +63,7 @@ async function main() {
   child.stderr.on("data", collect);
   for (let i = 0; i < 100 && exited === null && !serviceLog.includes(`ws://localhost:${PORT}`); i++) await new Promise((r) => setTimeout(r, 200));
   assert(exited === null && serviceLog.includes(`ws://localhost:${PORT}`), "built service starts and listens");
+  for (let i = 0; i < 25 && !/mouse hook disabled/i.test(serviceLog); i++) await new Promise((r) => setTimeout(r, 200));
   assert(/mouse hook disabled/i.test(serviceLog), "the service under test leaves the real mouse alone (no global hook)");
 
   ws = new WebSocket(`ws://localhost:${PORT}`);

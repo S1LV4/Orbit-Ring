@@ -383,7 +383,8 @@ var plugins_default = {
   emptyInstalledHint: "escolha um no cat\xE1logo ou copie a pasta de um plugin para ~/.orbit/plugins/",
   authorHintStart: "criando um plugin? uma pasta com um",
   authorHintFields: "(id, name, version, author, actions) \xB7",
-  authorHintEnd: "mostra o link e a foto do seu perfil"
+  authorHintEnd: "mostra o link e a foto do seu perfil",
+  updateTo: "Atualizar para v{version}"
 };
 
 // ../shared/locales/pt-BR/profiles.json
@@ -801,7 +802,8 @@ var plugins_default2 = {
   emptyInstalledHint: "pick one from the catalog, or copy a plugin folder to ~/.orbit/plugins/",
   authorHintStart: "writing a plugin? a folder with a",
   authorHintFields: "(id, name, version, author, actions) \xB7",
-  authorHintEnd: "shows your profile link and picture"
+  authorHintEnd: "shows your profile link and picture",
+  updateTo: "Update to v{version}"
 };
 
 // ../shared/locales/en-US/profiles.json
@@ -1219,7 +1221,8 @@ var plugins_default3 = {
   emptyInstalledHint: "elige uno del cat\xE1logo o copia la carpeta de un plugin en ~/.orbit/plugins/",
   authorHintStart: "\xBFcreando un plugin? una carpeta con un",
   authorHintFields: "(id, name, version, author, actions) \xB7",
-  authorHintEnd: "muestra el enlace y la foto de tu perfil"
+  authorHintEnd: "muestra el enlace y la foto de tu perfil",
+  updateTo: "Actualizar a v{version}"
 };
 
 // ../shared/locales/es-ES/profiles.json

@@ -36,6 +36,16 @@ export interface PluginCatalogEntry {
   updateAvailable: boolean;
 }
 
+export type PluginStatusTone = "ok" | "warn" | "error" | "neutral";
+
+/** What a plugin shows about itself in the plugin list (e.g. "Authorized as …"), with an optional button */
+export interface PluginStatus {
+  text: string;
+  tone: PluginStatusTone;
+  /** Runs onAction(id) when the user clicks the button */
+  action?: { id: string; label: string };
+}
+
 export interface PluginInfo {
   id: string;
   name: string;
@@ -44,6 +54,7 @@ export interface PluginInfo {
   description: string;
   actions: PluginAction[];
   loaded: boolean;
+  status?: PluginStatus;
 }
 
 export type PluginStateStatus = "green" | "amber" | "red";

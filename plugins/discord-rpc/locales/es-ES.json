@@ -12,5 +12,35 @@
         "description": "Activa o desactiva el audio de Discord"
       }
     }
+  },
+  "auth": {
+    "connecting": "Discord · conectando…",
+    "not_running": "Discord está cerrado",
+    "waiting": "Discord · aprueba OrbitRing en la ventana de Discord",
+    "denied": "Discord · autorización rechazada — haz clic para autorizar",
+    "error": "Discord · falló la autorización — haz clic para reintentar",
+    "not_approved": "Discord · control de voz no permitido — haz clic para reintentar"
+  },
+  "voice": {
+    "toggle_mute": {
+      "on": "Discord · micrófono silenciado",
+      "off": "Discord · micrófono activado"
+    },
+    "toggle_deafen": {
+      "on": "Discord · audio desactivado",
+      "off": "Discord · audio activado"
+    }
+  },
+  "attention": {
+    "title": "Discord no autorizado",
+    "text": "OrbitRing no puede controlar la voz de Discord. Abre Ajustes → Plugins y haz clic en Autorizar, o haz clic en un botón de Discord en el ring."
+  },
+  "status": {
+    "connecting": "Conectando con Discord…",
+    "not_running": "Discord está cerrado",
+    "waiting": "Esperando tu aprobación en la ventana de Discord",
+    "notAuthorized": "No autorizado",
+    "authorized": "Autorizado como {user}",
+    "authorize": "Autorizar"
   }
 }

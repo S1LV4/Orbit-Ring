@@ -30,5 +30,6 @@
   "emptyInstalledHint": "escolha um no catálogo ou copie a pasta de um plugin para ~/.orbit/plugins/",
   "authorHintStart": "criando um plugin? uma pasta com um",
   "authorHintFields": "(id, name, version, author, actions) ·",
-  "authorHintEnd": "mostra o link e a foto do seu perfil"
+  "authorHintEnd": "mostra o link e a foto do seu perfil",
+  "updateTo": "Atualizar para v{version}"
 }

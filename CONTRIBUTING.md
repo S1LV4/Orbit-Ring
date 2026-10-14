@@ -95,7 +95,9 @@ Rules that the compatibility tests enforce or that reviewers will check:
 - Only Node built-ins and the plugin's own files may be `require`d — an installed plugin has no
   `node_modules`.
 - `onUnload()` leaves nothing running.
-- A missing tool, account or connection is a state shown to the user, not an exception.
+- A missing tool, account or connection is a state shown to the user, not an exception. If the
+  plugin needs a login or an authorization, report it with `getStatus()` so it shows on the
+  plugin's card in Settings → Plugins (see AGENTS.md).
 - Read other applications' data read-only, and never log or store credentials.
 - Icons are inner SVG markup for a 24×24 viewBox (no `<svg>` wrapper).
 - Include a `README.md`, and a test suite in `packages/service/src/`.

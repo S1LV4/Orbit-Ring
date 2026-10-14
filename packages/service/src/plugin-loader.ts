@@ -4,7 +4,7 @@ import * as path from "path";
 import * as os from "os";
 import type {
   PluginManifest, PluginAction, PluginActionDef, PluginInfo, PluginHost,
-  PluginActionState, PluginActionStateObject, PluginStates, AttentionItem,
+  PluginActionState, PluginActionStateObject, PluginStates, AttentionItem, PluginStatus,
 } from "@orbitring/shared";
 
 type LoaderHostKeys = "stateChanged" | "actionsChanged" | "attention" | "clearAttention";
@@ -78,11 +78,28 @@ interface PluginModule {
   getState?(): Record<string, unknown>;
   getActions?(): unknown;
   onLocaleChanged?(locale: string): void;
+  getStatus?(): unknown;
+}
+
+const TONES = new Set(["ok", "warn", "error", "neutral"]);
+const ACTION_ID = /^[A-Za-z0-9_.:-]{1,64}$/;
+
+function sanitizeStatus(v: unknown): PluginStatus | undefined {
+  if (!v || typeof v !== "object") return undefined;
+  const o = v as Record<string, unknown>;
+  if (typeof o.text !== "string" || !o.text.trim()) return undefined;
+  const out: PluginStatus = { text: o.text.slice(0, 200), tone: TONES.has(o.tone as string) ? (o.tone as PluginStatus["tone"]) : "neutral" };
+  const a = o.action as Record<string, unknown> | undefined;
+  if (a && typeof a === "object" && typeof a.id === "string" && ACTION_ID.test(a.id) && typeof a.label === "string" && a.label.trim()) {
+    out.action = { id: a.id, label: a.label.slice(0, 40) };
+  }
+  return out;
 }
 
 interface LoadedPlugin {
   manifest: PluginManifest;
   text: ManifestText;
+  lastStatus?: string;
   module: PluginModule;
   dir: string;
   dynamic: PluginActionDef[];
@@ -216,6 +233,14 @@ export class PluginLoader {
       return tr ? { ...a, name: tr.name ?? a.name, description: tr.description ?? a.description } : a;
     });
     return [...own, ...plugin.dynamic];
+  }
+
+  private statusOf(plugin: LoadedPlugin): PluginStatus | undefined {
+    if (typeof plugin.module.getStatus !== "function") return undefined;
+    try { return sanitizeStatus(plugin.module.getStatus()); } catch (e) {
+      console.error(`[orbit] Plugin "${plugin.manifest.id}" getStatus() error:`, e);
+      return undefined;
+    }
   }
 
   getLocale(): string {
@@ -399,6 +424,16 @@ export class PluginLoader {
         return loader.locale;
       },
       stateChanged: () => {
+        const plugin = this.plugins.get(pluginId);
+        if (plugin) {
+          const status = JSON.stringify(this.statusOf(plugin) ?? null);
+          if (plugin.lastStatus !== undefined && status !== plugin.lastStatus) {
+            try { this.actionsListener?.(pluginId); } catch (e) {
+              console.error(`[orbit] Plugin "${pluginId}" actionsChanged handler error:`, e);
+            }
+          }
+          plugin.lastStatus = status;
+        }
         try { this.stateListener?.(pluginId); } catch (e) {
           console.error(`[orbit] Plugin "${pluginId}" stateChanged handler error:`, e);
         }
@@ -469,6 +504,9 @@ export class PluginLoader {
         actions,
         loaded: true,
       });
+      const status = this.statusOf(plugin);
+      if (status) result[result.length - 1].status = status;
+      plugin.lastStatus = JSON.stringify(status ?? null);
     }
     return result;
   }

@@ -1,34 +1,69 @@
 const net = require("net");
 const https = require("https");
-const { exec } = require("child_process");
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
 
+const i18n = require("./i18n")(__dirname);
+const t = i18n.t;
+
 const PIPE_PREFIX = process.platform === "win32" ? "\\\\?\\pipe\\discord-ipc-" : "/tmp/discord-ipc-";
 
 const CLIENT_ID = "1559496309306556597";
 const SCOPES = ["rpc", "identify", "rpc.voice.read", "rpc.voice.write"];
-
-const TOKEN_PATH = path.join(os.homedir(), ".orbit", "credentials.json");
+const ATTENTION_ID = "discord-auth";
 
 const OP = { HANDSHAKE: 0, FRAME: 1, CLOSE: 2, PING: 3, PONG: 4 };
 
+let deps = {};
+let host = null;
 let codeVerifier = null;
-function generatePKCE() {
-  codeVerifier = crypto.randomBytes(32).toString("base64url");
-  const challenge = crypto.createHash("sha256").update(codeVerifier).digest("base64url");
-  return challenge;
-}
-
 let socket = null;
-let authenticated = false;
+let auth = "connecting";
 let reconnectTimer = null;
 let voiceState = { mute: false, deaf: false };
 let recvBuf = Buffer.alloc(0);
 let currentUser = null;
-let waitingAuth = false;
+let stopped = false;
+let attentionShown = false;
+
+const tokenPath = () => deps.tokenPath || path.join(os.homedir(), ".orbit", "credentials.json");
+const authorized = () => auth === "authorized";
+
+function setAuth(next) {
+  if (auth === next) return;
+  auth = next;
+  if (next === "denied" || next === "error" || next === "not_approved") showAttention();
+  else if (next === "authorized") clearAttention();
+  changed();
+}
+
+function changed() {
+  if (host && typeof host.stateChanged === "function") {
+    try { host.stateChanged(); } catch {}
+  }
+}
+
+function showAttention() {
+  if (attentionShown || !host || typeof host.attention !== "function") return;
+  attentionShown = true;
+  try { host.attention({ id: ATTENTION_ID, title: t("attention.title"), text: t("attention.text"), timeoutMs: 60_000 }); } catch {}
+}
+
+function clearAttention() {
+  if (!attentionShown || !host) return;
+  attentionShown = false;
+  try {
+    if (typeof host.clearAttention === "function") host.clearAttention(ATTENTION_ID);
+    else if (typeof host.attention === "function") host.attention(null);
+  } catch {}
+}
+
+function generatePKCE() {
+  codeVerifier = crypto.randomBytes(32).toString("base64url");
+  return crypto.createHash("sha256").update(codeVerifier).digest("base64url");
+}
 
 function encode(opcode, data) {
   const json = JSON.stringify(data);
@@ -49,231 +84,156 @@ function decode(buf) {
   return { opcode, data: json, totalLen: 8 + length };
 }
 
-function nonce() { return crypto.randomUUID(); }
-
 function send(opcode, payload) {
   if (!socket || socket.destroyed) return;
   try { socket.write(encode(opcode, payload)); } catch (e) { console.error("[discord-rpc] send error:", e.message); }
 }
 
 function sendCommand(cmd, args, evt) {
-  const n = nonce();
-  const payload = { cmd, args, nonce: n };
+  const payload = { cmd, args, nonce: crypto.randomUUID() };
   if (evt) payload.evt = evt;
   send(OP.FRAME, payload);
-  return n;
 }
 
-function loadToken() {
-  try {
-    if (fs.existsSync(TOKEN_PATH)) {
-      const data = JSON.parse(fs.readFileSync(TOKEN_PATH, "utf8"));
-      if (data.access_token && data.expires_at > Date.now()) return data.access_token;
-      if (data.refresh_token) return refreshToken(data.refresh_token);
-    }
-  } catch {}
-  return null;
+function requestAuthorization() {
+  const challenge = generatePKCE();
+  sendCommand("AUTHORIZE", { client_id: CLIENT_ID, scopes: SCOPES, code_challenge: challenge, code_challenge_method: "S256" });
+  setAuth("waiting");
+}
+
+function postForm(url, params) {
+  if (deps.postForm) return Promise.resolve(deps.postForm(url, params)).catch(() => ({}));
+  return new Promise((resolve) => {
+    const body = new URLSearchParams(params).toString();
+    const u = new URL(url);
+    const req = https.request({
+      hostname: u.hostname, path: u.pathname, method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded", "Content-Length": Buffer.byteLength(body) },
+    }, (res) => {
+      let d = "";
+      res.on("data", (c) => (d += c));
+      res.on("end", () => { try { resolve(JSON.parse(d)); } catch { resolve({}); } });
+    });
+    req.on("error", () => resolve({}));
+    req.write(body);
+    req.end();
+  });
 }
 
 function saveToken(data) {
   try {
-    const tokenData = {
+    fs.mkdirSync(path.dirname(tokenPath()), { recursive: true });
+    fs.writeFileSync(tokenPath(), JSON.stringify({
       access_token: data.access_token,
       refresh_token: data.refresh_token,
       expires_at: Date.now() + (data.expires_in || 604800) * 1000,
-    };
-    fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokenData, null, 2));
-  } catch (e) { console.error("[discord-rpc] Failed to save token:", e.message); }
+    }, null, 2));
+  } catch (e) { console.error("[discord-rpc] Failed to save the token:", e.message); }
 }
 
-function exchangeCode(code) {
-  return new Promise((resolve, reject) => {
-    const params = { client_id: CLIENT_ID, grant_type: "authorization_code", code, code_verifier: codeVerifier };
-    const body = new URLSearchParams(params).toString();
-
-    const req = https.request({
-      hostname: "discord.com",
-      path: "/api/v10/oauth2/token",
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded", "Content-Length": Buffer.byteLength(body) },
-    }, (res) => {
-      let d = "";
-      res.on("data", c => d += c);
-      res.on("end", () => {
-        try {
-          const j = JSON.parse(d);
-          if (j.access_token) { saveToken(j); resolve(j.access_token); }
-          else { console.error("[discord-rpc] Token response:", JSON.stringify(j)); reject(new Error(j.error_description || j.error || "No token")); }
-        } catch (e) { reject(e); }
-      });
-    });
-    req.on("error", reject);
-    req.write(body);
-    req.end();
-  });
+function forgetToken() {
+  try { fs.unlinkSync(tokenPath()); } catch {}
 }
 
-function refreshToken(refresh) {
-  return new Promise((resolve) => {
-    const body = new URLSearchParams({
-      client_id: CLIENT_ID,
-      grant_type: "refresh_token",
-      refresh_token: refresh,
-    }).toString();
-
-    const req = https.request({
-      hostname: "discord.com",
-      path: "/api/oauth2/token",
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded", "Content-Length": Buffer.byteLength(body) },
-    }, (res) => {
-      let d = "";
-      res.on("data", c => d += c);
-      res.on("end", () => {
-        try {
-          const j = JSON.parse(d);
-          if (j.access_token) { saveToken(j); resolve(j.access_token); }
-          else resolve(null);
-        } catch { resolve(null); }
-      });
-    });
-    req.on("error", () => resolve(null));
-    req.write(body);
-    req.end();
-  });
+async function grant(params) {
+  const j = await postForm("https://discord.com/api/v10/oauth2/token", { client_id: CLIENT_ID, ...params });
+  if (j && typeof j.access_token === "string") { saveToken(j); return j.access_token; }
+  console.error("[discord-rpc] Token request refused:", (j && (j.error_description || j.error)) || "no token");
+  return null;
 }
 
-function sendDiscordKeystroke(vk) {
-  if (process.platform !== "win32") return;
-  const vkHex = "0x" + vk.toString(16).toUpperCase();
-  const ps = `
-Add-Type -MemberDefinition @'
-[DllImport("user32.dll")]public static extern IntPtr GetForegroundWindow();
-[DllImport("user32.dll")]public static extern bool SetForegroundWindow(IntPtr hWnd);
-[DllImport("user32.dll")]public static extern void keybd_event(byte bVk,byte bScan,uint dwFlags,UIntPtr dwExtraInfo);
-'@ -Name W -Namespace K
-$prev = [K.W]::GetForegroundWindow()
-$disc = Get-Process Discord -ErrorAction SilentlyContinue | Where-Object {$_.MainWindowHandle -ne 0} | Select-Object -First 1
-if ($disc) {
-  [K.W]::SetForegroundWindow($disc.MainWindowHandle) | Out-Null
-  Start-Sleep -Milliseconds 150
-  [K.W]::keybd_event(0x11,0,0,[UIntPtr]::Zero)
-  [K.W]::keybd_event(0x10,0,0,[UIntPtr]::Zero)
-  [K.W]::keybd_event(${vkHex},0,0,[UIntPtr]::Zero)
-  [K.W]::keybd_event(${vkHex},0,2,[UIntPtr]::Zero)
-  [K.W]::keybd_event(0x10,0,2,[UIntPtr]::Zero)
-  [K.W]::keybd_event(0x11,0,2,[UIntPtr]::Zero)
-  Start-Sleep -Milliseconds 50
-  [K.W]::SetForegroundWindow($prev) | Out-Null
-}`;
-  const encoded = Buffer.from(ps, "utf16le").toString("base64");
-  exec(`powershell -NoProfile -EncodedCommand ${encoded}`, { timeout: 5000, windowsHide: true });
+async function loadToken() {
+  let data;
+  try { data = JSON.parse(fs.readFileSync(tokenPath(), "utf8")); } catch { return null; }
+  if (data && typeof data.access_token === "string" && data.expires_at > Date.now()) return data.access_token;
+  if (data && typeof data.refresh_token === "string") return grant({ grant_type: "refresh_token", refresh_token: data.refresh_token });
+  return null;
 }
-
-let stopped = false;
 
 function tryConnect(pipeIndex = 0) {
   if (stopped) return;
   if (pipeIndex > 9) {
     console.log("[discord-rpc] Discord IPC not found on pipes 0-9");
+    setAuth("not_running");
     scheduleReconnect();
     return;
   }
-
-  const pipePath = PIPE_PREFIX + pipeIndex;
-  if (pipeIndex === 0) console.log("[discord-rpc] Connecting to Discord...");
-
-  const sock = net.createConnection(pipePath, () => {
+  const connect = deps.connect || ((p, cb) => net.createConnection(p, cb));
+  const sock = connect(PIPE_PREFIX + pipeIndex, () => {
     if (stopped) { sock.destroy(); return; }
     console.log(`[discord-rpc] Connected on pipe ${pipeIndex}`);
     socket = sock;
     recvBuf = Buffer.alloc(0);
     send(OP.HANDSHAKE, { v: 1, client_id: CLIENT_ID });
   });
-
   sock.on("data", onData);
   sock.on("error", (err) => {
     if (err.code === "ENOENT" || err.code === "ECONNREFUSED") { sock.destroy(); tryConnect(pipeIndex + 1); return; }
     console.error(`[discord-rpc] Socket error: ${err.message}`);
     handleDisconnect();
   });
-  sock.on("close", () => { if (socket === sock) { handleDisconnect(); } });
+  sock.on("close", () => { if (socket === sock) handleDisconnect(); });
   sock.setTimeout(3000, () => {
-    if (!waitingAuth) { sock.destroy(); tryConnect(pipeIndex + 1); }
+    if (auth !== "waiting") { sock.destroy(); tryConnect(pipeIndex + 1); }
   });
 }
 
 function onData(chunk) {
   recvBuf = Buffer.concat([recvBuf, chunk]);
-  while (true) {
+  for (;;) {
     const frame = decode(recvBuf);
     if (!frame) break;
     recvBuf = recvBuf.slice(frame.totalLen);
-    handleFrame(frame);
+    handleFrame(frame).catch((e) => console.error("[discord-rpc] Frame error:", e && e.message));
   }
 }
 
-async function handleFrame(frame) {
-  const { opcode, data } = frame;
+async function handleFrame({ opcode, data }) {
   if (opcode === OP.PING) { send(OP.PONG, data); return; }
   if (opcode === OP.CLOSE) { console.log("[discord-rpc] Discord sent CLOSE"); handleDisconnect(); return; }
   if (opcode !== OP.FRAME) return;
 
   if (data.evt === "READY") {
-    currentUser = data.data?.user;
+    currentUser = data.data && data.data.user;
     if (socket) socket.setTimeout(0);
-    console.log(`[discord-rpc] Handshake OK — user: ${currentUser?.username || "unknown"}`);
+    const token = await loadToken();
+    if (token) { sendCommand("AUTHENTICATE", { access_token: token }); return; }
+    console.log("[discord-rpc] Asking Discord for authorization");
+    requestAuthorization();
+    return;
+  }
 
-    const cachedToken = loadToken();
-    if (cachedToken) {
-      console.log("[discord-rpc] Using cached token...");
-      sendCommand("AUTHENTICATE", { access_token: cachedToken });
+  if (data.cmd === "AUTHORIZE") {
+    if (data.evt === "ERROR") {
+      console.log("[discord-rpc] Authorization refused in Discord");
+      setAuth("denied");
       return;
     }
-
-    console.log("[discord-rpc] Attempting OAuth authorization...");
-    waitingAuth = true;
-    const challenge = generatePKCE();
-    sendCommand("AUTHORIZE", { client_id: CLIENT_ID, scopes: SCOPES, code_challenge: challenge, code_challenge_method: "S256" });
-    return;
-  }
-
-  if (data.cmd === "AUTHORIZE" && typeof data.data?.code === "number") {
-    waitingAuth = false;
-    console.log("[discord-rpc] OAuth scopes not approved yet — using keyboard shortcuts for voice control");
-    console.log("[discord-rpc] To enable RPC voice control, get the app approved at Discord Developer Portal");
-    authenticated = false;
-    return;
-  }
-
-  if (data.cmd === "AUTHORIZE" && data.data?.code && typeof data.data.code === "string") {
-    waitingAuth = false;
-    const authCode = String(data.data.code);
-    console.log("[discord-rpc] Got auth code (full):", authCode);
-    console.log("[discord-rpc] AUTHORIZE response data:", JSON.stringify(data.data));
-    try {
-      const token = await exchangeCode(authCode);
-      console.log("[discord-rpc] Token obtained, authenticating...");
-      sendCommand("AUTHENTICATE", { access_token: token });
-    } catch (e) {
-      console.error("[discord-rpc] Token exchange failed:", e.message);
+    const code = data.data && data.data.code;
+    if (typeof code === "number") {
+      console.log("[discord-rpc] Discord refused voice control for this app");
+      setAuth("not_approved");
+      return;
+    }
+    if (typeof code === "string" && code) {
+      const token = await grant({ grant_type: "authorization_code", code, code_verifier: codeVerifier });
+      if (token) sendCommand("AUTHENTICATE", { access_token: token });
+      else setAuth("error");
     }
     return;
   }
 
-  if (data.cmd === "AUTHORIZE" && data.evt === "ERROR") {
-    waitingAuth = false;
-    console.log("[discord-rpc] Authorization denied by user");
-    return;
-  }
-
-  if (data.cmd === "AUTHENTICATE" && data.data?.user) {
-    authenticated = true;
+  if (data.cmd === "AUTHENTICATE") {
+    if (data.evt === "ERROR" || !(data.data && data.data.user)) {
+      console.log("[discord-rpc] Saved authorization refused by Discord; asking again");
+      forgetToken();
+      requestAuthorization();
+      return;
+    }
     currentUser = data.data.user;
-    console.log(`[discord-rpc] ✓ Authenticated as ${currentUser.username} — voice control enabled!`);
-
+    console.log("[discord-rpc] Authorized — voice control by RPC");
+    setAuth("authorized");
     sendCommand("SUBSCRIBE", {}, "VOICE_SETTINGS_UPDATE");
-
     sendCommand("GET_VOICE_SETTINGS", {});
     return;
   }
@@ -283,102 +243,125 @@ async function handleFrame(frame) {
     if (vs) {
       voiceState.mute = !!vs.mute;
       voiceState.deaf = !!vs.deaf;
-      console.log(`[discord-rpc] Voice — mute: ${voiceState.mute}, deaf: ${voiceState.deaf}`);
+      changed();
     }
     return;
   }
 
   if (data.evt === "ERROR") {
-    const code = data.data?.code;
-    const msg = data.data?.message;
-    console.error(`[discord-rpc] Error (${code}): ${msg}`);
+    const code = data.data && data.data.code;
+    console.error(`[discord-rpc] Error (${code}): ${data.data && data.data.message}`);
     if (code === 4002 || code === 4006) {
-      console.log("[discord-rpc] Token invalid, clearing cache and re-authorizing...");
-      try { fs.unlinkSync(TOKEN_PATH); } catch {}
-      const challenge = generatePKCE();
-    sendCommand("AUTHORIZE", { client_id: CLIENT_ID, scopes: SCOPES, code_challenge: challenge, code_challenge_method: "S256" });
+      forgetToken();
+      requestAuthorization();
     }
-    return;
   }
 }
 
 function handleDisconnect() {
-  authenticated = false;
   if (socket) { socket.destroy(); socket = null; }
-  if (waitingAuth) {
-    console.log("[discord-rpc] Connection lost during auth — retrying...");
-    waitingAuth = false;
-    if (!stopped) setTimeout(() => tryConnect(), 3000);
-  } else {
-    scheduleReconnect();
-  }
+  if (stopped) return;
+  setAuth("connecting");
+  scheduleReconnect();
 }
 
 function scheduleReconnect() {
   if (stopped || reconnectTimer) return;
-  console.log("[discord-rpc] Reconnecting in 15s...");
   reconnectTimer = setTimeout(() => { reconnectTimer = null; tryConnect(); }, 15000);
 }
 
+function actionState(id) {
+  if (authorized()) {
+    const on = id === "toggle_mute" ? voiceState.mute : voiceState.deaf;
+    return { active: on, label: t(`voice.${id}.${on ? "on" : "off"}`) };
+  }
+  if (auth === "not_running") return { active: false, text: "–", label: t("auth.not_running") };
+  if (auth === "connecting") return { active: false, label: t("auth.connecting") };
+  if (auth === "waiting") return { active: false, status: "amber", label: t("auth.waiting") };
+  return { active: false, status: "red", label: t(`auth.${auth}`) };
+}
+
+function status() {
+  if (authorized()) return { tone: "ok", text: t("status.authorized", { user: (currentUser && currentUser.username) || "?" }) };
+  if (auth === "connecting") return { tone: "neutral", text: t("status.connecting") };
+  if (auth === "not_running") return { tone: "neutral", text: t("status.not_running") };
+  if (auth === "waiting") return { tone: "warn", text: t("status.waiting") };
+  return { tone: "error", text: t("status.notAuthorized"), action: { id: "authorize", label: t("status.authorize") } };
+}
+
+function askAgain() {
+  if (socket && !socket.destroyed && auth !== "waiting" && !authorized()) requestAuthorization();
+}
+
+function reset() {
+  socket = null;
+  auth = "connecting";
+  reconnectTimer = null;
+  voiceState = { mute: false, deaf: false };
+  recvBuf = Buffer.alloc(0);
+  currentUser = null;
+  attentionShown = false;
+  codeVerifier = null;
+}
+
 module.exports = {
-  onLoad() {
+  onLoad(h) {
+    host = h && typeof h === "object" ? h : null;
+    if (host && host.locale) i18n.setLocale(host.locale);
     console.log("[discord-rpc] Plugin loaded — connecting to Discord...");
     stopped = false;
     tryConnect();
   },
 
   onUnload() {
-    console.log("[discord-rpc] Plugin unloading");
     stopped = true;
     if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
     if (socket) { try { send(OP.CLOSE, {}); } catch {} socket.destroy(); socket = null; }
-    authenticated = false;
+    clearAttention();
+    host = null;
+    reset();
+  },
+
+  onLocaleChanged(locale) {
+    i18n.setLocale(locale);
+    changed();
   },
 
   async onAction(actionId) {
-    if (actionId === "toggle_mute") {
-      if (authenticated) {
-        const newMute = !voiceState.mute;
-        sendCommand("SET_VOICE_SETTINGS", { mute: newMute });
-        voiceState.mute = newMute;
-        console.log(`[discord-rpc] Mute → ${newMute}`);
+    if (actionId === "authorize") {
+      askAgain();
+      return { handled: true, auth };
+    }
+    if (actionId !== "toggle_mute" && actionId !== "toggle_deafen") return;
+    if (authorized()) {
+      if (actionId === "toggle_mute") {
+        voiceState.mute = !voiceState.mute;
+        sendCommand("SET_VOICE_SETTINGS", { mute: voiceState.mute });
       } else {
-        console.log("[discord-rpc] Not authenticated, using keyboard fallback");
-        sendDiscordKeystroke(0x4D);
+        voiceState.deaf = !voiceState.deaf;
+        if (voiceState.deaf) voiceState.mute = true;
+        sendCommand("SET_VOICE_SETTINGS", { deaf: voiceState.deaf });
       }
-      return;
+      changed();
+      return { handled: true, via: "rpc" };
     }
+    askAgain();
+    return { handled: false, reason: "not_authorized", auth };
+  },
 
-    if (actionId === "toggle_deafen") {
-      if (authenticated) {
-        const newDeaf = !voiceState.deaf;
-        sendCommand("SET_VOICE_SETTINGS", { deaf: newDeaf });
-        voiceState.deaf = newDeaf;
-        if (newDeaf) voiceState.mute = true;
-        console.log(`[discord-rpc] Deafen → ${newDeaf}`);
-      } else {
-        console.log("[discord-rpc] Not authenticated, using keyboard fallback");
-        sendDiscordKeystroke(0x44);
-      }
-      return;
-    }
-
-    if (actionId === "voice_status") {
-      const status = authenticated ? "Connected" : "Disconnected";
-      const user = currentUser ? currentUser.username : "—";
-      const mute = voiceState.mute ? "MUTED" : "Unmuted";
-      const deaf = voiceState.deaf ? "DEAFENED" : "Listening";
-      console.log(`[discord-rpc] Status: ${status} | ${user} | ${mute} | ${deaf}`);
-      return { authenticated, user: currentUser, mute: voiceState.mute, deaf: voiceState.deaf };
-    }
+  getStatus() {
+    return status();
   },
 
   getState() {
-    return {
-      "toggle_mute": voiceState.mute,
-      "toggle_deafen": voiceState.deaf,
-      authenticated,
-      user: currentUser?.username || null,
-    };
+    return { toggle_mute: actionState("toggle_mute"), toggle_deafen: actionState("toggle_deafen") };
+  },
+
+  __test: {
+    configure(d) {
+      deps = d || {};
+      reset();
+    },
+    auth: () => auth,
   },
 };
