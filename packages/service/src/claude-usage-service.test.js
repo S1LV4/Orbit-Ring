@@ -5,16 +5,14 @@ const https = require("https");
 const { EventEmitter } = require("events");
 const esbuild = require("esbuild");
 
-let tmp, home, getClaudeUsage, errSpy, saved;
+let tmp, home, getClaudeUsage, errSpy, homeSpy, sentAuth;
 
 beforeAll(() => {
   tmp = fs.mkdtempSync(path.join(os.tmpdir(), "orbit-claude-usage-"));
   home = path.join(tmp, "home");
   fs.mkdirSync(path.join(home, ".claude"), { recursive: true });
   fs.writeFileSync(path.join(home, ".claude", ".credentials.json"), JSON.stringify({ claudeAiOauth: { accessToken: "token-example-abc" } }));
-  saved = { HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE };
-  process.env.HOME = home;
-  process.env.USERPROFILE = home;
+  homeSpy = jest.spyOn(os, "homedir").mockReturnValue(home);
   const out = path.join(tmp, "claude-usage.cjs");
   esbuild.buildSync({
     entryPoints: [path.join(__dirname, "claude-usage.ts")],
@@ -23,14 +21,15 @@ beforeAll(() => {
   ({ getClaudeUsage } = require(out));
 });
 afterAll(() => {
-  for (const [k, v] of Object.entries(saved)) if (v === undefined) delete process.env[k]; else process.env[k] = v;
+  homeSpy.mockRestore();
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 beforeEach(() => { errSpy = jest.spyOn(console, "error").mockImplementation(() => {}); });
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => { errSpy.mockRestore(); https.request.mockRestore?.(); });
 
 function answer(status, body) {
-  jest.spyOn(https, "request").mockImplementation((_opts, cb) => {
+  jest.spyOn(https, "request").mockImplementation((opts, cb) => {
+    sentAuth = opts.headers.Authorization;
     const req = new EventEmitter();
     req.end = () => setImmediate(() => {
       const res = new EventEmitter();
@@ -47,6 +46,7 @@ function answer(status, body) {
 test("an API error is logged by status only; the response body never reaches the log", async () => {
   answer(401, JSON.stringify({ error: { message: "invalid token token-example-abc for user@example.com" } }));
   const usage = await getClaudeUsage();
+  expect(sentAuth === "Bearer token-example-abc").toBe(true);
   expect(usage.available).toBe(false);
   const logged = errSpy.mock.calls.flat().map(String).join("\n");
   expect(logged).toContain("401");
