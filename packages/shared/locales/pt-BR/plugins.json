@@ -31,5 +31,20 @@
   "authorHintStart": "criando um plugin? uma pasta com um",
   "authorHintFields": "(id, name, version, author, actions) ·",
   "authorHintEnd": "mostra o link e a foto do seu perfil",
-  "updateTo": "Atualizar para v{version}"
+  "updateTo": "Atualizar para v{version}",
+  "incompatible": "Requer um OrbitRing mais novo",
+  "permissions": {
+    "title": "Pode",
+    "commands": "executar programas e comandos",
+    "network": "conectar à internet ou a outros apps",
+    "appData": "ler dados de outros apps",
+    "credentials": "usar o login de outros apps ou guardar o próprio",
+    "none": "Nenhuma permissão especial",
+    "undeclared": "Não declarou as permissões"
+  },
+  "problem": {
+    "incompatible": "Feito para a API de plugins {requires}; este OrbitRing oferece {provides}",
+    "failed": "Falhou ao iniciar — veja o log do serviço",
+    "unresponsive": "Parou de responder e foi desligado — reinstale ou reinicie o OrbitRing"
+  }
 }

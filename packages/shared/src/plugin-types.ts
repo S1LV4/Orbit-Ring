@@ -1,3 +1,10 @@
+/** The version of the plugin API (PluginHost and the module contract) this app provides */
+export const PLUGIN_API_VERSION = "1.0.0";
+
+/** What a plugin can do, shown to the user before installing; "commands" and "network" are checked against the code */
+export const PLUGIN_PERMISSIONS = ["commands", "network", "appData", "credentials"] as const;
+export type PluginPermission = (typeof PLUGIN_PERMISSIONS)[number];
+
 export interface PluginManifest {
   id: string;
   name: string;
@@ -6,6 +13,9 @@ export interface PluginManifest {
   description: string;
   main: string;
   actions: PluginActionDef[];
+  /** Range of the plugin API the plugin was written for, e.g. "^1.0"; missing means "^1.0.0" */
+  orbitApi?: string;
+  permissions?: PluginPermission[];
 }
 
 export interface PluginActionDef {
@@ -34,6 +44,10 @@ export interface PluginCatalogEntry {
   actionCount: number;
   installedVersion: string | null;
   updateAvailable: boolean;
+  orbitApi: string;
+  compatible: boolean;
+  /** null when the plugin does not declare them */
+  permissions: PluginPermission[] | null;
 }
 
 export type PluginStatusTone = "ok" | "warn" | "error" | "neutral";
@@ -55,7 +69,16 @@ export interface PluginInfo {
   actions: PluginAction[];
   loaded: boolean;
   status?: PluginStatus;
+  /** Why an installed plugin is not running */
+  problem?: PluginProblem;
+  /** null when the plugin does not declare them */
+  permissions: PluginPermission[] | null;
 }
+
+export type PluginProblem =
+  | { kind: "incompatible"; requires: string; provides: string }
+  | { kind: "failed" }
+  | { kind: "unresponsive" };
 
 export type PluginStateStatus = "green" | "amber" | "red";
 

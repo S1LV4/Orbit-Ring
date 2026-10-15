@@ -1,10 +1,12 @@
 {
   "id": "com.orbitring.claude-usage",
   "name": "Claude Code",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "author": "@S1LV4",
   "description": "Claude Code usage (5-hour session and week, across every Windows and WSL account) and approval of permission prompts right in the ring",
   "main": "index.js",
+  "orbitApi": "^1.0",
+  "permissions": ["commands", "network", "appData", "credentials"],
   "actions": [
     {
       "id": "show_usage",

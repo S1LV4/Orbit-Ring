@@ -77,6 +77,8 @@ A plugin is a folder with a `manifest.json` and CommonJS files:
   "author": "@your-github-handle",
   "description": "What it does, in one or two sentences.",
   "main": "index.js",
+  "orbitApi": "^1.0",
+  "permissions": ["network"],
   "actions": [{ "id": "wave", "name": "Hello · Wave" }]
 }
 ```
@@ -89,6 +91,19 @@ module.exports = {
   async onAction(id) {},    // the user picked an action
 };
 ```
+
+- `orbitApi` is the plugin API range the plugin was written for (`^1.0`). An app that provides
+  another major version does not run the plugin and says why; a plugin without it is treated as
+  `^1.0.0`.
+- `permissions` tells the user, before installing, what the plugin can do: `commands` (runs
+  programs), `network` (internet or other apps), `appData` (reads other apps' data),
+  `credentials` (uses another app's sign-in or keeps its own). The tests check `commands` and
+  `network` against the modules the code requires; reviewers check the other two. They are a
+  declaration, not a sandbox: an installed plugin runs with the app's rights.
+- Plugins run together in a plugin host process, apart from the app. `onLoad` and `onAction`
+  must finish within 15 s and `onUnload` within 5 s; past that the app gives up on the call. A
+  synchronous call (`getState`, `getStatus`…) that blocks for more than 5 s, or an uncaught
+  error from the plugin, turns the plugin off until it is reinstalled.
 
 Rules that the compatibility tests enforce or that reviewers will check:
 

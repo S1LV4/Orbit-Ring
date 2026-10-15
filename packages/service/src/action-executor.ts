@@ -1,14 +1,14 @@
 import type { Action } from "@orbitring/shared";
 import { exec } from "child_process";
 import { getClaudeUsage } from "./claude-usage";
-import type { PluginLoader } from "./plugin-loader";
+type PluginActions = { executePluginAction(pluginId: string, actionId: string): Promise<unknown> };
 
 export class ActionExecutor {
   private platform = process.platform;
-  private pluginLoader: PluginLoader | null;
+  private pluginLoader: PluginActions | null;
   private onPluginStateChange: (() => void) | null = null;
 
-  constructor(pluginLoader?: PluginLoader) {
+  constructor(pluginLoader?: PluginActions) {
     this.pluginLoader = pluginLoader ?? null;
   }
 

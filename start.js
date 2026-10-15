@@ -3,10 +3,10 @@ const path = require("path");
 
 const esbuild = require("esbuild");
 esbuild.buildSync({
-  entryPoints: ["packages/service/src/index.ts"],
+  entryPoints: ["packages/service/src/index.ts", "packages/service/src/plugin-host.ts"],
   bundle: true,
   platform: "node",
-  outfile: "packages/service/dist/index.js",
+  outdir: "packages/service/dist",
   external: ["node-hid", "koffi", "sharp"],
   format: "cjs",
 });
