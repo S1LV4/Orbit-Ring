@@ -3,6 +3,8 @@ import { SYSTEM_LOCALE, createTranslator, localeFor, type MessageKey, type Param
 import { WebSocket } from "ws";
 import { spawn, ChildProcess } from "child_process";
 import * as path from "path";
+import * as os from "os";
+import { serviceSocketArgs, tokenForSender } from "./service-token";
 import { autoUpdater } from "electron-updater";
 import { startUpdater, updateMenuItem, type UpdaterControl, type UpdateStatus } from "./updater";
 
@@ -301,6 +303,7 @@ function createConfigWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       webSecurity: false,
+      preload: path.join(__dirname, "config-preload.js"),
     },
   });
 
@@ -440,7 +443,7 @@ function hideRing() {
 }
 
 function connectService() {
-  ws = new WebSocket("ws://localhost:9119");
+  ws = new WebSocket(...serviceSocketArgs(os.homedir()));
 
   ws.on("open", () => {
     console.log("[ring] Connected to service");
@@ -510,6 +513,10 @@ function connectService() {
     ws?.close();
   });
 }
+
+ipcMain.on("service-token", (event) => {
+  event.returnValue = tokenForSender(event.sender, configWindow?.webContents, os.homedir());
+});
 
 ipcMain.on("execute-action", (_event, action) => {
   console.log("[ring] execute-action received:", JSON.stringify(action).slice(0, 100));

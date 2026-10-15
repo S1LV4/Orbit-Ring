@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 
 async function open(page: Page) {
-  await page.routeWebSocket("ws://localhost:9119", (ws) => {
+  await page.routeWebSocket("ws://127.0.0.1:9119", (ws) => {
     setTimeout(() => ws.send(JSON.stringify({ type: "plugins", plugins: [] })), 30);
     ws.onMessage(() => {});
   });
@@ -34,7 +34,7 @@ for (const c of CASES) {
 async function openWithService(page: Page, savedLocale?: string) {
   const sent: any[] = [];
   let locale = savedLocale;
-  await page.routeWebSocket("ws://localhost:9119", (ws) => {
+  await page.routeWebSocket("ws://127.0.0.1:9119", (ws) => {
     setTimeout(() => {
       ws.send(JSON.stringify({ type: "plugins", plugins: [] }));
       if (locale) ws.send(JSON.stringify({ type: "locale", locale }));

@@ -148,7 +148,7 @@ An npm-workspaces monorepo:
 
 | Package | Role |
 | --- | --- |
-| `packages/service` | Node service: device detection, low-level mouse hook, config store, plugin loader. Talks over WebSocket on `localhost:9119` |
+| `packages/service` | Node service: device detection, low-level mouse hook, config store, plugin loader. Talks over WebSocket on `127.0.0.1:9119`, token required |
 | `packages/ring` | Electron app: the ring overlay (Preact), tray icon and config window |
 | `packages/ui` | The config UI (React, Vite, Tailwind) |
 | `packages/shared` | Types, the WebSocket protocol, the ring catalog and the translations (`locales/<language>/`) |

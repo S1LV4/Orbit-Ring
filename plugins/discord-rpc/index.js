@@ -120,15 +120,33 @@ function postForm(url, params) {
   });
 }
 
-function saveToken(data) {
+function writeToken(token) {
+  const sealed = host && typeof host.protectSecret === "function" ? host.protectSecret(JSON.stringify(token)) : null;
+  const file = tokenPath();
   try {
-    fs.mkdirSync(path.dirname(tokenPath()), { recursive: true });
-    fs.writeFileSync(tokenPath(), JSON.stringify({
-      access_token: data.access_token,
-      refresh_token: data.refresh_token,
-      expires_at: Date.now() + (data.expires_in || 604800) * 1000,
-    }, null, 2));
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, JSON.stringify(sealed ? { version: 2, protected: sealed } : token, null, 2), { mode: 0o600 });
   } catch (e) { console.error("[discord-rpc] Failed to save the token:", e.message); }
+}
+
+function saveToken(data) {
+  writeToken({
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    expires_at: Date.now() + (data.expires_in || 604800) * 1000,
+  });
+}
+
+function readToken() {
+  let data;
+  try { data = JSON.parse(fs.readFileSync(tokenPath(), "utf8")); } catch { return null; }
+  if (!data || typeof data !== "object") return null;
+  if (data.version !== 2) {
+    if (host && typeof host.protectSecret === "function") writeToken(data);
+    return data;
+  }
+  const clear = host && typeof host.unprotectSecret === "function" ? host.unprotectSecret(data.protected) : null;
+  try { return clear ? JSON.parse(clear) : null; } catch { return null; }
 }
 
 function forgetToken() {
@@ -143,8 +161,7 @@ async function grant(params) {
 }
 
 async function loadToken() {
-  let data;
-  try { data = JSON.parse(fs.readFileSync(tokenPath(), "utf8")); } catch { return null; }
+  const data = readToken();
   if (data && typeof data.access_token === "string" && data.expires_at > Date.now()) return data.access_token;
   if (data && typeof data.refresh_token === "string") return grant({ grant_type: "refresh_token", refresh_token: data.refresh_token });
   return null;

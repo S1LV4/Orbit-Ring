@@ -1,6 +1,8 @@
 import { spawn } from "child_process";
+import os from "os";
+import path from "path";
 import { WebSocketServer, WebSocket } from "ws";
-import { WS_PORT } from "@orbitring/shared";
+import { WS_HOST, WS_PORT, serviceUrl } from "@orbitring/shared";
 import { DeviceManager } from "./device-manager";
 import { ConfigStore } from "./config-store";
 import { ActionExecutor } from "./action-executor";
@@ -9,20 +11,32 @@ import { AppProfileSwitcher } from "./app-profile-switch";
 import { PluginLoader } from "./plugin-loader";
 import { listCatalog, installFromCatalog, removeInstalled } from "./plugin-catalog";
 import { getClaudeUsage } from "./claude-usage";
-import { makeThumbnail } from "./thumbnail";
+import { hostServices } from "./host-services";
+import { generateServiceToken, handleProtocols, makeVerifyClient, writeServiceToken } from "./service-auth";
 import type { UIMessage, ServiceMessage } from "@orbitring/shared";
 import { localeFor } from "@orbitring/shared/src/i18n";
 
 const config = new ConfigStore();
 const devices = new DeviceManager();
 const appLocale = () => localeFor(config.getLocale(), [Intl.DateTimeFormat().resolvedOptions().locale]);
-const pluginLoader = new PluginLoader({ hostServices: { getClaudeUsage, makeThumbnail }, locale: appLocale() });
+const pluginLoader = new PluginLoader({ hostServices, locale: appLocale() });
 const executor = new ActionExecutor(pluginLoader);
 const agentDetector = new AgentDetector();
 const appSwitcher = new AppProfileSwitcher();
 
 const PORT = Number(process.env.ORBIT_WS_PORT) || WS_PORT;
-const wss = new WebSocketServer({ port: PORT });
+const UI_PORT = Number(process.env.ORBIT_UI_PORT) || 9120;
+const SERVICE_TOKEN = generateServiceToken();
+const wss = new WebSocketServer({
+  host: WS_HOST,
+  port: PORT,
+  verifyClient: makeVerifyClient(SERVICE_TOKEN, UI_PORT),
+  handleProtocols,
+});
+wss.on("listening", () => {
+  writeServiceToken(path.join(os.homedir(), ".orbit"), SERVICE_TOKEN);
+  console.log(`[orbit] Service running on ${serviceUrl(PORT)}`);
+});
 
 function broadcast(msg: ServiceMessage) {
   const data = JSON.stringify(msg);
@@ -306,7 +320,6 @@ function handleMessage(msg: UIMessage, ws: WebSocket) {
   }
 }
 
-console.log(`[orbit] Service running on ws://localhost:${PORT}`);
 devices.start();
 appSwitcher.start();
 executor.setPluginStateCallback(broadcastPluginStates);

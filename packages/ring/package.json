@@ -49,6 +49,7 @@
     "files": [
       "main.js",
       "preload.js",
+      "config-preload.js",
       "src/ring.html",
       "src/ring.css",
       "src/ring-bundle.js",

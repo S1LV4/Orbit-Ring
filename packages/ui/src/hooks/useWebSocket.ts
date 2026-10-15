@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 
-const WS_URL = "ws://localhost:9119";
+import { WS_SUBPROTOCOL, serviceProtocols, serviceUrl } from "@orbitring/shared/src/protocol";
+
+declare global {
+  interface Window { orbit?: { serviceToken?: () => string } }
+}
+
+const offeredProtocols = () => {
+  const token = window.orbit?.serviceToken?.();
+  return token ? serviceProtocols(token) : [WS_SUBPROTOCOL];
+};
 
 type ConnectionState = "connecting" | "connected" | "disconnected";
 type MessageHandler = (msg: any) => void;
@@ -22,7 +31,7 @@ export function useWebSocket() {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
     setState("connecting");
-    const ws = new WebSocket(WS_URL);
+    const ws = new WebSocket(serviceUrl(), offeredProtocols());
 
     ws.onopen = () => {
       setState("connected");

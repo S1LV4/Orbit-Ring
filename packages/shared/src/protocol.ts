@@ -46,3 +46,14 @@ export type UIMessage =
   | { type: "remove_app_ring_profile"; processName: string };
 
 export const WS_PORT = 9119;
+export const WS_HOST = "127.0.0.1";
+export const WS_SUBPROTOCOL = "orbitring";
+export const SERVICE_TOKEN_FILE = "service-token";
+const TOKEN_PROTOCOL_PREFIX = "token.";
+
+export const serviceUrl = (port: number = WS_PORT) => `ws://${WS_HOST}:${port}`;
+export const serviceProtocols = (token: string) => [WS_SUBPROTOCOL, TOKEN_PROTOCOL_PREFIX + token];
+export const tokenFromProtocols = (protocols: Iterable<string>): string | null => {
+  for (const p of protocols) if (p.startsWith(TOKEN_PROTOCOL_PREFIX)) return p.slice(TOKEN_PROTOCOL_PREFIX.length);
+  return null;
+};

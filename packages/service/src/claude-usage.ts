@@ -97,7 +97,7 @@ function fetchUsageApi(token: string): Promise<UsageApiResponse | null> {
       res.on("end", () => {
         lastApiStatus = res.statusCode ?? 0;
         if (res.statusCode !== 200) {
-          console.error(`[orbit] Claude usage API returned ${res.statusCode}: ${body.slice(0, 200)}`);
+          console.error(`[orbit] Claude usage API returned ${res.statusCode}`);
           resolve(null);
           return;
         }

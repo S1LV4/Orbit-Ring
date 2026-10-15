@@ -1315,7 +1315,29 @@ function createTranslator(locale, messages = MESSAGES) {
 // src/main.ts
 var import_ws = require("ws");
 var import_child_process = require("child_process");
-var path = __toESM(require("path"));
+var path2 = __toESM(require("path"));
+var os = __toESM(require("os"));
+
+var import_fs = __toESM(require("fs"));
+var import_path = __toESM(require("path"));
+
+var WS_PORT = 9119;
+var WS_HOST = "127.0.0.1";
+var WS_SUBPROTOCOL = "orbitring";
+var SERVICE_TOKEN_FILE = "service-token";
+var TOKEN_PROTOCOL_PREFIX = "token.";
+var serviceUrl = (port = WS_PORT) => `ws://${WS_HOST}:${port}`;
+var serviceProtocols = (token) => [WS_SUBPROTOCOL, TOKEN_PROTOCOL_PREFIX + token];
+
+function readServiceToken(home) {
+  try {
+    return import_fs.default.readFileSync(import_path.default.join(home, ".orbit", SERVICE_TOKEN_FILE), "utf8").trim();
+  } catch {
+    return "";
+  }
+}
+var serviceSocketArgs = (home) => [serviceUrl(), serviceProtocols(readServiceToken(home))];
+var tokenForSender = (sender, configContents, home) => configContents && sender === configContents ? readServiceToken(home) : "";
 var import_electron_updater = require("electron-updater");
 
 // src/updater.ts
@@ -1461,7 +1483,7 @@ function createCueWindow() {
   cue.setIgnoreMouseEvents(true);
   cue.setAlwaysOnTop(true, "screen-saver");
   cue.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  cue.loadFile(path.join(__dirname, "src", "cue.html"));
+  cue.loadFile(path2.join(__dirname, "src", "cue.html"));
   cue.webContents.on("did-finish-load", () => {
     cueLoaded = true;
     updateCue();
@@ -1548,11 +1570,11 @@ ${i.id}`));
   updateCue();
 }
 var IS_PACKAGED = import_electron.app.isPackaged;
-var RESOURCES = IS_PACKAGED ? process.resourcesPath : path.join(__dirname, "..");
-var ASSETS = IS_PACKAGED ? path.join(RESOURCES, "app.asar", "assets") : path.join(__dirname, "..", "assets");
-var CONFIG_FILE = IS_PACKAGED ? path.join(RESOURCES, "ui", "index.html") : null;
+var RESOURCES = IS_PACKAGED ? process.resourcesPath : path2.join(__dirname, "..");
+var ASSETS = IS_PACKAGED ? path2.join(RESOURCES, "app.asar", "assets") : path2.join(__dirname, "..", "assets");
+var CONFIG_FILE = IS_PACKAGED ? path2.join(RESOURCES, "ui", "index.html") : null;
 var CONFIG_URL = `http://localhost:${Number(process.env.ORBIT_UI_PORT) || 9120}`;
-var SERVICE_PATH = IS_PACKAGED ? path.join(RESOURCES, "service", "index.js") : path.join(__dirname, "..", "service", "dist", "index.js");
+var SERVICE_PATH = IS_PACKAGED ? path2.join(RESOURCES, "service", "index.js") : path2.join(__dirname, "..", "service", "dist", "index.js");
 function releaseWin32State() {
   try {
     const cleanupCode = `
@@ -1568,7 +1590,7 @@ function releaseWin32State() {
     const cleanupEnv = { ...process.env };
     if (IS_PACKAGED) {
       cleanupEnv.ELECTRON_RUN_AS_NODE = "1";
-      cleanupEnv.NODE_PATH = path.join(RESOURCES, "app.asar.unpacked", "node_modules") + path.delimiter + path.join(RESOURCES, "app.asar", "node_modules");
+      cleanupEnv.NODE_PATH = path2.join(RESOURCES, "app.asar.unpacked", "node_modules") + path2.delimiter + path2.join(RESOURCES, "app.asar", "node_modules");
     }
     const cp = (0, import_child_process.spawn)(cleanupExe, ["-e", cleanupCode], {
       stdio: "ignore",
@@ -1586,8 +1608,8 @@ function startService() {
   const env = { ...process.env };
   if (IS_PACKAGED) {
     env.ELECTRON_RUN_AS_NODE = "1";
-    env.NODE_PATH = path.join(RESOURCES, "app.asar.unpacked", "node_modules") + path.delimiter + path.join(RESOURCES, "app.asar", "node_modules");
-    env.ORBIT_PLUGIN_CATALOG = path.join(RESOURCES, "plugins");
+    env.NODE_PATH = path2.join(RESOURCES, "app.asar.unpacked", "node_modules") + path2.delimiter + path2.join(RESOURCES, "app.asar", "node_modules");
+    env.ORBIT_PLUGIN_CATALOG = path2.join(RESOURCES, "plugins");
   }
   svcProcess = (0, import_child_process.spawn)(nodeExe, [SERVICE_PATH], {
     stdio: "inherit",
@@ -1614,10 +1636,10 @@ function createRingWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, "preload.js")
+      preload: path2.join(__dirname, "preload.js")
     }
   });
-  ring.loadFile(path.join(__dirname, "src", "ring.html"), { query: { v: Date.now().toString() } });
+  ring.loadFile(path2.join(__dirname, "src", "ring.html"), { query: { v: Date.now().toString() } });
   ring.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   ring.on("ready-to-show", () => {
     console.log("[ring] Window ready");
@@ -1633,7 +1655,7 @@ function createConfigWindow() {
     configWindow.focus();
     return;
   }
-  const appIcon = import_electron.nativeImage.createFromPath(path.join(ASSETS, "app-icon.png"));
+  const appIcon = import_electron.nativeImage.createFromPath(path2.join(ASSETS, "app-icon.png"));
   configWindow = new import_electron.BrowserWindow({
     width: 900,
     height: 640,
@@ -1652,7 +1674,8 @@ function createConfigWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      webSecurity: false
+      webSecurity: false,
+      preload: path2.join(__dirname, "config-preload.js")
     }
   });
   if (CONFIG_FILE) {
@@ -1714,7 +1737,7 @@ function buildTrayMenu() {
   ]));
 }
 function createTray() {
-  const icon = import_electron.nativeImage.createFromPath(path.join(ASSETS, "tray-icon.png"));
+  const icon = import_electron.nativeImage.createFromPath(path2.join(ASSETS, "tray-icon.png"));
   tray = new import_electron.Tray(icon);
   tray.setToolTip("OrbitRing");
   buildTrayMenu();
@@ -1769,7 +1792,7 @@ function hideRing() {
   }
 }
 function connectService() {
-  ws = new import_ws.WebSocket("ws://localhost:9119");
+  ws = new import_ws.WebSocket(...serviceSocketArgs(os.homedir()));
   ws.on("open", () => {
     console.log("[ring] Connected to service");
     ws?.send(JSON.stringify({ type: "get_plugins" }));
@@ -1836,6 +1859,9 @@ function connectService() {
     ws?.close();
   });
 }
+import_electron.ipcMain.on("service-token", (event) => {
+  event.returnValue = tokenForSender(event.sender, configWindow?.webContents, os.homedir());
+});
 import_electron.ipcMain.on("execute-action", (_event, action) => {
   console.log("[ring] execute-action received:", JSON.stringify(action).slice(0, 100));
   hideRing();

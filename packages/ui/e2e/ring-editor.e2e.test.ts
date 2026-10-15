@@ -42,7 +42,7 @@ async function openEditor(page: Page, opts: { echo?: boolean; ring?: Ring } = {}
   const saves: Ring[] = [];
   const ring = opts.ring ?? FIXTURE;
   let push: (ring: Ring) => void = () => {};
-  await page.routeWebSocket("ws://localhost:9119", (ws) => {
+  await page.routeWebSocket("ws://127.0.0.1:9119", (ws) => {
     push = (r) => ws.send(JSON.stringify({ type: "ring_config", ring: r }));
     setTimeout(() => {
       ws.send(JSON.stringify({ type: "ring_config", ring }));

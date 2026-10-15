@@ -25,7 +25,7 @@ const PLUGINS = [{
 
 async function openEditor(page: Page) {
   const saves: unknown[] = [];
-  await page.routeWebSocket("ws://localhost:9119", (ws) => {
+  await page.routeWebSocket("ws://127.0.0.1:9119", (ws) => {
     setTimeout(() => {
       ws.send(JSON.stringify({ type: "ring_config", ring: RING }));
       ws.send(JSON.stringify({ type: "plugins", plugins: PLUGINS }));

@@ -93,4 +93,6 @@ export interface PluginHost {
   clearAttention?(id: string): void;
   getClaudeUsage?(): Promise<unknown>;
   makeThumbnail?(input: string | Uint8Array, opts?: ThumbnailOptions): Promise<string | null>;
+  protectSecret?(secret: string): string | null;
+  unprotectSecret?(blob: string): string | null;
 }
