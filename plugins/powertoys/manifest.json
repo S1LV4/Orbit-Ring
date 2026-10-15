@@ -1,10 +1,12 @@
 {
   "id": "com.orbitring.powertoys",
   "name": "PowerToys",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "@S1LV4",
   "description": "Triggers Microsoft PowerToys utilities straight from the ring (Color Picker, Always On Top, FancyZones, Screen Ruler, Text Extractor, Peek…). Needs PowerToys installed: the plugin checks the installation and tells you when it or a module is not available.",
   "main": "index.js",
+  "orbitApi": "^1.0",
+  "permissions": ["commands", "appData"],
   "actions": [
     {
       "id": "color_picker",

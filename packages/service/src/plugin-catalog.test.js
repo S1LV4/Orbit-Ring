@@ -64,7 +64,7 @@ test("lists catalog plugins sorted by name, with author and installed state", ()
   expect(list.map((p) => p.name)).toEqual(["Alpha", "Beta", "Zeta"]);
   expect(list[0]).toEqual({
     id: "x.alpha", name: "Alpha", version: "1.3.0", author: "@S1LV4, @other", description: "",
-    actionCount: 0, installedVersion: "1.2.0", updateAvailable: true,
+    actionCount: 0, installedVersion: "1.2.0", updateAvailable: true, orbitApi: "^1.0.0", compatible: true, permissions: null,
   });
   expect(list[1]).toMatchObject({ installedVersion: "1.0.0", updateAvailable: false });
   expect(list[2]).toMatchObject({ author: "@S1LV4", actionCount: 2, installedVersion: null, updateAvailable: false });

@@ -9,6 +9,15 @@ const esbuild = require("esbuild");
 
 const CATALOG = path.resolve(__dirname, "..", "..", "..", "plugins");
 const folders = fs.readdirSync(CATALOG, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort();
+let pluginApi, apiTmp;
+beforeAll(() => {
+  apiTmp = fs.mkdtempSync(path.join(os.tmpdir(), "orbit-compat-api-"));
+  const out = path.join(apiTmp, "plugin-api.cjs");
+  esbuild.buildSync({ entryPoints: [path.join(__dirname, "plugin-api.ts")], bundle: true, platform: "node", format: "cjs", outfile: out, logLevel: "silent" });
+  pluginApi = require(out);
+});
+afterAll(() => fs.rmSync(apiTmp, { recursive: true, force: true }));
+
 const manifestOf = (folder) => JSON.parse(fs.readFileSync(path.join(CATALOG, folder, "manifest.json"), "utf8"));
 
 function jsFiles(dir, rel = "") {
@@ -43,6 +52,21 @@ describe.each(folders)("contract: %s", (folder) => {
     expect(typeof m.description === "string" && m.description.trim().length > 0).toBe(true);
     expect(typeof m.main).toBe("string");
     expect(fs.existsSync(path.join(dir, m.main))).toBe(true);
+  });
+
+  test("declares the plugin API it was written for, and this app provides it", () => {
+    expect(typeof m.orbitApi).toBe("string");
+    expect(pluginApi.apiCompatible(m.orbitApi)).toBe(true);
+  });
+
+  test("declares its permissions, and the checked ones match the modules its code requires", () => {
+    expect(Array.isArray(m.permissions)).toBe(true);
+    expect(pluginApi.readPermissions(m)).toEqual(m.permissions);
+    const modules = jsFiles(dir).flatMap((rel) =>
+      [...fs.readFileSync(path.join(dir, rel), "utf8").matchAll(/\brequire\(\s*["']([^"'.][^"']*)["']\s*\)/g)].map((x) => x[1]));
+    const needed = pluginApi.permissionsForModules(modules);
+    const declaredChecked = m.permissions.filter((p) => pluginApi.CHECKED_PERMISSIONS.includes(p));
+    expect(declaredChecked).toEqual(needed);
   });
 
   test("actions have unique ids, a name and inner-SVG icons", () => {

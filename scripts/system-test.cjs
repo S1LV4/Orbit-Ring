@@ -16,7 +16,7 @@ const manifests = fs.readdirSync(CATALOG, { withFileTypes: true })
   .filter((e) => e.isDirectory())
   .map((e) => JSON.parse(fs.readFileSync(path.join(CATALOG, e.name, "manifest.json"), "utf8")));
 
-let child = null, orphan = null, ws = null, home = null, serviceLog = "", passed = 0;
+let hostPid = 0, child = null, orphan = null, ws = null, home = null, serviceLog = "", passed = 0;
 
 function ok(label) { passed++; console.log(`  ok  ${label}`); }
 function assert(cond, label) { if (!cond) throw new Error(`FAILED: ${label}`); ok(label); }
@@ -123,6 +123,10 @@ async function main() {
   await new Promise((resolve, reject) => { ws.once("open", resolve); ws.once("error", reject); });
   await until(() => last.config_loaded && last.ring_config && last.plugins && last.plugin_states, "initial state");
   ok("a client receives config, ring settings and plugin lists on connect");
+  for (let i = 0; i < 50 && !/Plugin host started \(pid \d+\)/.test(serviceLog); i++) await new Promise((r) => setTimeout(r, 100));
+  const hostMatch = /Plugin host started \(pid (\d+)\)/.exec(serviceLog);
+  assert(hostMatch && Number(hostMatch[1]) !== child.pid, "plugins run in a plugin host process, not in the service");
+  hostPid = Number(hostMatch[1]);
   assert(Array.isArray(last.plugins.plugins) && last.plugins.plugins.length === 0, "a fresh install has no plugins (the catalog is opt-in)");
 
   console.log("settings");
@@ -166,6 +170,8 @@ async function main() {
   const entry = (id) => last.plugin_catalog.plugins.find((p) => p.id === id);
   assert(last.plugin_catalog.plugins.length === manifests.length, `catalog lists the ${manifests.length} plugins of plugins/`);
   assert(last.plugin_catalog.plugins.every((p) => p.installedVersion === null), "listing the catalog installs nothing");
+  assert(last.plugin_catalog.plugins.every((p) => p.compatible === true && typeof p.orbitApi === "string"), "every catalog plugin is compatible with this app's plugin API");
+  assert(last.plugin_catalog.plugins.every((p) => Array.isArray(p.permissions)), "every catalog plugin shows its permissions before install");
   assert(!fs.existsSync(pluginsDir) || fs.readdirSync(pluginsDir).length === 0, "plugins folder is still empty");
 
   console.log("install");
@@ -197,6 +203,11 @@ async function main() {
   await until(() => errors.length > before, "error for unknown plugin");
   ok("an unknown plugin id is refused with an error");
   assert(exited === null, "service is still running at the end");
+  const alive = (pid) => { try { process.kill(pid, 0); return true; } catch { return false; } };
+  assert(alive(hostPid), "the plugin host is still running at the end");
+  child.kill();
+  for (let i = 0; i < 50 && alive(hostPid); i++) await new Promise((r) => setTimeout(r, 200));
+  assert(!alive(hostPid), "the plugin host goes away with the service");
 
   console.log("orphan protection");
   const parent = spawn(process.execPath, ["-e", "setTimeout(() => {}, 60000)"], { stdio: "ignore", windowsHide: true });

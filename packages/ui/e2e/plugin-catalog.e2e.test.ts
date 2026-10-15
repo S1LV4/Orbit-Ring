@@ -13,10 +13,11 @@ const CATALOG = [
   { id: "x.steam", name: "Steam", version: "1.0.0", author: "@S1LV4", description: "Biblioteca e jogos", actionCount: 18, installedVersion: "1.0.0", updateAvailable: false },
 ];
 
-async function openPlugins(page: Page) {
+async function openPlugins(page: Page, { installed = INSTALLED, catalog = CATALOG }: { installed?: any[]; catalog?: any[] } = {}) {
   const sent: any[] = [];
+  const CATALOG = catalog;
   await page.routeWebSocket("ws://127.0.0.1:9119", (ws) => {
-    setTimeout(() => ws.send(JSON.stringify({ type: "plugins", plugins: INSTALLED })), 30);
+    setTimeout(() => ws.send(JSON.stringify({ type: "plugins", plugins: installed })), 30);
     ws.onMessage((raw) => {
       let m: any;
       try { m = JSON.parse(String(raw)); } catch { return; }
@@ -116,4 +117,61 @@ test("installed list: a newer catalog version is offered right on the installed 
   await expect(page.locator('[data-plugin-id="x.steam"]').getByRole("button", { name: /Atualizar/ })).toHaveCount(0);
   await power.getByRole("button", { name: "Atualizar para v1.1.0" }).click();
   expect(sent.filter((m) => m.type === "install_plugin")).toEqual([{ type: "install_plugin", pluginId: "x.power" }]);
+});
+
+const entry = (over: Record<string, unknown>) => ({
+  id: "x.p", name: "P", version: "1.0.0", author: "@S1LV4", description: "d", actionCount: 1,
+  installedVersion: null, updateAvailable: false, orbitApi: "^1.0", compatible: true, permissions: [], ...over,
+});
+
+test("the catalog tells what a plugin can do before it is installed", async ({ page }) => {
+  await openPlugins(page, { catalog: [
+    entry({ id: "x.usage", name: "Uso", permissions: ["commands", "network", "appData", "credentials"] }),
+    entry({ id: "x.quiet", name: "Quieto", permissions: [] }),
+    entry({ id: "x.old", name: "Antigo", permissions: null }),
+  ] });
+  const perms = card(page, "x.usage").getByTestId("plugin-permissions");
+  await expect(perms.locator("[data-permission]")).toHaveText([
+    "executar programas e comandos", "conectar à internet ou a outros apps", "ler dados de outros apps",
+    "usar o login de outros apps ou guardar o próprio",
+  ]);
+  await expect(perms).toContainText("Pode");
+  await expect(card(page, "x.quiet").getByTestId("plugin-permissions")).toHaveText("Nenhuma permissão especial");
+  const old = card(page, "x.old").getByTestId("plugin-permissions");
+  await expect(old).toHaveText("Não declarou as permissões");
+  await expect(old).toHaveAttribute("data-undeclared", "true");
+  await shot(page, "plugins-permissions");
+});
+
+test("a plugin written for a newer OrbitRing cannot be installed, and says why", async ({ page }) => {
+  const sent = await openPlugins(page, { catalog: [entry({ id: "x.future", name: "Futuro", orbitApi: "^2.0", compatible: false })] });
+  const c = card(page, "x.future");
+  await expect(c.getByRole("button", { name: "Instalar" })).toHaveCount(0);
+  await expect(c.getByTestId("plugin-incompatible")).toHaveText("Requer um OrbitRing mais novo");
+  await expect(c.getByTestId("plugin-incompatible")).toHaveAttribute("title", "Feito para a API de plugins ^2.0; este OrbitRing oferece 1.0.0");
+  expect(sent.filter((m) => m.type === "install_plugin")).toEqual([]);
+});
+
+test("an installed plugin that is not running says why, and shows its permissions in the details", async ({ page }) => {
+  await openPlugins(page, { catalog: [], installed: [
+    { id: "x.future", name: "Futuro", version: "2.0.0", author: "@S1LV4", description: "d", loaded: false, actions: [],
+      problem: { kind: "incompatible", requires: "^2.0", provides: "1.0.0" }, permissions: ["network"] },
+    { id: "x.broken", name: "Quebrado", version: "1.0.0", author: "@S1LV4", description: "d", loaded: false, actions: [],
+      problem: { kind: "failed" }, permissions: null },
+    { id: "x.stuck", name: "Travado", version: "1.0.0", author: "@S1LV4", description: "d", loaded: false, actions: [],
+      problem: { kind: "unresponsive" }, permissions: [] },
+  ] });
+  await page.getByRole("tab", { name: /Instalados/ }).click();
+  const future = page.locator(`[data-testid="installed-plugin"][data-plugin-id="x.future"]`);
+  await expect(future.getByTestId("plugin-problem")).toHaveText("Feito para a API de plugins ^2.0; este OrbitRing oferece 1.0.0");
+  await expect(future).toContainText("erro");
+  const broken = page.locator(`[data-testid="installed-plugin"][data-plugin-id="x.broken"]`);
+  await expect(broken.getByTestId("plugin-problem")).toHaveText("Falhou ao iniciar — veja o log do serviço");
+  const stuck = page.locator(`[data-testid="installed-plugin"][data-plugin-id="x.stuck"]`);
+  await expect(stuck.getByTestId("plugin-problem")).toHaveText("Parou de responder e foi desligado — reinstale ou reinicie o OrbitRing");
+
+  await future.getByRole("button", { name: /ações|ação/ }).click();
+  const details = page.getByTestId("plugin-details");
+  await expect(details.getByTestId("plugin-permissions").locator("[data-permission]")).toHaveText(["conectar à internet ou a outros apps"]);
+  await expect(details.getByRole("button", { name: "Desinstalar" })).toBeVisible();
 });

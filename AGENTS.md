@@ -141,7 +141,7 @@ Tests run on developers' real machines, next to their real accounts.
   update. Installing is a user action (`install_plugin`); the installed copy lives in
   `~/.orbit/plugins/<folder>`.
 - A plugin is `manifest.json` (`id`, `name`, `version` as `x.y.z`, `author`, `description`,
-  `main`, `actions`) plus plain CommonJS files. `author` is a GitHub handle such as `@S1LV4`
+  `main`, `orbitApi`, `permissions`, `actions`) plus plain CommonJS files. `author` is a GitHub handle such as `@S1LV4`
   (several: comma-separated); the UI links the profile.
 - An installed plugin has **no `node_modules`**: it may `require` only Node built-ins and its own
   files. Capabilities that need a native module (e.g. thumbnails) come from the `host` object
@@ -154,6 +154,21 @@ Tests run on developers' real machines, next to their real accounts.
   `getStatus()` → `{ text, tone: "ok" | "warn" | "error" | "neutral", action?: { id, label } }`.
   The action is a button on the installed card that calls `onAction(id)`. The loader re-announces
   the plugin list when the status changes after `host.stateChanged()`.
+- `orbitApi` is a caret range against `PLUGIN_API_VERSION` (`plugin-types.ts`), the version of
+  `PluginHost` and the module contract — not of the WebSocket protocol. A breaking change to
+  either bumps its major; an added optional capability bumps its minor. An incompatible plugin is
+  never `require`d: it is listed with `problem` and can be removed.
+- `permissions` (`commands`, `network`, `appData`, `credentials`) is a declaration shown before
+  install, not enforcement. `plugins-compat.test.js` fails when `commands`/`network` do not match
+  the modules the code requires; review checks `appData`/`credentials`.
+- Plugins run in one **plugin host** process (`plugin-host.ts`, forked by the service with
+  `--max-old-space-size=512`); the service talks to it through `PluginHostClient`, which mirrors
+  the plugin list, states and attention from snapshots. The host exits with the service.
+- The loader bounds `onLoad`/`onAction` (15 s) and `onUnload` (5 s). A synchronous call into a
+  plugin that blocks the host for more than 5 s, or an uncaught error whose stack points at a
+  plugin, turns that plugin off (`problem: { kind: "unresponsive" }`) and restarts the host with
+  the others; uninstalling or reinstalling clears it. More than 5 restarts in a minute gives up.
+- The host is a fault boundary, not a sandbox: every plugin in it has the app's rights.
 - Changing a plugin's behaviour bumps its `version`, so installed copies are offered the update.
 - Every plugin has a `README.md` and its own test suite in `packages/service/src/`. The
   compatibility suite and the system test load every catalog plugin automatically; a new plugin

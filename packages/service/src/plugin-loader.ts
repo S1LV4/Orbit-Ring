@@ -1,10 +1,11 @@
 import { readManifestText, type ManifestText } from "./plugin-text";
+import { PLUGIN_API_VERSION, apiCompatible, readPermissions, requiredApi } from "./plugin-api";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import type {
   PluginManifest, PluginAction, PluginActionDef, PluginInfo, PluginHost,
-  PluginActionState, PluginActionStateObject, PluginStates, AttentionItem, PluginStatus,
+  PluginActionState, PluginActionStateObject, PluginStates, AttentionItem, PluginStatus, PluginProblem,
 } from "@orbitring/shared";
 
 type LoaderHostKeys = "stateChanged" | "actionsChanged" | "attention" | "clearAttention";
@@ -108,6 +109,12 @@ interface LoadedPlugin {
   imageWarned: Set<string>;
 }
 
+interface RejectedPlugin {
+  manifest: PluginManifest;
+  dir: string;
+  problem: PluginProblem;
+}
+
 function imageWarner(pluginId: string, warned: Set<string>, actionId: string): (reason: string) => void {
   return (reason) => {
     if (warned.has(actionId)) return;
@@ -146,10 +153,30 @@ function sanitizeDynamicActions(
 
 const PLUGINS_DIR = path.join(os.homedir(), ".orbit", "plugins");
 
+const DEFAULT_TIMEOUTS = { load: 15_000, action: 15_000, unload: 5_000 };
+type Timeouts = typeof DEFAULT_TIMEOUTS;
+
+const TIMED_OUT = Symbol("timed out");
+
+function within<T>(work: () => T | Promise<T>, ms: number): Promise<T | typeof TIMED_OUT> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => resolve(TIMED_OUT), ms);
+    Promise.resolve().then(work).then(
+      (v) => { clearTimeout(timer); resolve(v); },
+      (e) => { clearTimeout(timer); reject(e); },
+    );
+  });
+}
+
 export interface PluginLoaderOptions {
   pluginsDir?: string;
   locale?: string;
   hostServices?: Omit<PluginHost, LoaderHostKeys>;
+  timeouts?: Partial<Timeouts>;
+  /** Called right before and right after every synchronous call into a plugin */
+  onPluginCall?: (pluginId: string, method: string, start: boolean) => void;
+  /** Plugins that stopped responding earlier: listed, never run */
+  unresponsive?: string[];
 }
 
 const STATUSES = new Set(["green", "amber", "red"]);
@@ -182,7 +209,12 @@ function toPluginAction(a: PluginActionDef, pluginId: string): PluginAction {
 }
 
 export class PluginLoader {
+  static readonly DEFAULT_TIMEOUTS: Timeouts = DEFAULT_TIMEOUTS;
+  private timeouts: Timeouts;
+  private onPluginCall: PluginLoaderOptions["onPluginCall"];
+  private unresponsive: Set<string>;
   private plugins = new Map<string, LoadedPlugin>();
+  private rejected = new Map<string, RejectedPlugin>();
   private pluginsDir: string;
   private hostServices: Omit<PluginHost, LoaderHostKeys>;
   private stateListener: ((pluginId: string) => void) | null = null;
@@ -196,6 +228,29 @@ export class PluginLoader {
     this.pluginsDir = opts.pluginsDir ?? PLUGINS_DIR;
     this.locale = opts.locale ?? "en-US";
     this.hostServices = opts.hostServices ?? {};
+    this.timeouts = { ...DEFAULT_TIMEOUTS, ...opts.timeouts };
+    this.onPluginCall = opts.onPluginCall;
+    this.unresponsive = new Set(opts.unresponsive ?? []);
+  }
+
+  private track<T>(pluginId: string, method: string, fn: () => T): T {
+    this.onPluginCall?.(pluginId, method, true);
+    try {
+      return fn();
+    } finally {
+      this.onPluginCall?.(pluginId, method, false);
+    }
+  }
+
+  private async stop(pluginId: string, mod: PluginModule): Promise<void> {
+    if (typeof mod.onUnload !== "function") return;
+    try {
+      if (await within(() => this.track(pluginId, "onUnload", () => mod.onUnload!()), this.timeouts.unload) === TIMED_OUT) {
+        console.error(`[orbit] Plugin "${pluginId}" onUnload() did not finish within ${this.timeouts.unload} ms — removed anyway`);
+      }
+    } catch (e) {
+      console.error(`[orbit] Plugin "${pluginId}" onUnload() error:`, e);
+    }
   }
 
   onStateChanged(cb: (pluginId: string) => void): void {
@@ -212,7 +267,7 @@ export class PluginLoader {
       try {
         const manifestIds = new Set((plugin.manifest.actions || []).map((a) => a.id));
         next = sanitizeDynamicActions(
-          plugin.module.getActions(), manifestIds, { ...plugin.manifestImages },
+          this.track(plugin.manifest.id, "getActions", () => plugin.module.getActions!()), manifestIds, { ...plugin.manifestImages },
           (actionId) => imageWarner(plugin.manifest.id, plugin.imageWarned, actionId),
         );
       } catch (e) {
@@ -237,7 +292,7 @@ export class PluginLoader {
 
   private statusOf(plugin: LoadedPlugin): PluginStatus | undefined {
     if (typeof plugin.module.getStatus !== "function") return undefined;
-    try { return sanitizeStatus(plugin.module.getStatus()); } catch (e) {
+    try { return sanitizeStatus(this.track(plugin.manifest.id, "getStatus", () => plugin.module.getStatus!())); } catch (e) {
       console.error(`[orbit] Plugin "${plugin.manifest.id}" getStatus() error:`, e);
       return undefined;
     }
@@ -253,7 +308,7 @@ export class PluginLoader {
     for (const [pluginId, plugin] of this.plugins) {
       plugin.text = readManifestText(plugin.dir, locale);
       try {
-        if (typeof plugin.module.onLocaleChanged === "function") plugin.module.onLocaleChanged(locale);
+        if (typeof plugin.module.onLocaleChanged === "function") this.track(pluginId, "onLocaleChanged", () => plugin.module.onLocaleChanged!(locale));
       } catch (e) {
         console.error(`[orbit] Plugin "${pluginId}" onLocaleChanged() error:`, e);
       }
@@ -353,23 +408,35 @@ export class PluginLoader {
   }
 
   getPluginDir(pluginId: string): string | null {
-    return this.plugins.get(pluginId)?.dir ?? null;
+    return this.plugins.get(pluginId)?.dir ?? this.rejected.get(pluginId)?.dir ?? null;
   }
 
-  async unload(pluginId: string): Promise<boolean> {
-    const plugin = this.plugins.get(pluginId);
-    if (!plugin) return false;
-    try {
-      if (typeof plugin.module.onUnload === "function") await plugin.module.onUnload();
-    } catch (e) {
-      console.error(`[orbit] Plugin "${pluginId}" onUnload() error:`, e);
-    }
-    this.plugins.delete(pluginId);
-    this.clearAttention(pluginId);
-    const prefix = (path.resolve(plugin.dir) + path.sep).toLowerCase();
+  private forgetModules(dir: string): void {
+    const prefix = (path.resolve(dir) + path.sep).toLowerCase();
     for (const key of Object.keys(require.cache)) {
       if (key.toLowerCase().startsWith(prefix)) delete require.cache[key];
     }
+  }
+
+  private reject(manifest: PluginManifest, dir: string, problem: PluginProblem): void {
+    this.rejected.set(manifest.id, { manifest, dir, problem });
+    this.forgetModules(dir);
+  }
+
+  async unload(pluginId: string): Promise<boolean> {
+    this.unresponsive.delete(pluginId);
+    const rejected = this.rejected.get(pluginId);
+    if (rejected) {
+      this.rejected.delete(pluginId);
+      this.forgetModules(rejected.dir);
+      return true;
+    }
+    const plugin = this.plugins.get(pluginId);
+    if (!plugin) return false;
+    await this.stop(pluginId, plugin.module);
+    this.plugins.delete(pluginId);
+    this.clearAttention(pluginId);
+    this.forgetModules(plugin.dir);
     console.log(`[orbit] Unloaded plugin: ${plugin.manifest.name}`);
     return true;
   }
@@ -396,8 +463,13 @@ export class PluginLoader {
       return;
     }
 
-    if (this.plugins.has(manifest.id)) {
+    if (this.plugins.has(manifest.id) || this.rejected.has(manifest.id)) {
       console.warn(`[orbit] Duplicate plugin id "${manifest.id}", skipping ${path.basename(dir)}`);
+      return;
+    }
+
+    if (this.unresponsive.has(manifest.id)) {
+      this.reject(manifest, dir, { kind: "unresponsive" });
       return;
     }
 
@@ -407,12 +479,20 @@ export class PluginLoader {
       return;
     }
 
+    const range = requiredApi(manifest);
+    if (!apiCompatible(range, PLUGIN_API_VERSION)) {
+      console.warn(`[orbit] Plugin "${manifest.name}" needs plugin API ${range}; this app provides ${PLUGIN_API_VERSION} — not loaded`);
+      this.reject(manifest, dir, { kind: "incompatible", requires: range, provides: PLUGIN_API_VERSION });
+      return;
+    }
+
     let mod: PluginModule;
     try {
       delete require.cache[require.resolve(mainPath)];
-      mod = require(mainPath);
+      mod = this.track(manifest.id, "require", () => require(mainPath));
     } catch (e) {
       console.error(`[orbit] Plugin "${manifest.name}": failed to require main file:`, e);
+      this.reject(manifest, dir, { kind: "failed" });
       return;
     }
 
@@ -454,12 +534,17 @@ export class PluginLoader {
       },
     };
     try {
-      if (typeof mod.onLoad === "function") {
-        await mod.onLoad(host);
+      if (typeof mod.onLoad === "function" && await within(() => this.track(pluginId, "onLoad", () => mod.onLoad!(host)), this.timeouts.load) === TIMED_OUT) {
+        console.error(`[orbit] Plugin "${manifest.name}": onLoad() did not finish within ${this.timeouts.load} ms — not loaded`);
+        this.clearAttention(pluginId);
+        await this.stop(pluginId, mod);
+        this.reject(manifest, dir, { kind: "failed" });
+        return;
       }
     } catch (e) {
       console.error(`[orbit] Plugin "${manifest.name}": onLoad() error:`, e);
       this.clearAttention(pluginId);
+      this.reject(manifest, dir, { kind: "failed" });
       return;
     }
 
@@ -503,10 +588,25 @@ export class PluginLoader {
         description: plugin.text.description ?? plugin.manifest.description,
         actions,
         loaded: true,
+        permissions: readPermissions(plugin.manifest),
       });
       const status = this.statusOf(plugin);
       if (status) result[result.length - 1].status = status;
       plugin.lastStatus = JSON.stringify(status ?? null);
+    }
+    for (const { manifest, dir, problem } of this.rejected.values()) {
+      const text = readManifestText(dir, this.locale);
+      result.push({
+        id: manifest.id,
+        name: text.name ?? manifest.name,
+        version: manifest.version,
+        author: manifest.author,
+        description: text.description ?? manifest.description,
+        actions: [],
+        loaded: false,
+        problem,
+        permissions: readPermissions(manifest),
+      });
     }
     return result;
   }
@@ -526,7 +626,10 @@ export class PluginLoader {
       return { handled: false, unavailable: true };
     }
     try {
-      return await plugin.module.onAction(actionId);
+      const result = await within(() => this.track(pluginId, "onAction", () => plugin.module.onAction!(actionId)), this.timeouts.action);
+      if (result !== TIMED_OUT) return result;
+      console.error(`[orbit] Plugin "${pluginId}" action "${actionId}" did not finish within ${this.timeouts.action} ms`);
+      return { handled: false, timedOut: true };
     } catch (e) {
       console.error(`[orbit] Plugin "${pluginId}" action "${actionId}" error:`, e);
     }
@@ -537,7 +640,7 @@ export class PluginLoader {
     for (const [pluginId, plugin] of this.plugins) {
       if (typeof plugin.module.getState !== "function") continue;
       try {
-        const raw = plugin.module.getState() || {};
+        const raw = this.track(pluginId, "getState", () => plugin.module.getState!()) || {};
         const out: Record<string, PluginActionState> = {};
         for (const action of this.actionsOf(plugin)) {
           const st = sanitizeState(raw[action.id]);
@@ -553,16 +656,9 @@ export class PluginLoader {
   }
 
   async unloadAll(): Promise<void> {
-    for (const [pluginId, plugin] of this.plugins) {
-      try {
-        if (typeof plugin.module.onUnload === "function") {
-          await plugin.module.onUnload();
-        }
-      } catch (e) {
-        console.error(`[orbit] Plugin "${pluginId}" onUnload() error:`, e);
-      }
-    }
+    for (const [pluginId, plugin] of this.plugins) await this.stop(pluginId, plugin.module);
     this.plugins.clear();
+    this.rejected.clear();
     if (this.attention.size) {
       for (const e of this.attention.values()) clearTimeout(e.timer);
       this.attention.clear();

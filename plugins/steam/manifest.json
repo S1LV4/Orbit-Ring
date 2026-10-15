@@ -1,10 +1,12 @@
 {
   "id": "com.orbitring.steam",
   "name": "Steam",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "@S1LV4",
   "description": "Shows the running game, the active download and recently played games (each with its cover) in the ring, and opens the library, store, friends and Big Picture. Needs Steam installed; reads only Steam's registry entries and local files, with no login and no Web API.",
   "main": "index.js",
+  "orbitApi": "^1.0",
+  "permissions": ["commands", "network", "appData"],
   "actions": [
     {
       "id": "playing",

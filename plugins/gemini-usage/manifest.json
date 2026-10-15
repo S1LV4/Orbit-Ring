@@ -1,10 +1,12 @@
 {
   "id": "com.orbitring.gemini",
   "name": "Gemini CLI",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "@S1LV4",
   "description": "Gemini CLI quota (Pro and Flash models, across every Windows and WSL account) right in the ring",
   "main": "index.js",
+  "orbitApi": "^1.0",
+  "permissions": ["commands", "network", "appData", "credentials"],
   "actions": [
     {
       "id": "pro",

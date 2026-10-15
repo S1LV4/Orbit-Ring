@@ -31,5 +31,20 @@
   "authorHintStart": "writing a plugin? a folder with a",
   "authorHintFields": "(id, name, version, author, actions) ·",
   "authorHintEnd": "shows your profile link and picture",
-  "updateTo": "Update to v{version}"
+  "updateTo": "Update to v{version}",
+  "incompatible": "Needs a newer OrbitRing",
+  "permissions": {
+    "title": "Can",
+    "commands": "run programs and commands",
+    "network": "connect to the internet or other apps",
+    "appData": "read other apps’ data",
+    "credentials": "use other apps’ sign-in or keep its own",
+    "none": "No special permissions",
+    "undeclared": "Did not declare its permissions"
+  },
+  "problem": {
+    "incompatible": "Written for plugin API {requires}; this OrbitRing provides {provides}",
+    "failed": "Failed to start — see the service log",
+    "unresponsive": "Stopped responding and was turned off — reinstall it or restart OrbitRing"
+  }
 }

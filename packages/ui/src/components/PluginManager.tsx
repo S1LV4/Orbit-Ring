@@ -10,7 +10,13 @@ import {
   Download,
   RefreshCw,
   X,
+  Terminal,
+  Globe,
+  FolderSearch,
+  KeyRound,
+  AlertTriangle,
 } from "lucide-react";
+import { PLUGIN_API_VERSION, type PluginPermission, type PluginProblem } from "@orbitring/shared/src/plugin-types";
 import { t } from "../i18n";
 
 interface PluginAction {
@@ -29,6 +35,8 @@ export interface PluginInfo {
   actions: PluginAction[];
   loaded: boolean;
   status?: { text: string; tone: "ok" | "warn" | "error" | "neutral"; action?: { id: string; label: string } };
+  problem?: PluginProblem;
+  permissions?: PluginPermission[] | null;
 }
 
 export interface CatalogPlugin {
@@ -40,6 +48,9 @@ export interface CatalogPlugin {
   actionCount: number;
   installedVersion: string | null;
   updateAvailable: boolean;
+  orbitApi?: string;
+  compatible?: boolean;
+  permissions?: PluginPermission[] | null;
 }
 
 interface PluginManagerProps {
@@ -76,6 +87,49 @@ function CardBody({ name, version, description, author }: { name: string; versio
   );
 }
 
+const PERMISSION_ICON: Record<PluginPermission, typeof Terminal> = {
+  commands: Terminal,
+  network: Globe,
+  appData: FolderSearch,
+  credentials: KeyRound,
+};
+
+function Permissions({ permissions }: { permissions?: PluginPermission[] | null }) {
+  const base = "flex flex-wrap items-center gap-1 mt-2 text-[10px]";
+  if (!permissions) {
+    return (
+      <p data-testid="plugin-permissions" data-undeclared="true" className={base} style={{ color: TONE_COLOR.warn }}>
+        <AlertTriangle className="w-3 h-3" />
+        {t("plugins.permissions.undeclared")}
+      </p>
+    );
+  }
+  if (permissions.length === 0) {
+    return <p data-testid="plugin-permissions" className={`${base} text-orbit-text-muted`}>{t("plugins.permissions.none")}</p>;
+  }
+  return (
+    <p data-testid="plugin-permissions" className={`${base} text-orbit-text-muted`}>
+      <span className="mr-0.5">{t("plugins.permissions.title")}</span>
+      {permissions.map((p) => {
+        const Icon = PERMISSION_ICON[p];
+        return (
+          <span key={p} className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#1A1A1E] border border-orbit-border text-orbit-text-dim">
+            <Icon className="w-2.5 h-2.5 shrink-0" />
+            <span data-permission={p}>{t.dyn(`plugins.permissions.${p}`)}</span>
+          </span>
+        );
+      })}
+    </p>
+  );
+}
+
+const problemText = (problem: PluginProblem) =>
+  problem.kind === "incompatible"
+    ? t("plugins.problem.incompatible", { requires: problem.requires, provides: problem.provides })
+    : problem.kind === "unresponsive"
+      ? t("plugins.problem.unresponsive")
+      : t("plugins.problem.failed");
+
 function CatalogCard({ plugin, onInstall }: { plugin: CatalogPlugin; onInstall?: (id: string) => void }) {
   const [busyFor, setBusyFor] = useState<string | null | undefined>(undefined);
   const busy = busyFor !== undefined && busyFor === plugin.installedVersion;
@@ -88,9 +142,20 @@ function CatalogCard({ plugin, onInstall }: { plugin: CatalogPlugin; onInstall?:
   return (
     <div className="orbit-card p-3 flex flex-col min-w-0" data-testid="catalog-plugin" data-plugin-id={plugin.id}>
       <CardBody name={plugin.name} version={plugin.version} description={plugin.description} author={plugin.author} />
-      <div className="flex items-center justify-between gap-2 mt-2.5 pt-2.5 border-t border-orbit-border">
+      <Permissions permissions={plugin.permissions ?? null} />
+      <div className="flex-1 min-h-2.5" />
+      <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-orbit-border">
         <span className="text-[10px] font-mono text-[#555]">{actionsLabel(plugin.actionCount)}</span>
-        {installed && !plugin.updateAvailable ? (
+        {plugin.compatible === false && !(installed && !plugin.updateAvailable) ? (
+          <span
+            data-testid="plugin-incompatible"
+            title={problemText({ kind: "incompatible", requires: plugin.orbitApi ?? "", provides: PLUGIN_API_VERSION })}
+            className="flex items-center gap-1 text-[10px] font-mono"
+            style={{ color: TONE_COLOR.warn }}
+          >
+            {t("plugins.incompatible")}
+          </span>
+        ) : installed && !plugin.updateAvailable ? (
           <span className="flex items-center gap-1 text-[10px] font-mono" style={{ color: "var(--accent)" }}>
             <CheckCircle className="w-3 h-3" /> {t("plugins.installedBadge")}
           </span>
@@ -121,6 +186,7 @@ function InstalledCard({
   onRunAction?: (pluginId: string, actionId: string) => void;
 }) {
   const status = plugin.status;
+  const problem = plugin.problem;
   return (
     <div
       className="orbit-card p-3 flex flex-col min-w-0 transition-colors"
@@ -129,8 +195,13 @@ function InstalledCard({
       data-plugin-id={plugin.id}
     >
       <CardBody name={plugin.name} version={plugin.version} description={plugin.description} author={plugin.author} />
-      {(status || update) && (
+      {(status || update || problem) && (
         <div className="flex flex-wrap items-center gap-2 mt-2">
+          {problem && (
+            <span data-testid="plugin-problem" className="text-[11px]" style={{ color: TONE_COLOR.error }}>
+              {problemText(problem)}
+            </span>
+          )}
           {status && (
             <span
               data-testid="plugin-status"
@@ -240,6 +311,7 @@ function PluginDetails({
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
+      <Permissions permissions={plugin.permissions ?? null} />
 
       {plugin.actions.length > 0 && (
         <div className="grid gap-1 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 mt-2.5">

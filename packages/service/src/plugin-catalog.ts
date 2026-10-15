@@ -1,7 +1,8 @@
 import { readManifestText } from "./plugin-text";
+import { apiCompatible, readPermissions, requiredApi } from "./plugin-api";
 import * as fs from "fs";
 import * as path from "path";
-import type { PluginCatalogEntry } from "@orbitring/shared";
+import type { PluginCatalogEntry, PluginPermission } from "@orbitring/shared";
 
 export function compareVersions(a: unknown, b: unknown): number {
   const parts = (v: unknown) => String(v ?? "").split(".").map((p) => parseInt(p, 10) || 0);
@@ -21,6 +22,8 @@ interface FolderManifest {
   author: string;
   description: string;
   actionCount: number;
+  orbitApi: string;
+  permissions: PluginPermission[] | null;
 }
 
 const text = (v: unknown) => (typeof v === "string" ? v : "");
@@ -44,6 +47,8 @@ function readFolders(root: string | undefined): FolderManifest[] {
         dir, id: m.id, name: text(m.name) || m.id, version: text(m.version) || "0",
         author: text(m.author), description: text(m.description),
         actionCount: Array.isArray(m.actions) ? m.actions.length : 0,
+        orbitApi: requiredApi(m),
+        permissions: readPermissions(m),
       });
     } catch {  }
   }
@@ -59,6 +64,7 @@ export function listCatalog(catalogDir: string | undefined, pluginsDir: string, 
       return {
         ...p, name: text.name ?? p.name, description: text.description ?? p.description, installedVersion,
         updateAvailable: installedVersion !== null && compareVersions(p.version, installedVersion) > 0,
+        compatible: apiCompatible(p.orbitApi),
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -67,6 +73,7 @@ export function listCatalog(catalogDir: string | undefined, pluginsDir: string, 
 export function installFromCatalog(catalogDir: string | undefined, pluginId: string, pluginsDir: string): string {
   const source = readFolders(catalogDir).find((p) => p.id === pluginId);
   if (!source) throw new Error(`Plugin "${pluginId}" is not in the catalog`);
+  if (!apiCompatible(source.orbitApi)) throw new Error(`Plugin "${pluginId}" needs plugin API ${source.orbitApi}, which this app does not provide`);
   const existing = readFolders(pluginsDir).find((p) => p.id === pluginId);
   const target = existing ? existing.dir : path.join(pluginsDir, path.basename(source.dir));
   if (!existing && fs.existsSync(target)) {
