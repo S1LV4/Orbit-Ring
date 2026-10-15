@@ -14,7 +14,7 @@ describe("ring main process build", () => {
   });
   afterAll(() => fs.rmSync(outdir, { recursive: true, force: true }));
 
-  for (const file of ["main.js", "preload.js"]) {
+  for (const file of ["main.js", "preload.js", "config-preload.js"]) {
     test(`every require in ${file} resolves at run time`, () => {
       const code = fs.readFileSync(path.join(outdir, file), "utf8");
       const ids = [...code.matchAll(/require\(["']([^"']+)["']\)/g)].map((m) => m[1]);
@@ -31,4 +31,24 @@ describe("ring main process build", () => {
     expect(code).not.toMatch(/require\(["']@orbitring\/shared/);
     expect(code).toContain("createTranslator");
   });
+});
+
+describe("config window preload", () => {
+  test("it exposes only the service token to the config window", () => {
+    const outdir = fs.mkdtempSync(path.join(os.tmpdir(), "orbit-config-preload-"));
+    try {
+      require(path.join(RING_DIR, "build-main.cjs")).buildMain(outdir);
+      const code = fs.readFileSync(path.join(outdir, "config-preload.js"), "utf8");
+      expect(code).toMatch(/exposeInMainWorld\(\s*["']orbit["']/);
+      expect(code).toContain("service-token");
+      expect(code).not.toMatch(/executeAction|close-ring/);
+    } finally {
+      fs.rmSync(outdir, { recursive: true, force: true });
+    }
+  });
+});
+
+test("the packaged app ships the config window preload", () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(RING_DIR, "package.json"), "utf8"));
+  expect(pkg.build.files).toContain("config-preload.js");
 });

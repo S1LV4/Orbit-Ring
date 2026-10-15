@@ -52,8 +52,13 @@ async function settle() { for (let i = 0; i < 15; i++) await flush(); }
 
 let tmp, discord, host, logSpy, errSpy, keystrokes, posts;
 
-function start({ running = true, token = null, post } = {}) {
-  tmp = fs.mkdtempSync(path.join(os.tmpdir(), "orbit-discord-"));
+const fakeProtection = {
+  protectSecret: (s) => "P1" + Buffer.from(s).toString("base64").split("").reverse().join(""),
+  unprotectSecret: (b) => (typeof b === "string" && b.startsWith("P1") ? Buffer.from(b.slice(2).split("").reverse().join(""), "base64").toString() : null),
+};
+
+function start({ running = true, token = null, post, protection = fakeProtection, reuse = false } = {}) {
+  if (!reuse) tmp = fs.mkdtempSync(path.join(os.tmpdir(), "orbit-discord-"));
   const tokenPath = path.join(tmp, "credentials.json");
   if (token) fs.writeFileSync(tokenPath, JSON.stringify(token));
   discord = fakeDiscord({ running });
@@ -67,7 +72,7 @@ function start({ running = true, token = null, post } = {}) {
   });
   host = { locale: "pt-BR", states: 0, attention: [], stateChanged() { this.states++; } };
   host.attentionFn = (item) => host.attention.push(item);
-  plugin.onLoad({ locale: host.locale, stateChanged: () => host.stateChanged(), attention: host.attentionFn });
+  plugin.onLoad({ locale: host.locale, stateChanged: () => host.stateChanged(), attention: host.attentionFn, ...(protection || {}) });
   return tokenPath;
 }
 
@@ -234,6 +239,78 @@ test("any authentication error drops the saved token and asks again", async () =
   expect(fs.existsSync(tokenPath)).toBe(false);
   expect(discord.commands("AUTHORIZE")).toHaveLength(1);
   expect(state().toggle_mute).toMatchObject({ status: "amber" });
+});
+
+async function approve() {
+  await settle();
+  ready();
+  await settle();
+  discord.reply({ cmd: "AUTHORIZE", data: { code: "code-1" } });
+  await settle();
+}
+
+test("the saved token is encrypted with the host protection, never written in clear", async () => {
+  const tokenPath = start();
+  await approve();
+  const text = fs.readFileSync(tokenPath, "utf8");
+  expect(text).not.toContain("tok-new");
+  expect(text).not.toContain("ref-new");
+  const saved = JSON.parse(text);
+  expect(saved.version).toBe(2);
+  expect(JSON.parse(fakeProtection.unprotectSecret(saved.protected))).toMatchObject({ access_token: "tok-new", refresh_token: "ref-new" });
+});
+
+test("an encrypted token is reused after a restart", async () => {
+  start();
+  await approve();
+  plugin.onUnload();
+  start({ reuse: true });
+  await settle();
+  ready();
+  await settle();
+  expect(discord.commands("AUTHENTICATE").map((f) => f.data.args.access_token)).toEqual(["tok-new"]);
+  expect(discord.commands("AUTHORIZE")).toHaveLength(0);
+});
+
+test("a token saved in clear by an older version is reused and rewritten encrypted", async () => {
+  const tokenPath = start({ token: { access_token: "tok-saved", refresh_token: "ref-old", expires_at: Date.now() + 3600_000 } });
+  await settle();
+  ready();
+  await settle();
+  expect(discord.commands("AUTHENTICATE").map((f) => f.data.args.access_token)).toEqual(["tok-saved"]);
+  const text = fs.readFileSync(tokenPath, "utf8");
+  expect(text).not.toContain("tok-saved");
+  expect(text).not.toContain("ref-old");
+  expect(JSON.parse(fakeProtection.unprotectSecret(JSON.parse(text).protected))).toMatchObject({ access_token: "tok-saved", refresh_token: "ref-old" });
+});
+
+test("a token that cannot be decrypted (another user or machine) means asking again, not a crash", async () => {
+  start({ token: { version: 2, protected: "garbage" } });
+  await settle();
+  ready();
+  await settle();
+  expect(discord.commands("AUTHENTICATE")).toHaveLength(0);
+  expect(discord.commands("AUTHORIZE")).toHaveLength(1);
+});
+
+test("a decrypted token that is not valid JSON means asking again, not a crash", async () => {
+  start({ token: { version: 2, protected: "P1x" }, protection: { protectSecret: fakeProtection.protectSecret, unprotectSecret: () => "{not json" } });
+  await settle();
+  ready();
+  await settle();
+  expect(discord.commands("AUTHENTICATE")).toHaveLength(0);
+  expect(discord.commands("AUTHORIZE")).toHaveLength(1);
+});
+
+test("without host protection the token still works, so the plugin degrades instead of failing", async () => {
+  start({ protection: null });
+  await approve();
+  plugin.onUnload();
+  start({ reuse: true, protection: null });
+  await settle();
+  ready();
+  await settle();
+  expect(discord.commands("AUTHENTICATE").map((f) => f.data.args.access_token)).toEqual(["tok-new"]);
 });
 
 test("speaks the app language", async () => {

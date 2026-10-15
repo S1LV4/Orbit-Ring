@@ -15,7 +15,7 @@ const CATALOG = [
 
 async function openPlugins(page: Page) {
   const sent: any[] = [];
-  await page.routeWebSocket("ws://localhost:9119", (ws) => {
+  await page.routeWebSocket("ws://127.0.0.1:9119", (ws) => {
     setTimeout(() => ws.send(JSON.stringify({ type: "plugins", plugins: INSTALLED })), 30);
     ws.onMessage((raw) => {
       let m: any;

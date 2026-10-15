@@ -14,7 +14,9 @@ OrbitRing plugin that mutes and deafens you in Discord voice from the ring.
 The plugin connects to the Discord app running on the same computer (its local RPC pipe) and
 asks for authorization with OAuth (PKCE). Discord shows a window asking you to authorize
 OrbitRing; once you accept, the token is saved in `~/.orbit/credentials.json` and reused, and
-refreshed when it expires. Tokens and authorization codes are never written to the log.
+refreshed when it expires. The file is encrypted for your Windows user (DPAPI), so it cannot be
+read from another account, another machine or a backup; a file saved in clear by an older version
+is encrypted the next time it is read. Tokens and authorization codes are never written to the log.
 
 There is no keyboard-shortcut fallback: without authorization the buttons do nothing but say so,
 and a click asks Discord for authorization again.

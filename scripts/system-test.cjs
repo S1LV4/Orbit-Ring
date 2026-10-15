@@ -38,6 +38,22 @@ function until(fn, label) {
   });
 }
 const send = (m) => ws.send(JSON.stringify(m));
+const URL = (port) => `ws://127.0.0.1:${port}`;
+const LISTENING = (port) => `Service running on ${URL(port)}`;
+const tokenProtocols = (token) => ["orbitring", `token.${token}`];
+
+function handshake(url, protocols, origin) {
+  return new Promise((resolve) => {
+    const c = new WebSocket(url, protocols, origin ? { origin } : {});
+    const done = (result) => { try { c.terminate(); } catch {} resolve(result); };
+    c.once("open", () => done({ open: true, protocol: c.protocol }));
+    c.once("unexpected-response", (_req, res) => done({ open: false, status: res.statusCode }));
+    c.once("error", (e) => done({ open: false, error: e.code || e.message }));
+  });
+}
+
+const lanAddress = () => Object.values(os.networkInterfaces()).flat()
+  .find((a) => a && a.family === "IPv4" && !a.internal)?.address;
 
 async function main() {
   if (!fs.existsSync(SERVICE)) throw new Error(`${SERVICE} not found — run "npm run build" first`);
@@ -61,12 +77,43 @@ async function main() {
   const collect = (d) => { serviceLog += d; };
   child.stdout.on("data", collect);
   child.stderr.on("data", collect);
-  for (let i = 0; i < 100 && exited === null && !serviceLog.includes(`ws://localhost:${PORT}`); i++) await new Promise((r) => setTimeout(r, 200));
-  assert(exited === null && serviceLog.includes(`ws://localhost:${PORT}`), "built service starts and listens");
+  for (let i = 0; i < 100 && exited === null && !serviceLog.includes(LISTENING(PORT)); i++) await new Promise((r) => setTimeout(r, 200));
+  assert(exited === null && serviceLog.includes(LISTENING(PORT)), "built service starts and listens on 127.0.0.1");
   for (let i = 0; i < 25 && !/mouse hook disabled/i.test(serviceLog); i++) await new Promise((r) => setTimeout(r, 200));
   assert(/mouse hook disabled/i.test(serviceLog), "the service under test leaves the real mouse alone (no global hook)");
 
-  ws = new WebSocket(`ws://localhost:${PORT}`);
+  console.log("socket security");
+  const tokenFile = path.join(home, ".orbit", "service-token");
+  assert(fs.existsSync(tokenFile), "the service writes its per-start token to ~/.orbit/service-token");
+  const token = fs.readFileSync(tokenFile, "utf8").trim();
+  assert(/^[0-9a-f]{64}$/.test(token), "the service token is 32 random bytes");
+  const noToken = await handshake(URL(PORT));
+  assert(!noToken.open && noToken.status === 401, "a client without the token is refused (401)");
+  const onlyProtocol = await handshake(URL(PORT), ["orbitring"]);
+  assert(!onlyProtocol.open, "a client offering the subprotocol but no token is refused");
+  const wrong = await handshake(URL(PORT), tokenProtocols("0".repeat(64)));
+  assert(!wrong.open && wrong.status === 401, "a client with a wrong token is refused (401)");
+  const site = await handshake(URL(PORT), tokenProtocols(token), "https://example.com");
+  assert(!site.open && site.status === 401, "a web page is refused even with the token (Origin check)");
+  const sandboxed = await handshake(URL(PORT), tokenProtocols(token), "null");
+  assert(!sandboxed.open, "a sandboxed iframe (Origin: null) is refused");
+  const lan = lanAddress();
+  if (lan) {
+    const remote = await handshake(`ws://${lan}:${PORT}`, tokenProtocols(token));
+    assert(!remote.open && remote.status === undefined, `the service does not listen on the network address ${lan}`);
+  } else console.log("  --  no non-loopback IPv4 address on this machine: network bind not checked");
+  const good = await handshake(URL(PORT), tokenProtocols(token), "file://");
+  assert(good.open && good.protocol === "orbitring", "a window with the token is accepted and the token is not echoed back");
+
+  const clash = spawn(process.execPath, [SERVICE], { env, cwd: ROOT, stdio: "ignore", windowsHide: true });
+  const clashExit = await new Promise((resolve) => {
+    const t = setTimeout(() => { clash.kill(); resolve("still running"); }, STEP_TIMEOUT);
+    clash.on("exit", (code) => { clearTimeout(t); resolve(code); });
+  });
+  assert(clashExit !== "still running", "a second service on a busy port exits");
+  assert(fs.readFileSync(tokenFile, "utf8").trim() === token, "a service that could not listen leaves the running service's token alone");
+
+  ws = new WebSocket(URL(PORT), tokenProtocols(token));
   ws.on("message", (raw) => {
     const m = JSON.parse(String(raw));
     last[m.type] = m;
@@ -161,7 +208,7 @@ async function main() {
   let orphanLog = "", orphanExit = null;
   orphan.stdout.on("data", (d) => { orphanLog += d; });
   orphan.on("exit", (code) => { orphanExit = code; });
-  for (let i = 0; i < 100 && orphanExit === null && !orphanLog.includes(`ws://localhost:${orphanPort}`); i++) await new Promise((r) => setTimeout(r, 200));
+  for (let i = 0; i < 100 && orphanExit === null && !orphanLog.includes(LISTENING(orphanPort)); i++) await new Promise((r) => setTimeout(r, 200));
   assert(orphanExit === null, "a second service starts with a separate parent process");
   parent.kill();
   for (let i = 0; i < 50 && orphanExit === null; i++) await new Promise((r) => setTimeout(r, 200));

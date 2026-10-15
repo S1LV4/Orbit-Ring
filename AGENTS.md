@@ -14,15 +14,15 @@ npm workspaces, scope `@orbitring/*`:
 | Path | What it is |
 | --- | --- |
 | `packages/shared` | Types, the WebSocket protocol (`protocol.ts`) and the ring catalog shared by everything |
-| `packages/service` | Node service: devices, mouse hook, config store, plugin loader and catalog. WebSocket on `ws://localhost:9119` |
+| `packages/service` | Node service: devices, mouse hook, config store, plugin loader and catalog. WebSocket on `ws://127.0.0.1:9119` |
 | `packages/ring` | Electron app: the ring overlay (Preact, bundled with esbuild), tray, config window. `electron-builder` config lives in its `package.json` |
 | `packages/ui` | Config UI (React + Vite + Tailwind), shown in the config window |
 | `plugins/` | The plugin **catalog** shipped with the app (one folder per plugin) |
 | `scripts/system-test.cjs` | System test that boots the built service |
 | `.github/workflows/build.yml` | CI: tests → installer → GitHub Release on a `v*` tag |
 
-Generated, never edited by hand: `packages/ring/main.js`, `packages/ring/preload.js` (from
-`src/main.ts`, `src/preload.ts`), `packages/ring/src/ring-bundle.js`, every `dist/`, and
+Generated, never edited by hand: `packages/ring/main.js`, `packages/ring/preload.js`,
+`packages/ring/config-preload.js` (from `src/main.ts`, `src/preload.ts`, `src/config-preload.ts`), `packages/ring/src/ring-bundle.js`, every `dist/`, and
 `packages/ring/release/`.
 
 ## Commands
@@ -108,7 +108,7 @@ Tests run on developers' real machines, next to their real accounts.
   The system test never installs the Discord plugin: it would connect to the Discord running on
   the machine and ask the user for authorization. Its behaviour is tested with a fake Discord
   (`discord-plugin.test.js`).
-- **UI tests always mock the service socket** with `page.routeWebSocket("ws://localhost:9119")`
+- **UI tests always mock the service socket** with `page.routeWebSocket("ws://127.0.0.1:9119")`
   before navigating. A UI test must never reach a running service or save a real config.
 - **No test talks to a third-party service or another app** (Anthropic, OpenAI, Google, Discord,
   Steam). Stub the transport. Plugins skip account discovery when `JEST_WORKER_ID` is set — keep
@@ -126,6 +126,11 @@ Tests run on developers' real machines, next to their real accounts.
 - Never refresh or rotate a credential that belongs to another tool unless that tool's own client
   would do it the same way and the plugin's README documents it.
 - Local servers bind to `127.0.0.1` only and require the per-install token.
+- The service socket refuses a client without the token the service writes to
+  `~/.orbit/service-token` at each start (offered as the `token.<hex>` WebSocket subprotocol) and
+  any `Origin` other than `file://` or the UI dev server. The ring main process reads the file;
+  the config window gets it only through `config-preload` (`window.orbit.serviceToken()`).
+- Credentials a plugin saves are encrypted with `host.protectSecret` (DPAPI, current user).
 - Nothing a plugin provides is trusted as markup: icons are inner SVG for a 24×24 viewBox, with no
   `<svg>` wrapper, scripts or event handlers.
 - The config window opens `https://` links in the system browser and denies every other window.
