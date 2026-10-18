@@ -39,7 +39,7 @@ export const S = {
   activeGroup: null as string | null,
   hover: null as string | null,
   dx: 0, dy: 0, shownAt: 0, lastMove: 0,
-  CX: 0, CY: 0,
+  CX: 0, CY: 0, center: null as { x: number; y: number } | null,
   inset: { l: 0, t: 0, r: 0, b: 0 },
   reduce: typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches,
 };
@@ -66,9 +66,9 @@ export interface RingHost {
   setTheme?: (t: string) => void;
   onConfig?: (cb: (cfg: unknown) => void) => void;
   onShow?: (cb: (d?: unknown) => void) => void;
-  onMove?: (cb: (d: { dx: number; dy: number }) => void) => void;
   onRelease?: (cb: () => void) => void;
   onHide?: (cb: () => void) => void;
+  hidden?: () => void;
 }
 export const host = (): RingHost | undefined => (window as unknown as { ring?: RingHost }).ring;
 export const hostMode = !!(host() && typeof host()!.onShow === "function");

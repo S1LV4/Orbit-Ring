@@ -32,6 +32,7 @@ export type UIMessage =
   | { type: "start_macro_record" }
   | { type: "stop_macro_record" }
   | { type: "identify_button" }
+  | { type: "warp_cursor"; x: number; y: number }
   | { type: "get_claude_usage" }
   | { type: "get_plugins" }
   | { type: "open_plugins_folder" }

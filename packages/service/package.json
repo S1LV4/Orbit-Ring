@@ -5,8 +5,8 @@
   "license": "GPL-3.0-only",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "esbuild src/index.ts src/plugin-host.ts --bundle --platform=node --outdir=dist --external:node-hid --external:koffi --external:sharp --format=cjs && node dist/index.js",
-    "build": "esbuild src/index.ts src/plugin-host.ts --bundle --platform=node --outdir=dist --external:node-hid --external:koffi --external:sharp --format=cjs",
+    "dev": "esbuild src/index.ts src/plugin-host.ts src/mouse-hook-worker.ts --bundle --platform=node --outdir=dist --external:node-hid --external:koffi --external:sharp --format=cjs && node dist/index.js",
+    "build": "esbuild src/index.ts src/plugin-host.ts src/mouse-hook-worker.ts --bundle --platform=node --outdir=dist --external:node-hid --external:koffi --external:sharp --format=cjs",
     "test": "jest"
   },
   "dependencies": {

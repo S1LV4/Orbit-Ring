@@ -1,225 +1,45 @@
-import koffi from "koffi";
+import path from "path";
+import { Worker } from "worker_threads";
+import { setCursorPos, postQuit } from "./win32-user32";
+import { HOOK_STATE_SLOTS, THREAD_ID, type HookOutput, type MouseButtonEvent } from "./mouse-hook-proc";
 
-const WH_MOUSE_LL = 14;
-const WM_MOUSEMOVE = 0x0200;
-const WM_XBUTTONDOWN = 0x020b;
-const WM_XBUTTONUP = 0x020c;
-const WM_MBUTTONDOWN = 0x0207;
-const WM_MBUTTONUP = 0x0208;
-const XBUTTON1 = 0x0001;
-const XBUTTON2 = 0x0002;
-
-const user32 = koffi.load("user32.dll");
-
-const MSLLHOOKSTRUCT = koffi.struct("MSLLHOOKSTRUCT", {
-  x: "int32",
-  y: "int32",
-  mouseData: "uint32",
-  flags: "uint32",
-  time: "uint32",
-  dwExtraInfo: "uintptr",
-});
-
-const HOOKPROC = koffi.proto("HOOKPROC", "intptr", ["int", "uintptr", "intptr"]);
-const HOOKPROC_PTR = koffi.pointer(HOOKPROC);
-
-const SetWindowsHookExW = user32.func(
-  "SetWindowsHookExW",
-  "intptr",
-  ["int", HOOKPROC_PTR, "intptr", "uint32"]
-);
-
-const CallNextHookEx = user32.func(
-  "CallNextHookEx",
-  "intptr",
-  ["intptr", "int", "uintptr", "intptr"]
-);
-
-const UnhookWindowsHookEx = user32.func(
-  "UnhookWindowsHookEx",
-  "int",
-  ["intptr"]
-);
-
-const PeekMessageW = user32.func("PeekMessageW", "int", [
-  "void *",
-  "intptr",
-  "uint32",
-  "uint32",
-  "uint32",
-]);
-
-export type MouseButtonEvent = {
-  button: string;
-  action: "press" | "release";
-  x?: number;
-  y?: number;
-  timestamp: number;
-};
-
-export type MouseMoveEvent = {
-  dx: number;
-  dy: number;
-};
-
+export type { MouseButtonEvent };
 export type MouseHookCallback = (event: MouseButtonEvent) => void;
-export type MouseMoveCallback = (event: MouseMoveEvent) => void;
 
-const SetCursorPos = user32.func("SetCursorPos", "int", ["int", "int"]);
-const GetCursorPos = user32.func("GetCursorPos", "int", ["void *"]);
-const ClipCursor = user32.func("ClipCursor", "int", ["void *"]);
+const state = new Int32Array(new SharedArrayBuffer(HOOK_STATE_SLOTS * 4));
 
-const consumedButtons = new Set<string>(["side2"]);
+let hookThread: Worker | null = null;
 
-let hookHandle: any = null;
-let callbackRef: any = null;
-let pumpInterval: ReturnType<typeof setInterval> | null = null;
-
-let cursorLocked = false;
-let lockX = 0;
-let lockY = 0;
-let moveCallback: MouseMoveCallback | null = null;
-let lockSafetyTimer: ReturnType<typeof setTimeout> | null = null;
-
-const LOCK_SAFETY_TIMEOUT_MS = 30000;
-
-export function lockCursor(onMove: MouseMoveCallback): void {
-  const buf = Buffer.alloc(8);
-  GetCursorPos(buf);
-  lockX = buf.readInt32LE(0);
-  lockY = buf.readInt32LE(4);
-  moveCallback = onMove;
-  cursorLocked = true;
-
-  if (lockSafetyTimer) clearTimeout(lockSafetyTimer);
-  lockSafetyTimer = setTimeout(() => {
-    if (cursorLocked) {
-      console.warn("[orbit] Safety timeout: auto-unlocking cursor after " + LOCK_SAFETY_TIMEOUT_MS + "ms");
-      unlockCursor();
-    }
-  }, LOCK_SAFETY_TIMEOUT_MS);
-}
-
-export function moveCursorLock(x: number, y: number): void {
-  if (!cursorLocked) return;
-  lockX = Math.round(x);
-  lockY = Math.round(y);
-  SetCursorPos(lockX, lockY);
-}
-
-export function unlockCursor(): void {
-  cursorLocked = false;
-  moveCallback = null;
-  if (lockSafetyTimer) {
-    clearTimeout(lockSafetyTimer);
-    lockSafetyTimer = null;
-  }
-  ClipCursor(null);
+export function warpCursor(x: number, y: number): void {
+  setCursorPos(Math.round(x), Math.round(y));
 }
 
 export function startMouseHook(callback: MouseHookCallback): void {
-  if (hookHandle) {
+  if (hookThread) {
     console.warn("[orbit] Mouse hook already running");
     return;
   }
 
-  callbackRef = koffi.register(
-    (nCode: number, wParam: number, lParam: number): number => {
-      try {
-        if (nCode >= 0 && lParam) {
-          const buf = koffi.decode(lParam, MSLLHOOKSTRUCT);
-
-          if (cursorLocked && wParam === WM_MOUSEMOVE) {
-            if (buf.flags & 1) {
-              return CallNextHookEx(hookHandle || 0, nCode, wParam, lParam);
-            }
-            const dx = buf.x - lockX;
-            const dy = buf.y - lockY;
-            if (dx !== 0 || dy !== 0) {
-              SetCursorPos(lockX, lockY);
-              if (moveCallback) {
-                try { moveCallback({ dx, dy }); } catch {}
-              }
-            }
-            return 1;
-          }
-
-          const event = parseMouseEvent(wParam, buf);
-          if (event) {
-            try {
-              callback(event);
-            } catch {}
-
-            if (consumedButtons.has(event.button)) {
-              return 1;
-            }
-          }
-        }
-      } catch (e) {
-        console.error("[orbit] Hook callback error, passing event through:", e);
-      }
-      return CallNextHookEx(hookHandle || 0, nCode, wParam, lParam);
-    },
-    HOOKPROC_PTR
-  );
-
-  hookHandle = SetWindowsHookExW(WH_MOUSE_LL, callbackRef, 0, 0);
-
-  if (!hookHandle) {
-    console.error("[orbit] Failed to set mouse hook");
-    return;
-  }
-
-  console.log("[orbit] Win32 mouse hook installed");
-
-  const msgBuf = Buffer.alloc(48);
-  pumpInterval = setInterval(() => {
-    while (PeekMessageW(msgBuf, 0, 0, 0, 1)) {
-    }
-  }, 8);
+  Atomics.store(state, THREAD_ID, 0);
+  const thread = new Worker(path.join(__dirname, "mouse-hook-worker.js"), { workerData: { state } });
+  hookThread = thread;
+  thread.on("message", (msg: HookOutput | { kind: "ready" | "failed" }) => {
+    try {
+      if (msg.kind === "button") callback(msg.event);
+      else if (msg.kind === "ready") console.log("[orbit] Win32 mouse hook installed");
+      else console.error("[orbit] Failed to set mouse hook");
+    } catch {}
+  });
+  thread.on("error", (e) => console.error("[orbit] Mouse hook thread error:", e));
+  thread.on("exit", () => { if (hookThread === thread) hookThread = null; });
 }
 
 export function stopMouseHook(): void {
-  unlockCursor();
-  if (pumpInterval) {
-    clearInterval(pumpInterval);
-    pumpInterval = null;
-  }
-  if (hookHandle) {
-    UnhookWindowsHookEx(hookHandle);
-    hookHandle = null;
-    console.log("[orbit] Mouse hook removed");
-  }
-}
-
-function parseMouseEvent(
-  wParam: number,
-  lParam: { x: number; y: number; mouseData: number; time: number }
-): MouseButtonEvent | null {
-  const hiWord = (lParam.mouseData >> 16) & 0xffff;
-
-  switch (wParam) {
-    case WM_XBUTTONDOWN:
-      return {
-        button: hiWord === XBUTTON1 ? "side1" : "side2",
-        action: "press",
-        x: lParam.x,
-        y: lParam.y,
-        timestamp: lParam.time,
-      };
-    case WM_XBUTTONUP:
-      return {
-        button: hiWord === XBUTTON1 ? "side1" : "side2",
-        action: "release",
-        x: lParam.x,
-        y: lParam.y,
-        timestamp: lParam.time,
-      };
-    case WM_MBUTTONDOWN:
-      return { button: "middle", action: "press", x: lParam.x, y: lParam.y, timestamp: lParam.time };
-    case WM_MBUTTONUP:
-      return { button: "middle", action: "release", x: lParam.x, y: lParam.y, timestamp: lParam.time };
-    default:
-      return null;
-  }
+  const thread = hookThread;
+  if (!thread) return;
+  hookThread = null;
+  const threadId = Atomics.load(state, THREAD_ID);
+  if (threadId) postQuit(threadId);
+  else thread.terminate();
+  console.log("[orbit] Mouse hook removed");
 }

@@ -7,6 +7,7 @@ import * as os from "os";
 import { serviceSocketArgs, tokenForSender } from "./service-token";
 import { autoUpdater } from "electron-updater";
 import { startUpdater, updateMenuItem, type UpdaterControl, type UpdateStatus } from "./updater";
+import { placeRing } from "./ring-placement";
 
 app.disableHardwareAcceleration();
 
@@ -396,51 +397,49 @@ function startUpdates() {
 
 const RING_CONTENT_RADIUS = 190;
 
-function showRing(cursorX?: number, cursorY?: number) {
-  if (!ring) return;
+const HIDE_FALLBACK_MS = 150;
+let ringOpen = false;
+let pendingHide: ReturnType<typeof setTimeout> | null = null;
 
-  if (ring.isVisible()) return;
+function finishHide() {
+  if (!pendingHide) return;
+  clearTimeout(pendingHide);
+  pendingHide = null;
+  ring?.hide();
+}
 
-  const cursor = cursorX != null
-    ? { x: cursorX, y: cursorY! }
-    : screen.getCursorScreenPoint();
-  const display = screen.getDisplayNearestPoint(cursor);
+function showRing() {
+  if (!ring || ringOpen) return;
+  ringOpen = true;
+  if (pendingHide) { clearTimeout(pendingHide); pendingHide = null; }
 
-  const size = ringSize;
-  const b = display.bounds;
-  const reach = Math.min(RING_CONTENT_RADIUS, Math.floor(Math.min(b.width, b.height) / 2));
-  const centerX = Math.round(Math.max(b.x + reach, Math.min(cursor.x, b.x + b.width - reach)));
-  const centerY = Math.round(Math.max(b.y + reach, Math.min(cursor.y, b.y + b.height - reach)));
-  const x = centerX - size / 2;
-  const y = centerY - size / 2;
+  const cursor = screen.getCursorScreenPoint();
+  const place = placeRing(cursor, screen.getDisplayNearestPoint(cursor).bounds, RING_CONTENT_RADIUS);
 
-  ring.setBounds({ x, y, width: size, height: size });
+  ring.setBounds(place.window);
 
-  if ((centerX !== cursor.x || centerY !== cursor.y) && ws?.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: "move_cursor_lock", x: centerX, y: centerY }));
+  if (place.warpTo && ws?.readyState === WebSocket.OPEN) {
+    const to = process.platform === "win32" ? screen.dipToScreenPoint(place.warpTo) : place.warpTo;
+    ws.send(JSON.stringify({ type: "warp_cursor", x: to.x, y: to.y }));
   }
 
-  const inset = {
-    l: Math.max(0, b.x - x), t: Math.max(0, b.y - y),
-    r: Math.max(0, x + size - (b.x + b.width)), b: Math.max(0, y + size - (b.y + b.height)),
-  };
-
   sendRingState();
-  ring.webContents.send("ring-show", { cx: centerX - x, cy: centerY - y, inset });
+  ring.webContents.send("ring-show", { cx: place.center.x, cy: place.center.y, inset: { l: 0, t: 0, r: 0, b: 0 } });
 
   ring.showInactive();
   ring.moveTop();
 }
 
 function hideRing() {
-  if (ring && ring.isVisible()) {
-    ring.webContents.send("ring-hide");
-    ring.hide();
-  }
-  if (ws?.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: "unlock_cursor" }));
-  }
+  if (!ring || !ringOpen) return;
+  ringOpen = false;
+  ring.webContents.send("ring-hide");
+  pendingHide = setTimeout(finishHide, HIDE_FALLBACK_MS);
 }
+
+ipcMain.on("ring-hidden", () => {
+  if (!ringOpen) finishHide();
+});
 
 function connectService() {
   ws = new WebSocket(...serviceSocketArgs(os.homedir()));
@@ -457,19 +456,15 @@ function connectService() {
       const msg = JSON.parse(raw.toString());
 
       if (msg.type === "button_event" && msg.button === "side2") {
-        console.log("[ring] side2", msg.action, "visible:", ring?.isVisible());
+        console.log("[ring] side2", msg.action, "open:", ringOpen);
         if (msg.action === "press") {
-          if (ring && ring.isVisible()) {
+          if (ring && ringOpen) {
             console.log("[ring] Sending ring-release");
             ring.webContents.send("ring-release");
           } else {
             console.log("[ring] Showing ring at", msg.x, msg.y);
-            showRing(msg.x, msg.y);
+            showRing();
           }
-        }
-      } else if (msg.type === "ring_move") {
-        if (ring && ring.isVisible()) {
-          ring.webContents.send("ring-move", { dx: msg.dx, dy: msg.dy });
         }
       } else if (msg.type === "ring_config") {
         const r = msg.ring;
