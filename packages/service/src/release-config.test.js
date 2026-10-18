@@ -19,3 +19,11 @@ test("CI publishes the update metadata next to the installer", () => {
     expect(workflow).toContain(`release/${file}`);
   }
 });
+
+test("the installer ships every file the service build produces, so its worker and plugin host start in the installed app", () => {
+  const service = JSON.parse(fs.readFileSync(path.join(ROOT, "packages", "service", "package.json"), "utf8"));
+  const built = service.scripts.build.split(" ").filter((a) => a.startsWith("src/")).map((a) => path.basename(a, ".ts") + ".js");
+  const shipped = ring.build.extraResources.find((r) => r.from === "../service/dist").filter;
+  expect(built.length).toBeGreaterThan(1);
+  for (const file of built) expect(shipped).toContain(file);
+});
