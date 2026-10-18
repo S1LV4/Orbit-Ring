@@ -3,7 +3,7 @@ const path = require("path");
 
 const esbuild = require("esbuild");
 esbuild.buildSync({
-  entryPoints: ["packages/service/src/index.ts", "packages/service/src/plugin-host.ts"],
+  entryPoints: ["packages/service/src/index.ts", "packages/service/src/plugin-host.ts", "packages/service/src/mouse-hook-worker.ts"],
   bundle: true,
   platform: "node",
   outdir: "packages/service/dist",

@@ -17,13 +17,14 @@ function sizeSector(el: HTMLElement, rin: number, rout: number): void {
   (el.style as unknown as Record<string, string>).webkitMaskImage = m; el.style.maskImage = m;
 }
 export function layout(): void {
-  S.CX = innerWidth / 2; S.CY = innerHeight / 2;
+  S.CX = S.center ? S.center.x : innerWidth / 2; S.CY = S.center ? S.center.y : innerHeight / 2;
   A.box = 2 * (CFG.R2 + 120); A.cols = Math.floor(A.box / A.cw); A.rows = Math.floor(A.box / A.lh);
   if (E.sec1) sizeSector(E.sec1, 34, CFG.R1 + 34);
   if (E.sec2) sizeSector(E.sec2, CFG.R1 + 34, CFG.R2 + 34);
   if (E.goo) Object.assign(E.goo.style, { left: (S.CX - 380) + "px", top: (S.CY - 380) + "px" });
   if (E.stars) Object.assign(E.stars.style, { left: S.CX + "px", top: S.CY + "px" });
   if (E.breathe) Object.assign(E.breathe.style, { left: S.CX + "px", top: S.CY + "px" });
+  for (const el of [E.ascDim, E.ascMid, E.ascAcc, E.toast]) if (el) Object.assign(el.style, { left: S.CX + "px", top: S.CY + "px" });
 }
 
 function selPath(): Pt[] | null {

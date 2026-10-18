@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import HID from "node-hid";
 import type { DeviceInfo } from "@orbitring/shared";
-import { startMouseHook, stopMouseHook, lockCursor, unlockCursor, moveCursorLock, type MouseMoveCallback } from "./win32-mouse-hook";
+import { startMouseHook, stopMouseHook, warpCursor } from "./win32-mouse-hook";
 
 export class DeviceManager extends EventEmitter {
   private devices: Map<string, DeviceInfo> = new Map();
@@ -35,16 +35,8 @@ export class DeviceManager extends EventEmitter {
     stopMouseHook();
   }
 
-  lockCursor(onMove: MouseMoveCallback) {
-    lockCursor(onMove);
-  }
-
-  moveCursorLock(x: number, y: number) {
-    moveCursorLock(x, y);
-  }
-
-  unlockCursor() {
-    unlockCursor();
+  warpCursor(x: number, y: number) {
+    warpCursor(x, y);
   }
 
   getDevices(): DeviceInfo[] {

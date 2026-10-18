@@ -129,18 +129,7 @@ devices.on("button", (deviceId, button, action, x, y) => {
     timestamp: Date.now(),
   });
 
-  if (button === "side2") {
-    if (action === "press") {
-      if (wss.clients.size === 0) return;
-      devices.lockCursor((move) => {
-        broadcast({ type: "ring_move", dx: move.dx, dy: move.dy } as any);
-      });
-    } else if (action === "release") {
-      setTimeout(() => {
-      }, 0);
-    }
-    return;
-  }
+  if (button === "side2") return;
 
   if (!devices.identifyMode) {
     const binding = config.getBinding(button);
@@ -174,14 +163,6 @@ wss.on("connection", (ws) => {
   ws.on("message", (raw) => {
     try {
       const msg = JSON.parse(raw.toString());
-      if (msg.type === "unlock_cursor") {
-        devices.unlockCursor();
-        return;
-      }
-      if (msg.type === "move_cursor_lock") {
-        if (Number.isFinite(msg.x) && Number.isFinite(msg.y)) devices.moveCursorLock(msg.x, msg.y);
-        return;
-      }
       handleMessage(msg as UIMessage, ws);
     } catch (e) {
       console.error("[orbit] Invalid message:", e);
@@ -239,6 +220,10 @@ function handleMessage(msg: UIMessage, ws: WebSocket) {
 
     case "identify_button":
       devices.identifyMode = true;
+      break;
+
+    case "warp_cursor":
+      if (Number.isFinite(msg.x) && Number.isFinite(msg.y)) devices.warpCursor(msg.x, msg.y);
       break;
 
     case "get_agents":
@@ -344,7 +329,6 @@ function cleanup() {
   try { clearInterval(claudeUsageInterval); } catch {}
   try { pluginLoader.unloadAll(); } catch {}
   try { appSwitcher.stop(); } catch {}
-  try { devices.unlockCursor(); } catch {}
   try { devices.stop(); } catch {}
 }
 const PARENT_PID = Number(process.env.ORBIT_PARENT_PID) || 0;

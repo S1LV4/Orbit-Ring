@@ -22,10 +22,10 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// src/main.ts
+// packages/ring/src/main.ts
 var import_electron = require("electron");
 
-// ../shared/locales/pt-BR/app.json
+// packages/shared/locales/pt-BR/app.json
 var app_default = {
   nav: {
     ring: "Ring",
@@ -63,7 +63,7 @@ var app_default = {
   languageName: "Portugu\xEAs (Brasil)"
 };
 
-// ../shared/locales/pt-BR/bindings.json
+// packages/shared/locales/pt-BR/bindings.json
 var bindings_default = {
   title: "Atribui\xE7\xE3o de bot\xF5es",
   identify: "Identificar",
@@ -123,7 +123,7 @@ var bindings_default = {
   }
 };
 
-// ../shared/locales/pt-BR/catalog.json
+// packages/shared/locales/pt-BR/catalog.json
 var catalog_default = {
   actions: {
     copy: "Copiar",
@@ -192,7 +192,7 @@ var catalog_default = {
   unavailable: "Indispon\xEDvel"
 };
 
-// ../shared/locales/pt-BR/devices.json
+// packages/shared/locales/pt-BR/devices.json
 var devices_default = {
   title: "Dispositivos detectados",
   empty: "Nenhum mouse detectado",
@@ -202,7 +202,7 @@ var devices_default = {
   lastEvent: "\xDAltimo evento"
 };
 
-// ../shared/locales/pt-BR/editor.json
+// packages/shared/locales/pt-BR/editor.json
 var editor_default = {
   themes: {
     green: "Verde",
@@ -350,7 +350,7 @@ var editor_default = {
   }
 };
 
-// ../shared/locales/pt-BR/plugins.json
+// packages/shared/locales/pt-BR/plugins.json
 var plugins_default = {
   title: "Plugins",
   tabs: {
@@ -384,10 +384,25 @@ var plugins_default = {
   authorHintStart: "criando um plugin? uma pasta com um",
   authorHintFields: "(id, name, version, author, actions) \xB7",
   authorHintEnd: "mostra o link e a foto do seu perfil",
-  updateTo: "Atualizar para v{version}"
+  updateTo: "Atualizar para v{version}",
+  incompatible: "Requer um OrbitRing mais novo",
+  permissions: {
+    title: "Pode",
+    commands: "executar programas e comandos",
+    network: "conectar \xE0 internet ou a outros apps",
+    appData: "ler dados de outros apps",
+    credentials: "usar o login de outros apps ou guardar o pr\xF3prio",
+    none: "Nenhuma permiss\xE3o especial",
+    undeclared: "N\xE3o declarou as permiss\xF5es"
+  },
+  problem: {
+    incompatible: "Feito para a API de plugins {requires}; este OrbitRing oferece {provides}",
+    failed: "Falhou ao iniciar \u2014 veja o log do servi\xE7o",
+    unresponsive: "Parou de responder e foi desligado \u2014 reinstale ou reinicie o OrbitRing"
+  }
 };
 
-// ../shared/locales/pt-BR/profiles.json
+// packages/shared/locales/pt-BR/profiles.json
 var profiles_default = {
   title: "Perfis por aplicativo",
   new: "Novo perfil",
@@ -406,14 +421,14 @@ var profiles_default = {
   emptyHint: "crie perfis para ter a\xE7\xF5es diferentes em cada aplicativo"
 };
 
-// ../shared/locales/pt-BR/ring.json
+// packages/shared/locales/pt-BR/ring.json
 var ring_default = {
   addAction: "Adicionar a\xE7\xE3o",
   attentionGroup: "Claude \xB7 confirma\xE7\xE3o",
   attention: "Aten\xE7\xE3o"
 };
 
-// ../shared/locales/pt-BR/tray.json
+// packages/shared/locales/pt-BR/tray.json
 var tray_default = {
   openConfig: "Abrir configura\xE7\xF5es",
   quit: "Sair",
@@ -423,7 +438,7 @@ var tray_default = {
   restartToUpdate: "Reiniciar para atualizar para {version}"
 };
 
-// ../shared/locales/en-US/app.json
+// packages/shared/locales/en-US/app.json
 var app_default2 = {
   nav: {
     ring: "Ring",
@@ -461,7 +476,7 @@ var app_default2 = {
   languageName: "English"
 };
 
-// ../shared/locales/en-US/bindings.json
+// packages/shared/locales/en-US/bindings.json
 var bindings_default2 = {
   title: "Button bindings",
   identify: "Identify",
@@ -542,7 +557,7 @@ var bindings_default2 = {
   }
 };
 
-// ../shared/locales/en-US/catalog.json
+// packages/shared/locales/en-US/catalog.json
 var catalog_default2 = {
   actions: {
     copy: "Copy",
@@ -611,7 +626,7 @@ var catalog_default2 = {
   unavailable: "Unavailable"
 };
 
-// ../shared/locales/en-US/devices.json
+// packages/shared/locales/en-US/devices.json
 var devices_default2 = {
   title: "Detected devices",
   empty: "No mouse detected",
@@ -621,7 +636,7 @@ var devices_default2 = {
   lastEvent: "Last event"
 };
 
-// ../shared/locales/en-US/editor.json
+// packages/shared/locales/en-US/editor.json
 var editor_default2 = {
   themes: {
     green: "Green",
@@ -769,7 +784,7 @@ var editor_default2 = {
   }
 };
 
-// ../shared/locales/en-US/plugins.json
+// packages/shared/locales/en-US/plugins.json
 var plugins_default2 = {
   title: "Plugins",
   tabs: {
@@ -803,10 +818,25 @@ var plugins_default2 = {
   authorHintStart: "writing a plugin? a folder with a",
   authorHintFields: "(id, name, version, author, actions) \xB7",
   authorHintEnd: "shows your profile link and picture",
-  updateTo: "Update to v{version}"
+  updateTo: "Update to v{version}",
+  incompatible: "Needs a newer OrbitRing",
+  permissions: {
+    title: "Can",
+    commands: "run programs and commands",
+    network: "connect to the internet or other apps",
+    appData: "read other apps\u2019 data",
+    credentials: "use other apps\u2019 sign-in or keep its own",
+    none: "No special permissions",
+    undeclared: "Did not declare its permissions"
+  },
+  problem: {
+    incompatible: "Written for plugin API {requires}; this OrbitRing provides {provides}",
+    failed: "Failed to start \u2014 see the service log",
+    unresponsive: "Stopped responding and was turned off \u2014 reinstall it or restart OrbitRing"
+  }
 };
 
-// ../shared/locales/en-US/profiles.json
+// packages/shared/locales/en-US/profiles.json
 var profiles_default2 = {
   title: "App profiles",
   new: "New profile",
@@ -825,14 +855,14 @@ var profiles_default2 = {
   emptyHint: "create profiles to have different actions per app"
 };
 
-// ../shared/locales/en-US/ring.json
+// packages/shared/locales/en-US/ring.json
 var ring_default2 = {
   addAction: "Add action",
   attentionGroup: "Claude \xB7 approval",
   attention: "Attention"
 };
 
-// ../shared/locales/en-US/tray.json
+// packages/shared/locales/en-US/tray.json
 var tray_default2 = {
   openConfig: "Open settings",
   quit: "Quit",
@@ -842,7 +872,7 @@ var tray_default2 = {
   restartToUpdate: "Restart to update to {version}"
 };
 
-// ../shared/locales/es-ES/app.json
+// packages/shared/locales/es-ES/app.json
 var app_default3 = {
   nav: {
     ring: "Ring",
@@ -880,7 +910,7 @@ var app_default3 = {
   languageName: "Espa\xF1ol"
 };
 
-// ../shared/locales/es-ES/bindings.json
+// packages/shared/locales/es-ES/bindings.json
 var bindings_default3 = {
   title: "Asignaci\xF3n de botones",
   identify: "Identificar",
@@ -961,7 +991,7 @@ var bindings_default3 = {
   }
 };
 
-// ../shared/locales/es-ES/catalog.json
+// packages/shared/locales/es-ES/catalog.json
 var catalog_default3 = {
   actions: {
     copy: "Copiar",
@@ -1030,7 +1060,7 @@ var catalog_default3 = {
   unavailable: "No disponible"
 };
 
-// ../shared/locales/es-ES/devices.json
+// packages/shared/locales/es-ES/devices.json
 var devices_default3 = {
   title: "Dispositivos detectados",
   empty: "No se detect\xF3 ning\xFAn rat\xF3n",
@@ -1040,7 +1070,7 @@ var devices_default3 = {
   lastEvent: "\xDAltimo evento"
 };
 
-// ../shared/locales/es-ES/editor.json
+// packages/shared/locales/es-ES/editor.json
 var editor_default3 = {
   themes: {
     green: "Verde",
@@ -1188,7 +1218,7 @@ var editor_default3 = {
   }
 };
 
-// ../shared/locales/es-ES/plugins.json
+// packages/shared/locales/es-ES/plugins.json
 var plugins_default3 = {
   title: "Plugins",
   tabs: {
@@ -1222,10 +1252,25 @@ var plugins_default3 = {
   authorHintStart: "\xBFcreando un plugin? una carpeta con un",
   authorHintFields: "(id, name, version, author, actions) \xB7",
   authorHintEnd: "muestra el enlace y la foto de tu perfil",
-  updateTo: "Actualizar a v{version}"
+  updateTo: "Actualizar a v{version}",
+  incompatible: "Requiere un OrbitRing m\xE1s reciente",
+  permissions: {
+    title: "Puede",
+    commands: "ejecutar programas y comandos",
+    network: "conectarse a internet o a otras apps",
+    appData: "leer datos de otras apps",
+    credentials: "usar el inicio de sesi\xF3n de otras apps o guardar el suyo",
+    none: "Ning\xFAn permiso especial",
+    undeclared: "No declar\xF3 sus permisos"
+  },
+  problem: {
+    incompatible: "Hecho para la API de plugins {requires}; este OrbitRing ofrece {provides}",
+    failed: "No se pudo iniciar \u2014 mira el registro del servicio",
+    unresponsive: "Dej\xF3 de responder y se desactiv\xF3 \u2014 reinst\xE1lalo o reinicia OrbitRing"
+  }
 };
 
-// ../shared/locales/es-ES/profiles.json
+// packages/shared/locales/es-ES/profiles.json
 var profiles_default3 = {
   title: "Perfiles por aplicaci\xF3n",
   new: "Nuevo perfil",
@@ -1244,14 +1289,14 @@ var profiles_default3 = {
   emptyHint: "crea perfiles para tener acciones distintas en cada aplicaci\xF3n"
 };
 
-// ../shared/locales/es-ES/ring.json
+// packages/shared/locales/es-ES/ring.json
 var ring_default3 = {
   addAction: "A\xF1adir acci\xF3n",
   attentionGroup: "Claude \xB7 confirmaci\xF3n",
   attention: "Atenci\xF3n"
 };
 
-// ../shared/locales/es-ES/tray.json
+// packages/shared/locales/es-ES/tray.json
 var tray_default3 = {
   openConfig: "Abrir ajustes",
   quit: "Salir",
@@ -1261,7 +1306,7 @@ var tray_default3 = {
   restartToUpdate: "Reiniciar para actualizar a {version}"
 };
 
-// ../shared/src/i18n.ts
+// packages/shared/src/i18n.ts
 var ptBR = { app: app_default, bindings: bindings_default, catalog: catalog_default, devices: devices_default, editor: editor_default, plugins: plugins_default, profiles: profiles_default, ring: ring_default, tray: tray_default };
 var enUS = { app: app_default2, bindings: bindings_default2, catalog: catalog_default2, devices: devices_default2, editor: editor_default2, plugins: plugins_default2, profiles: profiles_default2, ring: ring_default2, tray: tray_default2 };
 var esES = { app: app_default3, bindings: bindings_default3, catalog: catalog_default3, devices: devices_default3, editor: editor_default3, plugins: plugins_default3, profiles: profiles_default3, ring: ring_default3, tray: tray_default3 };
@@ -1312,15 +1357,17 @@ function createTranslator(locale, messages = MESSAGES) {
   return t2;
 }
 
-// src/main.ts
+// packages/ring/src/main.ts
 var import_ws = require("ws");
 var import_child_process = require("child_process");
 var path2 = __toESM(require("path"));
 var os = __toESM(require("os"));
 
+// packages/ring/src/service-token.ts
 var import_fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
 
+// packages/shared/src/protocol.ts
 var WS_PORT = 9119;
 var WS_HOST = "127.0.0.1";
 var WS_SUBPROTOCOL = "orbitring";
@@ -1329,6 +1376,7 @@ var TOKEN_PROTOCOL_PREFIX = "token.";
 var serviceUrl = (port = WS_PORT) => `ws://${WS_HOST}:${port}`;
 var serviceProtocols = (token) => [WS_SUBPROTOCOL, TOKEN_PROTOCOL_PREFIX + token];
 
+// packages/ring/src/service-token.ts
 function readServiceToken(home) {
   try {
     return import_fs.default.readFileSync(import_path.default.join(home, ".orbit", SERVICE_TOKEN_FILE), "utf8").trim();
@@ -1338,9 +1386,11 @@ function readServiceToken(home) {
 }
 var serviceSocketArgs = (home) => [serviceUrl(), serviceProtocols(readServiceToken(home))];
 var tokenForSender = (sender, configContents, home) => configContents && sender === configContents ? readServiceToken(home) : "";
+
+// packages/ring/src/main.ts
 var import_electron_updater = require("electron-updater");
 
-// src/updater.ts
+// packages/ring/src/updater.ts
 var SIX_HOURS = 6 * 60 * 60 * 1e3;
 var message = (e) => e instanceof Error ? e.message : String(e);
 function startUpdater(opts) {
@@ -1408,7 +1458,23 @@ function updateMenuItem(status) {
   }
 }
 
-// src/main.ts
+// packages/ring/src/ring-placement.ts
+function placeRing(cursor, display, radius) {
+  const fit = (pos, start, length) => {
+    const reach = Math.min(radius, Math.floor(length / 2));
+    return Math.round(Math.max(start + reach, Math.min(pos, start + length - reach)));
+  };
+  const x = fit(cursor.x, display.x, display.width);
+  const y = fit(cursor.y, display.y, display.height);
+  const moved = x !== Math.round(cursor.x) || y !== Math.round(cursor.y);
+  return {
+    window: { ...display },
+    center: { x: x - display.x, y: y - display.y },
+    warpTo: moved ? { x, y } : null
+  };
+}
+
+// packages/ring/src/main.ts
 import_electron.app.disableHardwareAcceleration();
 var localeSetting = SYSTEM_LOCALE;
 var translator = null;
@@ -1755,42 +1821,43 @@ function startUpdates() {
   });
 }
 var RING_CONTENT_RADIUS = 190;
-function showRing(cursorX, cursorY) {
-  if (!ring) return;
-  if (ring.isVisible()) return;
-  const cursor = cursorX != null ? { x: cursorX, y: cursorY } : import_electron.screen.getCursorScreenPoint();
-  const display = import_electron.screen.getDisplayNearestPoint(cursor);
-  const size = ringSize;
-  const b = display.bounds;
-  const reach = Math.min(RING_CONTENT_RADIUS, Math.floor(Math.min(b.width, b.height) / 2));
-  const centerX = Math.round(Math.max(b.x + reach, Math.min(cursor.x, b.x + b.width - reach)));
-  const centerY = Math.round(Math.max(b.y + reach, Math.min(cursor.y, b.y + b.height - reach)));
-  const x = centerX - size / 2;
-  const y = centerY - size / 2;
-  ring.setBounds({ x, y, width: size, height: size });
-  if ((centerX !== cursor.x || centerY !== cursor.y) && ws?.readyState === import_ws.WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: "move_cursor_lock", x: centerX, y: centerY }));
+var HIDE_FALLBACK_MS = 150;
+var ringOpen = false;
+var pendingHide = null;
+function finishHide() {
+  if (!pendingHide) return;
+  clearTimeout(pendingHide);
+  pendingHide = null;
+  ring?.hide();
+}
+function showRing() {
+  if (!ring || ringOpen) return;
+  ringOpen = true;
+  if (pendingHide) {
+    clearTimeout(pendingHide);
+    pendingHide = null;
   }
-  const inset = {
-    l: Math.max(0, b.x - x),
-    t: Math.max(0, b.y - y),
-    r: Math.max(0, x + size - (b.x + b.width)),
-    b: Math.max(0, y + size - (b.y + b.height))
-  };
+  const cursor = import_electron.screen.getCursorScreenPoint();
+  const place = placeRing(cursor, import_electron.screen.getDisplayNearestPoint(cursor).bounds, RING_CONTENT_RADIUS);
+  ring.setBounds(place.window);
+  if (place.warpTo && ws?.readyState === import_ws.WebSocket.OPEN) {
+    const to = process.platform === "win32" ? import_electron.screen.dipToScreenPoint(place.warpTo) : place.warpTo;
+    ws.send(JSON.stringify({ type: "warp_cursor", x: to.x, y: to.y }));
+  }
   sendRingState();
-  ring.webContents.send("ring-show", { cx: centerX - x, cy: centerY - y, inset });
+  ring.webContents.send("ring-show", { cx: place.center.x, cy: place.center.y, inset: { l: 0, t: 0, r: 0, b: 0 } });
   ring.showInactive();
   ring.moveTop();
 }
 function hideRing() {
-  if (ring && ring.isVisible()) {
-    ring.webContents.send("ring-hide");
-    ring.hide();
-  }
-  if (ws?.readyState === import_ws.WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: "unlock_cursor" }));
-  }
+  if (!ring || !ringOpen) return;
+  ringOpen = false;
+  ring.webContents.send("ring-hide");
+  pendingHide = setTimeout(finishHide, HIDE_FALLBACK_MS);
 }
+import_electron.ipcMain.on("ring-hidden", () => {
+  if (!ringOpen) finishHide();
+});
 function connectService() {
   ws = new import_ws.WebSocket(...serviceSocketArgs(os.homedir()));
   ws.on("open", () => {
@@ -1803,19 +1870,15 @@ function connectService() {
     try {
       const msg = JSON.parse(raw.toString());
       if (msg.type === "button_event" && msg.button === "side2") {
-        console.log("[ring] side2", msg.action, "visible:", ring?.isVisible());
+        console.log("[ring] side2", msg.action, "open:", ringOpen);
         if (msg.action === "press") {
-          if (ring && ring.isVisible()) {
+          if (ring && ringOpen) {
             console.log("[ring] Sending ring-release");
             ring.webContents.send("ring-release");
           } else {
             console.log("[ring] Showing ring at", msg.x, msg.y);
-            showRing(msg.x, msg.y);
+            showRing();
           }
-        }
-      } else if (msg.type === "ring_move") {
-        if (ring && ring.isVisible()) {
-          ring.webContents.send("ring-move", { dx: msg.dx, dy: msg.dy });
         }
       } else if (msg.type === "ring_config") {
         const r = msg.ring;

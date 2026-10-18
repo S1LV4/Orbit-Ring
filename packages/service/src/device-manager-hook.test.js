@@ -11,7 +11,7 @@ const STUBS = {
     module.exports = {
       startMouseHook: () => { calls.start++; },
       stopMouseHook: () => { calls.stop++; },
-      lockCursor() {}, unlockCursor() {}, moveCursorLock() {},
+      warpCursor() {},
     };`,
   "node-hid": `module.exports = { devices: () => [] };`,
 };
